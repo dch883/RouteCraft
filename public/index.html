@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RouteCraft | Regional Day-Trip Planner (Kiniyama, Sri Lanka)</title>
+  <meta name="description" content="Interactive single-day itinerary planner for rural and semi-urban attractions within a 25 km radius of Kiniyama, Sri Lanka. Developed by H.M.D.C. Herath (University of Moratuwa).">
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="css/style.css">
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- =========================================================================
+       TOP PERSISTENT NAVIGATION BAR (SRS Figure 3)
+       ========================================================================= -->
+  <header class="top-nav">
+    <div class="nav-container">
+      <div class="brand">
+        <span class="brand-icon">🧭</span>
+        <div class="brand-text">
+          <span class="brand-title">RouteCraft</span>
+          <span class="brand-subtitle">Kiniyama Regional Day-Planner</span>
+        </div>
+      </div>
+
+      <!-- Quick Text Search Input (REQ-FUNC-03) -->
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="searchInput" placeholder="Search attractions, heritage sites, nature...">
+      </div>
+
+      <!-- Admin & Quick Action Controls -->
+      <div class="nav-actions">
+        <button id="adminLoginBtn" class="btn btn-outline" title="Admin Login">
+          <span class="btn-icon">🔒</span> Admin Portal
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- =========================================================================
+       SUB-NAV: CATEGORY CHIPS & TAG FILTERING BAR (SRS Section 4.1)
+       ========================================================================= -->
+  <section class="filter-bar">
+    <div class="filter-container">
+      <div class="chip-group" id="categoryChips">
+        <button class="filter-chip active" data-category="All">All Attractions</button>
+        <!-- Populated dynamically via GET /api/taxonomies -->
+      </div>
+      
+      <div class="dropdown-filters">
+        <select id="vibeFilter" class="filter-select">
+          <option value="">Filter by Vibe (Atmosphere)</option>
+        </select>
+
+        <select id="activityFilter" class="filter-select">
+          <option value="">Filter by Activity</option>
+        </select>
+        
+        <button id="resetFiltersBtn" class="btn btn-text" title="Reset all filters">Reset</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================================================================
+       MAIN WORKSPACE (DUAL-PANEL: CATALOG & ITINERARY BUILDER)
+       ========================================================================= -->
+  <main class="main-workspace">
+
+    <!-- LEFT PANEL: ITINERARY PLANNER WORKSPACE (SRS Figure 3 & Section 4.2) -->
+    <aside class="itinerary-panel" id="itineraryPanel">
+      <div class="panel-header">
+        <div class="panel-header-title">
+          <h3>Your Single-Day Itinerary</h3>
+          <span class="counter-badge" id="itineraryCountBadge">0 stops</span>
+        </div>
+        <p class="panel-desc">Assemble up to 10 stops within the 25 km Kiniyama zone.</p>
+      </div>
+
+      <!-- Over-Scheduled 8-Hour Alert Banner (REQ-FUNC-10 & Diagram 2) -->
+      <div class="alert-banner warning-banner hidden" id="timeWarningBanner">
+        <div class="alert-icon">⚠️</div>
+        <div class="alert-content">
+          <strong>Over-Scheduled Warning</strong>
+          <p id="warningBannerText">Plan exceeds realistic single-day limit (8.0 active hours).</p>
+        </div>
+      </div>
+
+      <!-- Active Selected Stops List (Reorderable) -->
+      <div class="itinerary-list" id="itineraryStopsList">
+        <div class="empty-state" id="emptyItineraryState">
+          <div class="empty-icon">📍</div>
+          <p>No places added yet.</p>
+          <span>Select "+ Add to Trip" on any destination card to begin crafting your route.</span>
+        </div>
+      </div>
+
+      <!-- Route Calculation Metrics Summary (REQ-FUNC-08, REQ-FUNC-09) -->
+      <div class="itinerary-metrics-box" id="metricsBox">
+        <div class="metric-row">
+          <span class="metric-label">Estimated Road Distance:</span>
+          <span class="metric-value" id="metricDistance">0.00 km</span>
+        </div>
+        <div class="metric-row">
+          <span class="metric-label">Cumulative Duration:</span>
+          <span class="metric-value" id="metricDuration">0h 0m</span>
+        </div>
+        <div class="metric-subtext">
+          <small>Includes dwell exploration time & estimated rural transit speeds (~35 km/h).</small>
+        </div>
+      </div>
+
+      <!-- Workspace Actions -->
+      <div class="panel-actions">
+        <button id="clearItineraryBtn" class="btn btn-secondary" disabled>Clear Plan</button>
+        <button id="exportItineraryBtn" class="btn btn-primary" disabled>Export Summary</button>
+      </div>
+
+      <!-- Informational Disclaimer (REQ-NF-05) -->
+      <div class="disclaimer-note">
+        <strong>Guidance Disclaimer:</strong> Distances and transit durations are Haversine-computed estimations intended strictly for day-trip guidance.
+      </div>
+    </aside>
+
+    <!-- RIGHT PANEL: DESTINATION DIRECTORY (SRS Section 4.1) -->
+    <section class="directory-panel">
+      <div class="directory-header">
+        <div class="directory-heading">
+          <h2>Destinations within 25 km of Kiniyama</h2>
+          <span id="resultsCount" class="results-count">Loading places...</span>
+        </div>
+        <div class="sort-selector">
+          <label for="sortOrder">Sort by:</label>
+          <select id="sortOrder" class="filter-select-sm">
+            <option value="distance">Distance from Center (Nearest)</option>
+            <option value="name">Alphabetical (A - Z)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Cards Grid (REQ-FUNC-01) -->
+      <div class="places-grid" id="placesGrid">
+        <!-- Rendered dynamically via app.js -->
+      </div>
+    </section>
+
+  </main>
+
+  <!-- =========================================================================
+       MODAL 1: PLACE DETAIL VIEW (SRS Figure 4 & REQ-FUNC-02)
+       ========================================================================= -->
+  <div class="modal-overlay hidden" id="placeDetailModal">
+    <div class="modal-window">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <span class="category-pill" id="modalCategoryBadge">Category</span>
+          <h3 id="modalPlaceTitle">Place Title</h3>
+          <span class="distance-pill" id="modalDistanceBadge">0.0 km from Kiniyama</span>
+        </div>
+        <button class="modal-close-btn" id="closeDetailModalBtn">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <p class="modal-description" id="modalPlaceDescription"></p>
+
+        <!-- Detailed Attributes Grid -->
+        <div class="attributes-grid">
+          <div class="attribute-item">
+            <span class="attr-icon">🕒</span>
+            <div>
+              <strong>Operating Hours</strong>
+              <p id="modalHours">08:00 AM - 05:00 PM</p>
+            </div>
+          </div>
+
+          <div class="attribute-item">
+            <span class="attr-icon">🎟️</span>
+            <div>
+              <strong>Entrance Fee</strong>
+              <p id="modalEntrance">Free Admission</p>
+            </div>
+          </div>
+
+          <div class="attribute-item">
+            <span class="attr-icon">🚗</span>
+            <div>
+              <strong>Parking Availability</strong>
+              <p id="modalParking">On-site Parking Available</p>
+            </div>
+          </div>
+
+          <div class="attribute-item">
+            <span class="attr-icon">📞</span>
+            <div>
+              <strong>Contact Info</strong>
+              <p id="modalContact">Not Available</p>
+            </div>
+          </div>
+
+          <div class="attribute-item">
+            <span class="attr-icon">⏳</span>
+            <div>
+              <strong>Recommended Duration</strong>
+              <p id="modalDuration">60 minutes</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Vibe & Activity Tags -->
+        <div class="modal-tags-container">
+          <h4>Vibes & Activities</h4>
+          <div class="tags-wrapper" id="modalTagsWrapper"></div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <a id="modalMapsLink" href="#" target="_blank" rel="noopener noreferrer" class="btn btn-outline">
+          📍 Open in Google Maps
+        </a>
+        <button id="modalAddToTripBtn" class="btn btn-primary">+ Add to Itinerary</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       MODAL 2: ADMIN AUTHENTICATION & CONTROL PANEL (SRS Figure 5)
+       ========================================================================= -->
+  <div class="modal-overlay hidden" id="adminModal">
+    <div class="modal-window modal-wide">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <h3>RouteCraft Administrative Control Panel</h3>
+          <span class="admin-session-text" id="adminSessionStatus">Authentication Required</span>
+        </div>
+        <button class="modal-close-btn" id="closeAdminModalBtn">&times;</button>
+      </div>
+
+      <!-- VIEW A: Login Form -->
+      <div class="modal-body" id="adminLoginFormView">
+        <form id="adminLoginForm" class="admin-form">
+          <p class="form-instruction">Provide administrator credentials to access destination management and soft-delete controls.</p>
+          <div class="form-group">
+            <label for="adminUsername">Username</label>
+            <input type="text" id="adminUsername" required placeholder="admin">
+          </div>
+          <div class="form-group">
+            <label for="adminPassword">Password</label>
+            <input type="password" id="adminPassword" required placeholder="••••••••">
+          </div>
+          <div class="form-error hidden" id="adminLoginError"></div>
+          <button type="submit" class="btn btn-primary btn-block">Sign In to Dashboard</button>
+        </form>
+      </div>
+
+      <!-- VIEW B: Admin Dashboard & CRUD Table -->
+      <div class="modal-body hidden" id="adminDashboardView">
+        <div class="admin-toolbar">
+          <div class="admin-user-info">
+            Logged in as: <strong id="adminUserDisplayName">admin</strong>
+          </div>
+          <div class="admin-toolbar-actions">
+            <button id="showAddPlaceFormBtn" class="btn btn-primary btn-sm">+ Create New Place</button>
+            <button id="adminLogoutBtn" class="btn btn-outline btn-sm">Log Out</button>
+          </div>
+        </div>
+
+        <!-- Add Place Form (Collapsible) -->
+        <div id="addPlaceFormContainer" class="add-place-container hidden">
+          <h4>Add New Destination (Max 25 km Kiniyama Scope)</h4>
+          <form id="createPlaceForm" class="grid-form">
+            <div class="form-group">
+              <label>Place Name *</label>
+              <input type="text" id="newPlaceName" required placeholder="e.g. Kiniyama Lake Reserve">
+            </div>
+
+            <div class="form-group">
+              <label>Category *</label>
+              <select id="newPlaceCategory" required>
+                <!-- Populated via API -->
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Distance From Kiniyama (km, &le; 25.0) *</label>
+              <input type="number" step="0.01" max="25.00" min="0" id="newPlaceDistance" required placeholder="e.g. 8.50">
+            </div>
+
+            <div class="form-group">
+              <label>Latitude *</label>
+              <input type="number" step="0.0000001" id="newPlaceLat" required placeholder="e.g. 7.5954000">
+            </div>
+
+            <div class="form-group">
+              <label>Longitude *</label>
+              <input type="number" step="0.0000001" id="newPlaceLon" required placeholder="e.g. 80.0987000">
+            </div>
+
+            <div class="form-group">
+              <label>Est. Visit Duration (minutes)</label>
+              <input type="number" id="newPlaceDuration" value="60" required>
+            </div>
+
+            <div class="form-group full-width">
+              <label>Description *</label>
+              <textarea id="newPlaceDesc" rows="3" required placeholder="Detailed historical/scenic summary..."></textarea>
+            </div>
+
+            <div class="form-actions full-width">
+              <button type="submit" class="btn btn-primary btn-sm">Save Record</button>
+              <button type="button" id="cancelAddPlaceBtn" class="btn btn-secondary btn-sm">Cancel</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Destination Records Management Table (SRS Figure 5) -->
+        <div class="table-responsive">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Place Name</th>
+                <th>Category</th>
+                <th>Distance</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="adminPlacesTableBody">
+              <!-- Populated via GET /api/admin/places -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       MODAL 3: EXPORT / PRINT SUMMARY (REQ-FUNC-11)
+       ========================================================================= -->
+  <div class="modal-overlay hidden" id="exportModal">
+    <div class="modal-window">
+      <div class="modal-header">
+        <h3>Day-Trip Itinerary Summary</h3>
+        <button class="modal-close-btn" id="closeExportModalBtn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <pre class="export-preview-box" id="exportContentBox"></pre>
+      </div>
+      <div class="modal-footer">
+        <button id="copyExportTextBtn" class="btn btn-secondary">Copy to Clipboard</button>
+        <button id="printItineraryBtn" class="btn btn-primary">Print / Save as PDF</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/app.js"></script>
+</body>
+</html>
