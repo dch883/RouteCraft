@@ -27,13 +27,11 @@
         </div>
       </div>
 
-      <!-- Quick Text Search Input -->
       <div class="search-box">
         <span class="search-icon">🔍</span>
         <input type="text" id="searchInput" placeholder="Search attractions, heritage sites, nature...">
       </div>
 
-      <!-- User / Admin Auth Portal Button -->
       <div class="nav-actions">
         <button id="authPortalBtn" class="btn btn-outline" title="Sign In or Register">
           <span class="btn-icon">👤</span> <span id="authBtnLabel">Login / Register</span>
@@ -66,11 +64,11 @@
   </section>
 
   <!-- =========================================================================
-       MAIN WORKSPACE (DUAL-PANEL: CATALOG & ITINERARY BUILDER)
+       MAIN WORKSPACE (DUAL-PANEL: ITINERARY ON FAR-LEFT & DIRECTORY GRID)
        ========================================================================= -->
   <main class="main-workspace">
 
-    <!-- LEFT PANEL: ITINERARY PLANNER WORKSPACE (Positioned to the Left) -->
+    <!-- LEFT PANEL: ITINERARY PLANNER WORKSPACE -->
     <aside class="itinerary-panel" id="itineraryPanel">
       <div class="panel-header">
         <div class="panel-header-title">
@@ -80,7 +78,6 @@
         <p class="panel-desc">Assemble up to 10 stops within the 25 km Kiniyama zone.</p>
       </div>
 
-      <!-- Over-Scheduled 8-Hour Alert Banner -->
       <div class="alert-banner warning-banner hidden" id="timeWarningBanner">
         <div class="alert-icon">⚠️</div>
         <div class="alert-content">
@@ -89,7 +86,6 @@
         </div>
       </div>
 
-      <!-- Active Selected Stops List -->
       <div class="itinerary-list" id="itineraryStopsList">
         <div class="empty-state" id="emptyItineraryState">
           <div class="empty-icon">📍</div>
@@ -98,7 +94,6 @@
         </div>
       </div>
 
-      <!-- Route Calculation Metrics Summary -->
       <div class="itinerary-metrics-box" id="metricsBox">
         <div class="metric-row">
           <span class="metric-label">Estimated Road Distance:</span>
@@ -113,7 +108,6 @@
         </div>
       </div>
 
-      <!-- Workspace Actions -->
       <div class="panel-actions">
         <button id="clearItineraryBtn" class="btn btn-secondary" disabled>Clear Plan</button>
         <button id="exportItineraryBtn" class="btn btn-primary" disabled>Export Summary</button>
@@ -140,93 +134,112 @@
         </div>
       </div>
 
-      <!-- Cards Grid with Photos -->
       <div class="places-grid" id="placesGrid"></div>
     </section>
 
   </main>
 
   <!-- =========================================================================
-       MODAL 1: PLACE DETAIL VIEW (With Photo)
+       MODAL 1: LARGE EXPANSIVE PLACE DETAIL VIEW (Matches Red Boundary)
        ========================================================================= -->
   <div class="modal-overlay hidden" id="placeDetailModal">
-    <div class="modal-window">
-      <!-- Modal Place Photo -->
-      <div class="modal-image-wrapper">
-        <img id="modalPlaceImage" src="" alt="Destination Photo">
-      </div>
-
+    <div class="modal-window modal-fullscreen-view">
       <div class="modal-header">
         <div class="modal-title-wrap">
-          <span class="category-pill" id="modalCategoryBadge">Category</span>
-          <h3 id="modalPlaceTitle">Place Title</h3>
-          <span class="distance-pill" id="modalDistanceBadge">0.0 km from Kiniyama</span>
+          <div class="modal-badges-row">
+            <span class="category-pill" id="modalCategoryBadge">Category</span>
+            <span class="distance-pill" id="modalDistanceBadge">0.0 km from Kiniyama</span>
+          </div>
+          <h2 id="modalPlaceTitle">Place Title</h2>
         </div>
         <button class="modal-close-btn" id="closeDetailModalBtn">&times;</button>
       </div>
 
-      <div class="modal-body">
-        <p class="modal-description" id="modalPlaceDescription"></p>
-
-        <div class="attributes-grid">
-          <div class="attribute-item">
-            <span class="attr-icon">🕒</span>
-            <div>
-              <strong>Operating Hours</strong>
-              <p id="modalHours">08:00 AM - 05:00 PM</p>
-            </div>
+      <!-- Two-Column Body Layout -->
+      <div class="modal-body-split">
+        <!-- Left Side: Large Photo & Fast Map Link -->
+        <div class="detail-left-col">
+          <div class="detail-photo-frame">
+            <img id="modalPlaceImage" src="" alt="Place Photo">
           </div>
-
-          <div class="attribute-item">
-            <span class="attr-icon">🎟️</span>
-            <div>
-              <strong>Entrance Fee</strong>
-              <p id="modalEntrance">Free Admission</p>
-            </div>
-          </div>
-
-          <div class="attribute-item">
-            <span class="attr-icon">🚗</span>
-            <div>
-              <strong>Parking Availability</strong>
-              <p id="modalParking">On-site Parking Available</p>
-            </div>
-          </div>
-
-          <div class="attribute-item">
-            <span class="attr-icon">📞</span>
-            <div>
-              <strong>Contact Info</strong>
-              <p id="modalContact">Not Available</p>
-            </div>
-          </div>
-
-          <div class="attribute-item">
-            <span class="attr-icon">⏳</span>
-            <div>
-              <strong>Recommended Duration</strong>
-              <p id="modalDuration">60 minutes</p>
-            </div>
-          </div>
+          <a id="modalMapsLink" href="#" target="_blank" rel="noopener noreferrer" class="btn btn-outline btn-block mt-2">
+            📍 Open Location in Google Maps
+          </a>
         </div>
 
-        <div class="modal-tags-container">
-          <h4>Vibes & Activities</h4>
-          <div class="tags-wrapper" id="modalTagsWrapper"></div>
+        <!-- Right Side: Descriptions, Attributes, Tags & Actions -->
+        <div class="detail-right-col">
+          <div class="detail-desc-box">
+            <h4>About this Destination</h4>
+            <p id="modalPlaceDescription" class="modal-description"></p>
+          </div>
+
+          <div class="attributes-grid">
+            <div class="attribute-item">
+              <span class="attr-icon">🕒</span>
+              <div>
+                <strong>Operating Hours</strong>
+                <p id="modalHours">08:00 AM - 05:00 PM</p>
+              </div>
+            </div>
+
+            <div class="attribute-item">
+              <span class="attr-icon">🎟️</span>
+              <div>
+                <strong>Entrance Fee</strong>
+                <p id="modalEntrance">Free Admission</p>
+              </div>
+            </div>
+
+            <div class="attribute-item">
+              <span class="attr-icon">🚗</span>
+              <div>
+                <strong>Parking Availability</strong>
+                <p id="modalParking">On-site Parking Available</p>
+              </div>
+            </div>
+
+            <div class="attribute-item">
+              <span class="attr-icon">📞</span>
+              <div>
+                <strong>Contact Info</strong>
+                <p id="modalContact">Not Available</p>
+              </div>
+            </div>
+
+            <div class="attribute-item">
+              <span class="attr-icon">⏳</span>
+              <div>
+                <strong>Recommended Duration</strong>
+                <p id="modalDuration">60 minutes</p>
+              </div>
+            </div>
+
+            <div class="attribute-item">
+              <span class="attr-icon">📍</span>
+              <div>
+                <strong>Scope Status</strong>
+                <p>Verified &le; 25 km Zone</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="modal-tags-container">
+            <h4>Vibe & Activity Tags</h4>
+            <div class="tags-wrapper" id="modalTagsWrapper"></div>
+          </div>
         </div>
       </div>
 
       <div class="modal-footer">
-        <a id="modalMapsLink" href="#" target="_blank" rel="noopener noreferrer" class="btn btn-outline">
-          📍 Open in Google Maps
-        </a>
-        <button id="modalAddToTripBtn" class="btn btn-primary">+ Add to Itinerary</button>
+        <button id="modalCloseActionBtn" class="btn btn-secondary">Close</button>
+        <button id="modalAddToTripBtn" class="btn btn-primary btn-lg">+ Add to Itinerary</button>
       </div>
     </div>
   </div>
 
   <!-- =========================================================================
-       MODAL 2: UNIFIED AUTH PORTAL (USER LOGIN / REGISTER / ADMIN LOGIN)
+       MODAL 2: UNIFIED AUTH PORTAL & FULL ADMIN CONTROL
        ========================================================================= -->
   <div class="modal-overlay hidden" id="authModal">
     <div class="modal-window modal-wide">
@@ -297,6 +310,9 @@
       <div class="modal-body auth-tab-content hidden" id="tabAdminLoginContent">
         <form id="adminLoginForm" class="admin-form">
           <p class="form-instruction">Authorized System Administrators only. Enter your back-office credentials.</p>
+          <div class="credentials-hint">
+            <strong>Default Credentials:</strong> Username: <code>admin</code> | Password: <code>Admin@RouteCraft2026</code>
+          </div>
           <div class="form-group">
             <label for="adminUsername">Admin Username</label>
             <input type="text" id="adminUsername" required placeholder="admin">
@@ -310,7 +326,7 @@
         </form>
       </div>
 
-      <!-- TAB 4: Active Admin Dashboard (Visible only after admin signs in) -->
+      <!-- TAB 4: Active Admin Dashboard with Navigation Tabs -->
       <div class="modal-body hidden" id="adminDashboardView">
         <div class="admin-toolbar">
           <div class="admin-user-info">
@@ -322,71 +338,138 @@
           </div>
         </div>
 
-        <div id="addPlaceFormContainer" class="add-place-container hidden">
-          <h4>Add New Destination (Max 25 km Kiniyama Scope)</h4>
-          <form id="createPlaceForm" class="grid-form">
-            <div class="form-group">
-              <label>Place Name *</label>
-              <input type="text" id="newPlaceName" required placeholder="e.g. Kiniyama Lake Reserve">
-            </div>
-
-            <div class="form-group">
-              <label>Category *</label>
-              <select id="newPlaceCategory" required></select>
-            </div>
-
-            <div class="form-group">
-              <label>Distance From Kiniyama (km, &le; 25.0) *</label>
-              <input type="number" step="0.01" max="25.00" min="0" id="newPlaceDistance" required placeholder="e.g. 8.50">
-            </div>
-
-            <div class="form-group">
-              <label>Latitude *</label>
-              <input type="number" step="0.0000001" id="newPlaceLat" required placeholder="e.g. 7.5954000">
-            </div>
-
-            <div class="form-group">
-              <label>Longitude *</label>
-              <input type="number" step="0.0000001" id="newPlaceLon" required placeholder="e.g. 80.0987000">
-            </div>
-
-            <div class="form-group">
-              <label>Est. Visit Duration (minutes)</label>
-              <input type="number" id="newPlaceDuration" value="60" required>
-            </div>
-
-            <div class="form-group full-width">
-              <label>Photo Image URL (Web link or Unsplash)</label>
-              <input type="url" id="newPlaceImage" placeholder="https://images.unsplash.com/...">
-            </div>
-
-            <div class="form-group full-width">
-              <label>Description *</label>
-              <textarea id="newPlaceDesc" rows="3" required placeholder="Detailed historical/scenic summary..."></textarea>
-            </div>
-
-            <div class="form-actions full-width">
-              <button type="submit" class="btn btn-primary btn-sm">Save Record</button>
-              <button type="button" id="cancelAddPlaceBtn" class="btn btn-secondary btn-sm">Cancel</button>
-            </div>
-          </form>
+        <!-- Dashboard Sub-Tabs: Places vs Admins -->
+        <div class="admin-subtabs">
+          <button class="subtab-btn active" id="subtabPlacesBtn">Manage Destinations</button>
+          <button class="subtab-btn" id="subtabAdminsBtn">Manage Administrators</button>
         </div>
 
-        <div class="table-responsive">
-          <table class="admin-table">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Place Name</th>
-                <th>Category</th>
-                <th>Distance</th>
-                <th>Status</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody id="adminPlacesTableBody"></tbody>
-          </table>
+        <!-- Section A: Destinations Management -->
+        <div id="adminPlacesSection">
+          <!-- Create / Edit Place Form (Collapsible) -->
+          <div id="addPlaceFormContainer" class="add-place-container hidden">
+            <h4 id="placeFormTitle">Add New Destination (Max 25 km Kiniyama Scope)</h4>
+            <form id="createPlaceForm" class="grid-form">
+              <input type="hidden" id="editPlaceId" value="">
+
+              <div class="form-group">
+                <label>Place Name *</label>
+                <input type="text" id="newPlaceName" required placeholder="e.g. Kiniyama Lake Reserve">
+              </div>
+
+              <div class="form-group">
+                <label>Category *</label>
+                <select id="newPlaceCategory" required></select>
+              </div>
+
+              <div class="form-group">
+                <label>Distance From Kiniyama (km, &le; 25.0) *</label>
+                <input type="number" step="0.01" max="25.00" min="0" id="newPlaceDistance" required placeholder="e.g. 8.50">
+              </div>
+
+              <div class="form-group">
+                <label>Latitude *</label>
+                <input type="number" step="0.0000001" id="newPlaceLat" required placeholder="e.g. 7.5954000">
+              </div>
+
+              <div class="form-group">
+                <label>Longitude *</label>
+                <input type="number" step="0.0000001" id="newPlaceLon" required placeholder="e.g. 80.0987000">
+              </div>
+
+              <div class="form-group">
+                <label>Est. Visit Duration (minutes)</label>
+                <input type="number" id="newPlaceDuration" value="60" required>
+              </div>
+
+              <div class="form-group">
+                <label>Opening Hours</label>
+                <input type="text" id="newPlaceHours" value="08:00 AM - 05:00 PM">
+              </div>
+
+              <div class="form-group">
+                <label>Entrance Fee</label>
+                <input type="text" id="newPlaceFee" value="Free Admission">
+              </div>
+
+              <div class="form-group full-width">
+                <label>Photo Image URL (or local path e.g. assets/places/photo.jpg)</label>
+                <input type="text" id="newPlaceImage" placeholder="assets/places/my_photo.jpg or https://...">
+              </div>
+
+              <div class="form-group full-width">
+                <label>Description *</label>
+                <textarea id="newPlaceDesc" rows="3" required placeholder="Detailed historical/scenic summary..."></textarea>
+              </div>
+
+              <div class="form-actions full-width">
+                <button type="submit" id="savePlaceBtn" class="btn btn-primary btn-sm">Save Record</button>
+                <button type="button" id="cancelAddPlaceBtn" class="btn btn-secondary btn-sm">Cancel</button>
+              </div>
+            </form>
+          </div>
+
+          <div class="table-responsive">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Place Name</th>
+                  <th>Category</th>
+                  <th>Distance</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="adminPlacesTableBody"></tbody>
+            </table>
+          </div>
         </div>
+
+        <!-- Section B: Admin Management (Create Another Admin) -->
+        <div id="adminManagementSection" class="hidden">
+          <div class="create-admin-box">
+            <h4>Create New Administrator Account</h4>
+            <form id="createAdminForm" class="grid-form">
+              <div class="form-group">
+                <label>Username *</label>
+                <input type="text" id="newAdminUsername" required placeholder="e.g. admin2">
+              </div>
+              <div class="form-group">
+                <label>Full Name *</label>
+                <input type="text" id="newAdminFullName" required placeholder="e.g. Kasun Perera">
+              </div>
+              <div class="form-group">
+                <label>Email Address *</label>
+                <input type="email" id="newAdminEmail" required placeholder="admin2@routecraft.lk">
+              </div>
+              <div class="form-group">
+                <label>Password *</label>
+                <input type="password" id="newAdminPassword" required placeholder="••••••••">
+              </div>
+              <div class="form-actions full-width">
+                <button type="submit" class="btn btn-primary btn-sm">+ Create Administrator</button>
+              </div>
+            </form>
+          </div>
+
+          <h4 class="mt-3">Registered System Administrators</h4>
+          <div class="table-responsive">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Username</th>
+                  <th>Full Name</th>
+                  <th>Email</th>
+                  <th>Last Login</th>
+                </tr>
+              </thead>
+              <tbody id="adminUsersTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+
       </div>
     </div>
   </div>
@@ -410,7 +493,6 @@
     </div>
   </div>
 
-  <!-- Scripts -->
   <script src="js/app.js"></script>
 </body>
 </html>
