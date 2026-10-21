@@ -16,7 +16,10 @@ const state = {
   itinerary: [],
   currentMetrics: null,
   activeAdmin: null,
-  currentUser: null
+  currentUser: null,
+  // Carousel State for Current Place
+  currentCarouselImages: [],
+  currentCarouselIndex: 0
 };
 
 const elements = {
@@ -38,11 +41,14 @@ const elements = {
   warningBannerText: document.getElementById('warningBannerText'),
   clearItineraryBtn: document.getElementById('clearItineraryBtn'),
   exportItineraryBtn: document.getElementById('exportItineraryBtn'),
-  // Wide Place Detail Modal
+  // Wide Place Detail Modal & Carousel
   placeDetailModal: document.getElementById('placeDetailModal'),
   closeDetailModalBtn: document.getElementById('closeDetailModalBtn'),
   modalCloseActionBtn: document.getElementById('modalCloseActionBtn'),
   modalPlaceImage: document.getElementById('modalPlaceImage'),
+  carouselPrevBtn: document.getElementById('carouselPrevBtn'),
+  carouselNextBtn: document.getElementById('carouselNextBtn'),
+  carouselCounterBadge: document.getElementById('carouselCounterBadge'),
   modalPlaceTitle: document.getElementById('modalPlaceTitle'),
   modalCategoryBadge: document.getElementById('modalCategoryBadge'),
   modalDistanceBadge: document.getElementById('modalDistanceBadge'),
@@ -57,6 +63,7 @@ const elements = {
   modalAddToTripBtn: document.getElementById('modalAddToTripBtn'),
   // Auth Portal Modal
   authModal: document.getElementById('authModal'),
+  authModalContainer: document.getElementById('authModalContainer'),
   authPortalBtn: document.getElementById('authPortalBtn'),
   authBtnLabel: document.getElementById('authBtnLabel'),
   closeAuthModalBtn: document.getElementById('closeAuthModalBtn'),
@@ -82,7 +89,7 @@ const elements = {
   regPassword: document.getElementById('regPassword'),
   regError: document.getElementById('regError'),
   regSuccess: document.getElementById('regSuccess'),
-  // Admin Dashboard
+  // Admin Dashboard Elements
   adminLoginForm: document.getElementById('adminLoginForm'),
   adminUsername: document.getElementById('adminUsername'),
   adminPassword: document.getElementById('adminPassword'),
@@ -320,8 +327,46 @@ async function updateItineraryUI() {
 }
 
 // =============================================================================
-// EXPANSIVE PLACE DETAIL MODAL (Matching User Red Box)
+// PLACE DETAIL MODAL & CAROUSEL (PREV / NEXT MULTI-PHOTO SYSTEM)
 // =============================================================================
+
+/**
+ * Builds the image list for a place:
+ * e.g., assets/places/kadigawa.jpg -> kadigawa.jpg, kadigawa2.jpg, kadigawa3.jpg
+ */
+function buildImageListForPlace(baseImageUrl) {
+  const list = [];
+  const primary = (baseImageUrl && baseImageUrl.trim()) ? baseImageUrl.trim() : FALLBACK_IMAGE;
+  list.push(primary);
+
+  // Generate secondary and tertiary image paths matching user file naming
+  // (e.g. kadigawa2.jpg, kadigawa3.jpg)
+  if (primary.match(/(\.[\w\d]+)$/)) {
+    const img2 = primary.replace(/(\.[\w\d]+)$/, '2$1');
+    const img3 = primary.replace(/(\.[\w\d]+)$/, '3$1');
+    list.push(img2);
+    list.push(img3);
+  }
+
+  return list;
+}
+
+function updateCarouselView() {
+  const images = state.currentCarouselImages;
+  const idx = state.currentCarouselIndex;
+
+  elements.modalPlaceImage.style.opacity = '0.3';
+  setTimeout(() => {
+    elements.modalPlaceImage.src = images[idx];
+    elements.modalPlaceImage.onerror = () => {
+      // If local extra image doesn't exist, fallback gracefully
+      elements.modalPlaceImage.src = images[0] || FALLBACK_IMAGE;
+    };
+    elements.modalPlaceImage.style.opacity = '1';
+  }, 100);
+
+  elements.carouselCounterBadge.innerText = `${idx + 1} / ${images.length}`;
+}
 
 async function openPlaceDetails(placeId) {
   try {
@@ -330,10 +375,12 @@ async function openPlaceDetails(placeId) {
     if (!result.success) return;
 
     const p = result.data;
-    const photoUrl = p.ImageUrl && p.ImageUrl.trim() !== '' ? p.ImageUrl : FALLBACK_IMAGE;
 
-    elements.modalPlaceImage.src = photoUrl;
-    elements.modalPlaceImage.onerror = () => { elements.modalPlaceImage.src = FALLBACK_IMAGE; };
+    // Initialize Multi-Photo Carousel
+    state.currentCarouselImages = buildImageListForPlace(p.ImageUrl);
+    state.currentCarouselIndex = 0;
+    updateCarouselView();
+
     elements.modalPlaceTitle.innerText = p.Name;
     elements.modalCategoryBadge.innerText = p.CategoryName;
     elements.modalDistanceBadge.innerText = `${p.DistanceFromCenter} km from Kiniyama`;
@@ -363,8 +410,21 @@ async function openPlaceDetails(placeId) {
   }
 }
 
+// Carousel Next / Prev Click Handlers
+function nextCarouselPhoto() {
+  const len = state.currentCarouselImages.length;
+  state.currentCarouselIndex = (state.currentCarouselIndex + 1) % len;
+  updateCarouselView();
+}
+
+function prevCarouselPhoto() {
+  const len = state.currentCarouselImages.length;
+  state.currentCarouselIndex = (state.currentCarouselIndex - 1 + len) % len;
+  updateCarouselView();
+}
+
 // =============================================================================
-// ADMINISTRATIVE CONTROLS (EDIT, DELETE & CREATE ADMIN)
+// REDESIGNED AUTH & ADMIN PORTAL
 // =============================================================================
 
 function switchAuthTab(tabName) {
@@ -373,22 +433,28 @@ function switchAuthTab(tabName) {
 
   elements.authTabsNav.classList.remove('hidden');
 
-  if (tabName === 'userLogin') {
-    elements.tabUserLoginBtn.classList.add('active');
-    elements.tabUserLoginContent.classList.remove('hidden');
-    elements.authModalTitle.innerText = 'User Login';
-  } else if (tabName === 'userRegister') {
-    elements.tabUserRegisterBtn.classList.add('active');
-    elements.tabUserRegisterContent.classList.remove('hidden');
-    elements.authModalTitle.innerText = 'Create Traveler Account';
-  } else if (tabName === 'adminLogin') {
-    elements.tabAdminLoginBtn.classList.add('active');
-    elements.tabAdminLoginContent.classList.remove('hidden');
-    elements.authModalTitle.innerText = 'Admin Portal';
-  } else if (tabName === 'adminDashboard') {
+  // Adjust modal width dynamically: compact for forms, wide only for dashboard
+  if (tabName === 'adminDashboard') {
+    elements.authModalContainer.classList.add('admin-expanded');
     elements.authTabsNav.classList.add('hidden');
     elements.adminDashboardView.classList.remove('hidden');
     elements.authModalTitle.innerText = 'Administrative Control Panel';
+  } else {
+    elements.authModalContainer.classList.remove('admin-expanded');
+
+    if (tabName === 'userLogin') {
+      elements.tabUserLoginBtn.classList.add('active');
+      elements.tabUserLoginContent.classList.remove('hidden');
+      elements.authModalTitle.innerText = 'User Login';
+    } else if (tabName === 'userRegister') {
+      elements.tabUserRegisterBtn.classList.add('active');
+      elements.tabUserRegisterContent.classList.remove('hidden');
+      elements.authModalTitle.innerText = 'Create Traveler Account';
+    } else if (tabName === 'adminLogin') {
+      elements.tabAdminLoginBtn.classList.add('active');
+      elements.tabAdminLoginContent.classList.remove('hidden');
+      elements.authModalTitle.innerText = 'Admin Portal';
+    }
   }
 }
 
@@ -402,7 +468,7 @@ function updateAuthButtonDisplay() {
   }
 }
 
-// Admin Subtabs (Places vs Admins)
+// Subtabs
 elements.subtabPlacesBtn.addEventListener('click', () => {
   elements.subtabPlacesBtn.classList.add('active');
   elements.subtabAdminsBtn.classList.remove('active');
@@ -491,7 +557,6 @@ async function loadAdminPlaces() {
   }
 }
 
-// Edit Place (Populates Form)
 function openEditPlaceForm(placeId) {
   const p = state.adminPlaces.find(item => item.PlaceID === placeId);
   if (!p) return;
@@ -513,7 +578,6 @@ function openEditPlaceForm(placeId) {
   elements.addPlaceFormContainer.scrollIntoView({ behavior: 'smooth' });
 }
 
-// Toggle Soft Delete
 async function togglePlaceStatus(placeId) {
   try {
     const res = await fetch(`/api/admin/places/${placeId}/toggle-status`, { method: 'PUT' });
@@ -527,7 +591,6 @@ async function togglePlaceStatus(placeId) {
   }
 }
 
-// Permanent Delete Place
 async function deletePlaceForever(placeId) {
   if (!confirm(`Are you sure you want to permanently delete place #${placeId}? This action cannot be undone.`)) {
     return;
@@ -594,7 +657,6 @@ elements.createPlaceForm.addEventListener('submit', async (e) => {
   }
 });
 
-// Load Admins List
 async function loadAdminUsers() {
   try {
     const res = await fetch('/api/admin/list');
@@ -615,7 +677,6 @@ async function loadAdminUsers() {
   }
 }
 
-// Create Another Administrator
 elements.createAdminForm.addEventListener('submit', async (e) => {
   e.preventDefault();
   const payload = {
@@ -907,6 +968,17 @@ function setupEventListeners() {
   });
 
   elements.exportItineraryBtn.addEventListener('click', generateExportSummary);
+
+  // Carousel Prev / Next Buttons
+  elements.carouselPrevBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    prevCarouselPhoto();
+  });
+
+  elements.carouselNextBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    nextCarouselPhoto();
+  });
 
   // Modal Closers
   elements.closeDetailModalBtn.addEventListener('click', () => elements.placeDetailModal.classList.add('hidden'));

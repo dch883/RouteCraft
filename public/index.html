@@ -140,7 +140,7 @@
   </main>
 
   <!-- =========================================================================
-       MODAL 1: LARGE EXPANSIVE PLACE DETAIL VIEW (Matches Red Boundary)
+       MODAL 1: PLACE DETAIL VIEW (With Multi-Photo Carousel)
        ========================================================================= -->
   <div class="modal-overlay hidden" id="placeDetailModal">
     <div class="modal-window modal-fullscreen-view">
@@ -155,19 +155,26 @@
         <button class="modal-close-btn" id="closeDetailModalBtn">&times;</button>
       </div>
 
-      <!-- Two-Column Body Layout -->
       <div class="modal-body-split">
-        <!-- Left Side: Large Photo & Fast Map Link -->
+        <!-- Left Column: Photo Carousel with Prev/Next Controls -->
         <div class="detail-left-col">
           <div class="detail-photo-frame">
             <img id="modalPlaceImage" src="" alt="Place Photo">
+            
+            <!-- Carousel Navigation Arrows -->
+            <button class="carousel-btn carousel-prev" id="carouselPrevBtn" title="Previous photo" aria-label="Previous photo">&#10094;</button>
+            <button class="carousel-btn carousel-next" id="carouselNextBtn" title="Next photo" aria-label="Next photo">&#10095;</button>
+            
+            <!-- Photo Counter Badge (e.g. 1 / 3) -->
+            <div class="carousel-counter" id="carouselCounterBadge">1 / 1</div>
           </div>
+
           <a id="modalMapsLink" href="#" target="_blank" rel="noopener noreferrer" class="btn btn-outline btn-block mt-2">
             📍 Open Location in Google Maps
           </a>
         </div>
 
-        <!-- Right Side: Descriptions, Attributes, Tags & Actions -->
+        <!-- Right Column: Information, Attributes & Tags -->
         <div class="detail-right-col">
           <div class="detail-desc-box">
             <h4>About this Destination</h4>
@@ -239,11 +246,11 @@
   </div>
 
   <!-- =========================================================================
-       MODAL 2: UNIFIED AUTH PORTAL & FULL ADMIN CONTROL
+       MODAL 2: REDESIGNED AUTH POPUP (COMPACT, CENTERED & BALANCED)
        ========================================================================= -->
   <div class="modal-overlay hidden" id="authModal">
-    <div class="modal-window modal-wide">
-      <div class="modal-header">
+    <div class="modal-window modal-auth" id="authModalContainer">
+      <div class="modal-header auth-header">
         <div class="modal-title-wrap">
           <h3 id="authModalTitle">Welcome to RouteCraft</h3>
           <span class="admin-session-text" id="authSessionStatus">Sign In or Create Account</span>
@@ -251,42 +258,48 @@
         <button class="modal-close-btn" id="closeAuthModalBtn">&times;</button>
       </div>
 
-      <!-- AUTH TABS SWITCHER -->
+      <!-- Auth Tabs Switcher -->
       <div class="auth-tabs" id="authTabsNav">
         <button class="auth-tab-btn active" id="tabUserLoginBtn">User Login</button>
         <button class="auth-tab-btn" id="tabUserRegisterBtn">Register</button>
         <button class="auth-tab-btn" id="tabAdminLoginBtn">Admin Portal</button>
       </div>
 
-      <!-- TAB 1: User Login -->
-      <div class="modal-body auth-tab-content" id="tabUserLoginContent">
-        <form id="userLoginForm" class="admin-form">
-          <p class="form-instruction">Log in to your tourist or traveler account to manage your day trips.</p>
+      <!-- TAB 1: User Login (Centered & Balanced) -->
+      <div class="auth-body-container auth-tab-content" id="tabUserLoginContent">
+        <form id="userLoginForm" class="clean-auth-form">
+          <p class="form-instruction text-center">Log in to your account to craft and manage your day trips.</p>
+          
           <div class="form-group">
             <label for="userEmail">Email Address</label>
             <input type="email" id="userEmail" required placeholder="name@example.com">
           </div>
+          
           <div class="form-group">
             <label for="userPassword">Password</label>
             <input type="password" id="userPassword" required placeholder="••••••••">
           </div>
+          
           <div class="form-error hidden" id="userLoginError"></div>
-          <button type="submit" class="btn btn-primary btn-block">Sign In</button>
+          <button type="submit" class="btn btn-primary btn-auth">Sign In</button>
         </form>
       </div>
 
-      <!-- TAB 2: User Register -->
-      <div class="modal-body auth-tab-content hidden" id="tabUserRegisterContent">
-        <form id="userRegisterForm" class="admin-form">
-          <p class="form-instruction">Create your traveler profile to plan trips around Kiniyama.</p>
+      <!-- TAB 2: User Register (Centered & Balanced) -->
+      <div class="auth-body-container auth-tab-content hidden" id="tabUserRegisterContent">
+        <form id="userRegisterForm" class="clean-auth-form">
+          <p class="form-instruction text-center">Create your traveler profile for planning trips around Kiniyama.</p>
+          
           <div class="form-group">
             <label for="regFullName">Full Name *</label>
-            <input type="text" id="regFullName" required placeholder="e.g. Chaminda Silva">
+            <input type="text" id="regFullName" required placeholder="e.g. Kasun Perera">
           </div>
+          
           <div class="form-group">
             <label for="regEmail">Email Address *</label>
             <input type="email" id="regEmail" required placeholder="name@example.com">
           </div>
+          
           <div class="form-group">
             <label for="regUserType">User Category</label>
             <select id="regUserType">
@@ -296,37 +309,39 @@
               <option value="Travel Enthusiast">Travel Enthusiast</option>
             </select>
           </div>
+          
           <div class="form-group">
             <label for="regPassword">Password * (Min 6 characters)</label>
             <input type="password" id="regPassword" required minlength="6" placeholder="••••••••">
           </div>
+          
           <div class="form-error hidden" id="regError"></div>
           <div class="form-success hidden" id="regSuccess"></div>
-          <button type="submit" class="btn btn-primary btn-block">Create Account</button>
+          <button type="submit" class="btn btn-primary btn-auth">Create Account</button>
         </form>
       </div>
 
-      <!-- TAB 3: Admin Login -->
-      <div class="modal-body auth-tab-content hidden" id="tabAdminLoginContent">
-        <form id="adminLoginForm" class="admin-form">
-          <p class="form-instruction">Authorized System Administrators only. Enter your back-office credentials.</p>
-          <div class="credentials-hint">
-            <strong>Default Credentials:</strong> Username: <code>admin</code> | Password: <code>Admin@RouteCraft2026</code>
-          </div>
+      <!-- TAB 3: Admin Login (No Credentials Hint Shown on Screen) -->
+      <div class="auth-body-container auth-tab-content hidden" id="tabAdminLoginContent">
+        <form id="adminLoginForm" class="clean-auth-form">
+          <p class="form-instruction text-center">Authorized System Administrators only. Enter your credentials.</p>
+          
           <div class="form-group">
             <label for="adminUsername">Admin Username</label>
-            <input type="text" id="adminUsername" required placeholder="admin">
+            <input type="text" id="adminUsername" required placeholder="Enter username">
           </div>
+          
           <div class="form-group">
             <label for="adminPassword">Admin Password</label>
             <input type="password" id="adminPassword" required placeholder="••••••••">
           </div>
+          
           <div class="form-error hidden" id="adminLoginError"></div>
-          <button type="submit" class="btn btn-primary btn-block">Sign In as Administrator</button>
+          <button type="submit" class="btn btn-primary btn-auth">Sign In as Administrator</button>
         </form>
       </div>
 
-      <!-- TAB 4: Active Admin Dashboard with Navigation Tabs -->
+      <!-- TAB 4: Active Admin Dashboard (Expands only when admin logs in) -->
       <div class="modal-body hidden" id="adminDashboardView">
         <div class="admin-toolbar">
           <div class="admin-user-info">
@@ -338,7 +353,6 @@
           </div>
         </div>
 
-        <!-- Dashboard Sub-Tabs: Places vs Admins -->
         <div class="admin-subtabs">
           <button class="subtab-btn active" id="subtabPlacesBtn">Manage Destinations</button>
           <button class="subtab-btn" id="subtabAdminsBtn">Manage Administrators</button>
@@ -346,7 +360,6 @@
 
         <!-- Section A: Destinations Management -->
         <div id="adminPlacesSection">
-          <!-- Create / Edit Place Form (Collapsible) -->
           <div id="addPlaceFormContainer" class="add-place-container hidden">
             <h4 id="placeFormTitle">Add New Destination (Max 25 km Kiniyama Scope)</h4>
             <form id="createPlaceForm" class="grid-form">
@@ -393,8 +406,8 @@
               </div>
 
               <div class="form-group full-width">
-                <label>Photo Image URL (or local path e.g. assets/places/photo.jpg)</label>
-                <input type="text" id="newPlaceImage" placeholder="assets/places/my_photo.jpg or https://...">
+                <label>Photo Image Path (e.g. assets/places/kadigawa.jpg)</label>
+                <input type="text" id="newPlaceImage" placeholder="assets/places/my_photo.jpg">
               </div>
 
               <div class="form-group full-width">
@@ -426,7 +439,7 @@
           </div>
         </div>
 
-        <!-- Section B: Admin Management (Create Another Admin) -->
+        <!-- Section B: Admin Management -->
         <div id="adminManagementSection" class="hidden">
           <div class="create-admin-box">
             <h4>Create New Administrator Account</h4>
