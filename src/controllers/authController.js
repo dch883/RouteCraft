@@ -1,5 +1,6 @@
 /**
  * RouteCraft - Authentication & User Registration Controller
+ * Author: H.M.D.C. Herath (E2410120) - University of Moratuwa
  */
 
 const bcrypt = require('bcryptjs');
