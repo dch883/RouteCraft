@@ -1,17 +1,11 @@
 /**
  * RouteCraft: Client-Side Single Page Application (SPA) Engine
- * 
- * Student: H.M.D.C. Herath
- * Registration Number: E2410120
- * Institution: University of Moratuwa
- * 
- * Implements: REQ-FUNC-01 to REQ-FUNC-18 & Haversine Metric Integration
+ * Student: H.M.D.C. Herath | Reg: E2410120 | University of Moratuwa
  */
 
 // Application State Management
 const state = {
   allPlaces: [],
-  filteredPlaces: [],
   categories: [],
   vibes: [],
   activities: [],
@@ -20,12 +14,13 @@ const state = {
   selectedActivity: '',
   searchKeyword: '',
   sortOrder: 'distance',
-  itinerary: [], // Array of Place IDs [1, 6, 4]
+  itinerary: [],
   currentMetrics: null,
-  activeAdmin: null
+  activeAdmin: null,
+  currentUser: null
 };
 
-// DOM Element References
+// DOM Elements
 const elements = {
   placesGrid: document.getElementById('placesGrid'),
   resultsCount: document.getElementById('resultsCount'),
@@ -48,6 +43,7 @@ const elements = {
   // Place Detail Modal
   placeDetailModal: document.getElementById('placeDetailModal'),
   closeDetailModalBtn: document.getElementById('closeDetailModalBtn'),
+  modalPlaceImage: document.getElementById('modalPlaceImage'),
   modalPlaceTitle: document.getElementById('modalPlaceTitle'),
   modalCategoryBadge: document.getElementById('modalCategoryBadge'),
   modalDistanceBadge: document.getElementById('modalDistanceBadge'),
@@ -60,17 +56,39 @@ const elements = {
   modalTagsWrapper: document.getElementById('modalTagsWrapper'),
   modalMapsLink: document.getElementById('modalMapsLink'),
   modalAddToTripBtn: document.getElementById('modalAddToTripBtn'),
-  // Admin Portal Modal
-  adminModal: document.getElementById('adminModal'),
-  adminLoginBtn: document.getElementById('adminLoginBtn'),
-  closeAdminModalBtn: document.getElementById('closeAdminModalBtn'),
-  adminLoginFormView: document.getElementById('adminLoginFormView'),
+  // Auth Portal Modal
+  authModal: document.getElementById('authModal'),
+  authPortalBtn: document.getElementById('authPortalBtn'),
+  authBtnLabel: document.getElementById('authBtnLabel'),
+  closeAuthModalBtn: document.getElementById('closeAuthModalBtn'),
+  authTabsNav: document.getElementById('authTabsNav'),
+  authModalTitle: document.getElementById('authModalTitle'),
+  authSessionStatus: document.getElementById('authSessionStatus'),
+  tabUserLoginBtn: document.getElementById('tabUserLoginBtn'),
+  tabUserRegisterBtn: document.getElementById('tabUserRegisterBtn'),
+  tabAdminLoginBtn: document.getElementById('tabAdminLoginBtn'),
+  tabUserLoginContent: document.getElementById('tabUserLoginContent'),
+  tabUserRegisterContent: document.getElementById('tabUserRegisterContent'),
+  tabAdminLoginContent: document.getElementById('tabAdminLoginContent'),
   adminDashboardView: document.getElementById('adminDashboardView'),
+  // User Login Form
+  userLoginForm: document.getElementById('userLoginForm'),
+  userEmail: document.getElementById('userEmail'),
+  userPassword: document.getElementById('userPassword'),
+  userLoginError: document.getElementById('userLoginError'),
+  // User Register Form
+  userRegisterForm: document.getElementById('userRegisterForm'),
+  regFullName: document.getElementById('regFullName'),
+  regEmail: document.getElementById('regEmail'),
+  regUserType: document.getElementById('regUserType'),
+  regPassword: document.getElementById('regPassword'),
+  regError: document.getElementById('regError'),
+  regSuccess: document.getElementById('regSuccess'),
+  // Admin Elements
   adminLoginForm: document.getElementById('adminLoginForm'),
   adminUsername: document.getElementById('adminUsername'),
   adminPassword: document.getElementById('adminPassword'),
   adminLoginError: document.getElementById('adminLoginError'),
-  adminSessionStatus: document.getElementById('adminSessionStatus'),
   adminUserDisplayName: document.getElementById('adminUserDisplayName'),
   adminLogoutBtn: document.getElementById('adminLogoutBtn'),
   adminPlacesTableBody: document.getElementById('adminPlacesTableBody'),
@@ -87,11 +105,15 @@ const elements = {
   printItineraryBtn: document.getElementById('printItineraryBtn')
 };
 
+// Default fallback photo if link fails to load
+const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1586861635167-e5223aadc9fe?w=600&auto=format&fit=crop&q=80';
+
 // =============================================================================
 // INITIALIZATION
 // =============================================================================
 document.addEventListener('DOMContentLoaded', async () => {
   setupEventListeners();
+  restoreSavedUserSession();
   await loadTaxonomies();
   await loadPlaces();
   restoreSavedItinerary();
@@ -101,9 +123,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 // API DATA FETCHING
 // =============================================================================
 
-/**
- * Loads taxonomies (categories, vibes, activities)
- */
 async function loadTaxonomies() {
   try {
     const res = await fetch('/api/taxonomies');
@@ -119,9 +138,6 @@ async function loadTaxonomies() {
   }
 }
 
-/**
- * Fetches destination catalog matching active filters (REQ-FUNC-01 - 05)
- */
 async function loadPlaces() {
   try {
     elements.resultsCount.innerText = 'Updating catalog...';
@@ -146,25 +162,22 @@ async function loadPlaces() {
 }
 
 // =============================================================================
-// UI RENDERING ENGINE
+// UI RENDERING ENGINE (CARDS WITH WORKING PHOTOS)
 // =============================================================================
 
 function renderTaxonomyControls() {
-  // 1. Render Category Filter Chips
   let chipsHtml = `<button class="filter-chip ${state.selectedCategory === 'All' ? 'active' : ''}" data-category="All">All Attractions</button>`;
   state.categories.forEach(cat => {
     chipsHtml += `<button class="filter-chip ${state.selectedCategory === cat.CategoryName ? 'active' : ''}" data-category="${cat.CategoryName}">${cat.CategoryName}</button>`;
   });
   elements.categoryChips.innerHTML = chipsHtml;
 
-  // 2. Populate Dropdowns
   elements.vibeFilter.innerHTML = `<option value="">Filter by Vibe (Atmosphere)</option>` +
     state.vibes.map(v => `<option value="${v.TagName}">${v.TagName}</option>`).join('');
 
   elements.activityFilter.innerHTML = `<option value="">Filter by Activity</option>` +
     state.activities.map(a => `<option value="${a.TagName}">${a.TagName}</option>`).join('');
 
-  // 3. Category Select in Admin Form
   elements.newPlaceCategory.innerHTML = state.categories.map(c => 
     `<option value="${c.CategoryID}">${c.CategoryName}</option>`
   ).join('');
@@ -191,17 +204,23 @@ function sortAndRenderPlaces() {
     return;
   }
 
+  // Render cards WITH PHOTO thumbnail
   elements.placesGrid.innerHTML = places.map(p => {
     const isAdded = state.itinerary.includes(p.PlaceID);
     const pills = (p.tags || []).slice(0, 3).map(t => `<span class="pill-sm">${t.TagName}</span>`).join('');
+    const photoUrl = p.ImageUrl && p.ImageUrl.trim() !== '' ? p.ImageUrl : FALLBACK_IMAGE;
 
     return `
       <article class="place-card">
-        <div class="card-body">
-          <div class="card-top">
+        <div class="card-image-box">
+          <img src="${escapeHtml(photoUrl)}" alt="${escapeHtml(p.Name)}" loading="lazy" onerror="this.onerror=null;this.src='${FALLBACK_IMAGE}';">
+          <div class="card-image-overlay">
             <span class="category-tag">${escapeHtml(p.CategoryName)}</span>
-            <span class="distance-badge">${p.DistanceFromCenter} km</span>
+            <span class="card-distance-badge">${p.DistanceFromCenter} km</span>
           </div>
+        </div>
+
+        <div class="card-body">
           <h3 class="card-title">${escapeHtml(p.Name)}</h3>
           <p class="card-description">${escapeHtml(p.Description)}</p>
           <div class="card-pills">${pills}</div>
@@ -220,16 +239,14 @@ function sortAndRenderPlaces() {
 }
 
 // =============================================================================
-// ITINERARY WORKSPACE & CALCULATION ENGINE (SRS Feature 2)
+// ITINERARY WORKSPACE & METRICS ENGINE
 // =============================================================================
 
 function toggleItineraryStop(placeId) {
   const index = state.itinerary.indexOf(placeId);
   if (index === -1) {
-    // REQ-FUNC-06: Add stop
     state.itinerary.push(placeId);
   } else {
-    // Remove stop
     state.itinerary.splice(index, 1);
   }
   saveItineraryState();
@@ -238,7 +255,6 @@ function toggleItineraryStop(placeId) {
 }
 
 function moveItineraryItem(index, direction) {
-  // REQ-FUNC-07: Custom sequence reordering
   const targetIndex = index + direction;
   if (targetIndex < 0 || targetIndex >= state.itinerary.length) return;
 
@@ -265,7 +281,6 @@ async function updateItineraryUI() {
     return;
   }
 
-  // Request Route Metrics from Backend (REQ-FUNC-08, 09, 10 & Diagram 3)
   try {
     const res = await fetch('/api/itinerary/calculate', {
       method: 'POST',
@@ -278,7 +293,6 @@ async function updateItineraryUI() {
       state.currentMetrics = result.metrics;
       const ordered = result.orderedPlaces;
 
-      // Render Reorderable Stops
       elements.itineraryStopsList.innerHTML = ordered.map((item, idx) => `
         <div class="itinerary-item">
           <div class="stop-info">
@@ -294,11 +308,9 @@ async function updateItineraryUI() {
         </div>
       `).join('');
 
-      // Update Metric Values
       elements.metricDistance.innerText = `${result.metrics.totalDistanceKm} km`;
       elements.metricDuration.innerText = result.metrics.totalDurationFormatted;
 
-      // REQ-FUNC-10: 8-Hour Over-Scheduled Warning Banner
       if (result.metrics.isOverScheduled) {
         elements.timeWarningBanner.classList.remove('hidden');
         elements.warningBannerText.innerText = result.metrics.warningBanner;
@@ -312,7 +324,7 @@ async function updateItineraryUI() {
 }
 
 // =============================================================================
-// PLACE DETAIL MODAL (SRS Figure 4 & REQ-FUNC-02)
+// PLACE DETAIL MODAL (WITH PHOTO)
 // =============================================================================
 
 async function openPlaceDetails(placeId) {
@@ -322,6 +334,10 @@ async function openPlaceDetails(placeId) {
     if (!result.success) return;
 
     const p = result.data;
+    const photoUrl = p.ImageUrl && p.ImageUrl.trim() !== '' ? p.ImageUrl : FALLBACK_IMAGE;
+
+    elements.modalPlaceImage.src = photoUrl;
+    elements.modalPlaceImage.onerror = () => { elements.modalPlaceImage.src = FALLBACK_IMAGE; };
     elements.modalPlaceTitle.innerText = p.Name;
     elements.modalCategoryBadge.innerText = p.CategoryName;
     elements.modalDistanceBadge.innerText = `${p.DistanceFromCenter} km from Kiniyama`;
@@ -332,20 +348,17 @@ async function openPlaceDetails(placeId) {
     elements.modalContact.innerText = p.ContactInfo || 'Not Available';
     elements.modalDuration.innerText = `${p.EstVisitDurationMins} minutes`;
 
-    // Render Tag Pills
     elements.modalTagsWrapper.innerHTML = (p.tags || []).map(t => 
       `<span class="pill-sm">${t.TagName} (${t.TagType})</span>`
     ).join('') || '<span class="text-muted" style="font-size: 0.8rem;">No tags assigned.</span>';
 
-    // External Maps URL (REQ-FUNC-14)
     elements.modalMapsLink.href = p.GoogleMapsUrl || `https://maps.google.com/?q=${p.Latitude},${p.Longitude}`;
 
-    // Add to Itinerary Button handler
     const isAdded = state.itinerary.includes(p.PlaceID);
     elements.modalAddToTripBtn.innerText = isAdded ? 'Remove from Itinerary' : '+ Add to Itinerary';
     elements.modalAddToTripBtn.onclick = () => {
       toggleItineraryStop(p.PlaceID);
-      openPlaceDetails(p.PlaceID); // Refresh modal button state
+      openPlaceDetails(p.PlaceID);
     };
 
     elements.placeDetailModal.classList.remove('hidden');
@@ -355,9 +368,152 @@ async function openPlaceDetails(placeId) {
 }
 
 // =============================================================================
-// ADMINISTRATIVE CONTROLS (SRS Figure 5, REQ-FUNC-15 to REQ-FUNC-18)
+// AUTHENTICATION PORTAL (USER LOGIN / REGISTER / ADMIN LOGIN)
 // =============================================================================
 
+function switchAuthTab(tabName) {
+  // Reset tabs
+  [elements.tabUserLoginBtn, elements.tabUserRegisterBtn, elements.tabAdminLoginBtn].forEach(b => b.classList.remove('active'));
+  [elements.tabUserLoginContent, elements.tabUserRegisterContent, elements.tabAdminLoginContent, elements.adminDashboardView].forEach(c => c.classList.add('hidden'));
+
+  elements.authTabsNav.classList.remove('hidden');
+
+  if (tabName === 'userLogin') {
+    elements.tabUserLoginBtn.classList.add('active');
+    elements.tabUserLoginContent.classList.remove('hidden');
+    elements.authModalTitle.innerText = 'User Login';
+  } else if (tabName === 'userRegister') {
+    elements.tabUserRegisterBtn.classList.add('active');
+    elements.tabUserRegisterContent.classList.remove('hidden');
+    elements.authModalTitle.innerText = 'Create Traveler Account';
+  } else if (tabName === 'adminLogin') {
+    elements.tabAdminLoginBtn.classList.add('active');
+    elements.tabAdminLoginContent.classList.remove('hidden');
+    elements.authModalTitle.innerText = 'Admin Portal';
+  } else if (tabName === 'adminDashboard') {
+    elements.authTabsNav.classList.add('hidden');
+    elements.adminDashboardView.classList.remove('hidden');
+    elements.authModalTitle.innerText = 'Administrative Control Panel';
+  }
+}
+
+function updateAuthButtonDisplay() {
+  if (state.activeAdmin) {
+    elements.authBtnLabel.innerText = `🔒 Admin (${state.activeAdmin.username})`;
+  } else if (state.currentUser) {
+    elements.authBtnLabel.innerText = `👤 ${state.currentUser.fullName}`;
+  } else {
+    elements.authBtnLabel.innerText = 'Login / Register';
+  }
+}
+
+// User Login Submit
+elements.userLoginForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  elements.userLoginError.classList.add('hidden');
+
+  try {
+    const res = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: elements.userEmail.value,
+        password: elements.userPassword.value
+      })
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      state.currentUser = data.user;
+      localStorage.setItem('routecraft_user', JSON.stringify(data.user));
+      updateAuthButtonDisplay();
+      elements.authModal.classList.add('hidden');
+      alert(`Welcome back, ${data.user.fullName}!`);
+    } else {
+      elements.userLoginError.innerText = data.message || 'Login failed.';
+      elements.userLoginError.classList.remove('hidden');
+    }
+  } catch (err) {
+    elements.userLoginError.innerText = 'Network error during login.';
+    elements.userLoginError.classList.remove('hidden');
+  }
+});
+
+// User Register Submit
+elements.userRegisterForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  elements.regError.classList.add('hidden');
+  elements.regSuccess.classList.add('hidden');
+
+  try {
+    const res = await fetch('/api/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        fullName: elements.regFullName.value,
+        email: elements.regEmail.value,
+        userType: elements.regUserType.value,
+        password: elements.regPassword.value
+      })
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      elements.regSuccess.innerText = data.message;
+      elements.regSuccess.classList.remove('hidden');
+      elements.userRegisterForm.reset();
+      setTimeout(() => switchAuthTab('userLogin'), 1500);
+    } else {
+      elements.regError.innerText = data.message || 'Registration failed.';
+      elements.regError.classList.remove('hidden');
+    }
+  } catch (err) {
+    elements.regError.innerText = 'Network error during registration.';
+    elements.regError.classList.remove('hidden');
+  }
+});
+
+// Admin Login Submit
+elements.adminLoginForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  elements.adminLoginError.classList.add('hidden');
+
+  try {
+    const res = await fetch('/api/admin/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        username: elements.adminUsername.value,
+        password: elements.adminPassword.value
+      })
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      state.activeAdmin = data.admin;
+      updateAuthButtonDisplay();
+      elements.adminSessionStatus.innerText = 'Admin Session Active';
+      elements.adminUserDisplayName.innerText = data.admin.username;
+      switchAuthTab('adminDashboard');
+      loadAdminPlaces();
+    } else {
+      elements.adminLoginError.innerText = data.message || 'Invalid credentials.';
+      elements.adminLoginError.classList.remove('hidden');
+    }
+  } catch (err) {
+    elements.adminLoginError.innerText = 'Network error during admin authentication.';
+    elements.adminLoginError.classList.remove('hidden');
+  }
+});
+
+// Admin Logout
+elements.adminLogoutBtn.addEventListener('click', () => {
+  state.activeAdmin = null;
+  updateAuthButtonDisplay();
+  switchAuthTab('userLogin');
+});
+
+// Load Admin Places Table
 async function loadAdminPlaces() {
   try {
     const res = await fetch('/api/admin/places');
@@ -393,15 +549,56 @@ async function togglePlaceStatus(placeId) {
     const result = await res.json();
     if (result.success) {
       await loadAdminPlaces();
-      await loadPlaces(); // Synchronize public catalog
+      await loadPlaces();
     }
   } catch (err) {
     console.error('[RouteCraft Admin] Status toggle error:', err);
   }
 }
 
+// Admin Create Place
+elements.createPlaceForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const payload = {
+    name: document.getElementById('newPlaceName').value,
+    categoryId: document.getElementById('newPlaceCategory').value,
+    distanceFromCenter: document.getElementById('newPlaceDistance').value,
+    latitude: document.getElementById('newPlaceLat').value,
+    longitude: document.getElementById('newPlaceLon').value,
+    estVisitDurationMins: document.getElementById('newPlaceDuration').value,
+    description: document.getElementById('newPlaceDesc').value,
+    googleMapsUrl: `https://maps.google.com/?q=${document.getElementById('newPlaceLat').value},${document.getElementById('newPlaceLon').value}`
+  };
+
+  const imgVal = document.getElementById('newPlaceImage').value;
+  if (imgVal && imgVal.trim()) {
+    payload.imageUrl = imgVal.trim();
+  }
+
+  try {
+    const res = await fetch('/api/admin/places', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      alert('Destination successfully registered!');
+      elements.createPlaceForm.reset();
+      elements.addPlaceFormContainer.classList.add('hidden');
+      await loadAdminPlaces();
+      await loadPlaces();
+    } else {
+      alert(data.message || 'Error creating destination.');
+    }
+  } catch (err) {
+    alert('Network error registering destination.');
+  }
+});
+
 // =============================================================================
-// EXPORT SUMMARY GENERATOR (REQ-FUNC-11)
+// EXPORT SUMMARY GENERATOR
 // =============================================================================
 
 function generateExportSummary() {
@@ -412,11 +609,14 @@ function generateExportSummary() {
   text += `   ROUTECRAFT: REGIONAL DAY-TRIP ITINERARY SUMMARY\n`;
   text += `   Target Region: Kiniyama, Sri Lanka (25 km radius)\n`;
   text += `   Generated: ${new Date().toLocaleString()}\n`;
+  if (state.currentUser) {
+    text += `   Crafted for: ${state.currentUser.fullName} (${state.currentUser.userType})\n`;
+  }
   text += `===========================================================\n\n`;
 
   text += `TOTAL METRICS:\n`;
   text += `• Total Stops: ${m.totalStops}\n`;
-  text += `• Cumulative Distance: ${m.totalDistanceKm} km\n`;
+  text += `• Cumulative Road Distance: ${m.totalDistanceKm} km\n`;
   text += `• Total Day Duration: ${m.totalDurationFormatted} (${m.totalDurationMinutes} mins)\n`;
   text += `• Viability Status: ${m.isOverScheduled ? 'OVER-SCHEDULED (> 8.0 hrs)' : 'VIABLE SINGLE-DAY PLAN'}\n\n`;
 
@@ -436,18 +636,17 @@ function generateExportSummary() {
   });
 
   text += `===========================================================\n`;
-  text += `Prepared via RouteCraft - Designed by H.M.D.C. Herath (E2410120)\n`;
+  text += `Prepared via RouteCraft - Developed by H.M.D.C. Herath (E2410120)\n`;
 
   elements.exportContentBox.textContent = text;
   elements.exportModal.classList.remove('hidden');
 }
 
 // =============================================================================
-// EVENT LISTENERS & HELPERS
+// EVENT LISTENERS & SETUP
 // =============================================================================
 
 function setupEventListeners() {
-  // Search Input with Debounce
   let debounceTimer;
   elements.searchInput.addEventListener('input', (e) => {
     clearTimeout(debounceTimer);
@@ -457,7 +656,6 @@ function setupEventListeners() {
     }, 250);
   });
 
-  // Category Filter Chips
   elements.categoryChips.addEventListener('click', (e) => {
     if (e.target.classList.contains('filter-chip')) {
       document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
@@ -467,7 +665,6 @@ function setupEventListeners() {
     }
   });
 
-  // Dropdown Filters
   elements.vibeFilter.addEventListener('change', (e) => {
     state.selectedVibe = e.target.value;
     loadPlaces();
@@ -491,13 +688,11 @@ function setupEventListeners() {
     loadPlaces();
   });
 
-  // Sorting
   elements.sortOrder.addEventListener('change', (e) => {
     state.sortOrder = e.target.value;
     sortAndRenderPlaces();
   });
 
-  // Itinerary Controls
   elements.clearItineraryBtn.addEventListener('click', () => {
     if (confirm('Are you sure you want to clear your current itinerary?')) {
       state.itinerary = [];
@@ -512,98 +707,35 @@ function setupEventListeners() {
   // Modal Closers
   elements.closeDetailModalBtn.addEventListener('click', () => elements.placeDetailModal.classList.add('hidden'));
   elements.closeExportModalBtn.addEventListener('click', () => elements.exportModal.classList.add('hidden'));
-  elements.closeAdminModalBtn.addEventListener('click', () => elements.adminModal.classList.add('hidden'));
+  elements.closeAuthModalBtn.addEventListener('click', () => elements.authModal.classList.add('hidden'));
 
-  // Admin Portal Triggers
-  elements.adminLoginBtn.addEventListener('click', () => {
-    elements.adminModal.classList.remove('hidden');
-    if (!state.activeAdmin) {
-      elements.adminLoginFormView.classList.remove('hidden');
-      elements.adminDashboardView.classList.add('hidden');
-    }
-  });
-
-  // Admin Login Submission
-  elements.adminLoginForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    elements.adminLoginError.classList.add('hidden');
-
-    try {
-      const res = await fetch('/api/admin/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          username: elements.adminUsername.value,
-          password: elements.adminPassword.value
-        })
-      });
-      const data = await res.json();
-
-      if (data.success) {
-        state.activeAdmin = data.admin;
-        elements.adminSessionStatus.innerText = 'Authenticated Session';
-        elements.adminUserDisplayName.innerText = data.admin.username;
-        elements.adminLoginFormView.classList.add('hidden');
-        elements.adminDashboardView.classList.remove('hidden');
-        loadAdminPlaces();
-      } else {
-        elements.adminLoginError.innerText = data.message || 'Invalid credentials.';
-        elements.adminLoginError.classList.remove('hidden');
+  // Auth Portal Button
+  elements.authPortalBtn.addEventListener('click', () => {
+    if (state.currentUser) {
+      if (confirm(`You are logged in as ${state.currentUser.fullName}. Do you want to log out?`)) {
+        state.currentUser = null;
+        localStorage.removeItem('routecraft_user');
+        updateAuthButtonDisplay();
       }
-    } catch (err) {
-      elements.adminLoginError.innerText = 'Network error during authentication.';
-      elements.adminLoginError.classList.remove('hidden');
+      return;
     }
+
+    if (state.activeAdmin) {
+      switchAuthTab('adminDashboard');
+    } else {
+      switchAuthTab('userLogin');
+    }
+    elements.authModal.classList.remove('hidden');
   });
 
-  // Admin Logout
-  elements.adminLogoutBtn.addEventListener('click', () => {
-    state.activeAdmin = null;
-    elements.adminSessionStatus.innerText = 'Authentication Required';
-    elements.adminLoginFormView.classList.remove('hidden');
-    elements.adminDashboardView.classList.add('hidden');
-    elements.adminUsername.value = '';
-    elements.adminPassword.value = '';
-  });
+  // Tab Switching
+  elements.tabUserLoginBtn.addEventListener('click', () => switchAuthTab('userLogin'));
+  elements.tabUserRegisterBtn.addEventListener('click', () => switchAuthTab('userRegister'));
+  elements.tabAdminLoginBtn.addEventListener('click', () => switchAuthTab('adminLogin'));
 
-  // Show/Hide Add Place Form
+  // Add Place form controls
   elements.showAddPlaceFormBtn.addEventListener('click', () => elements.addPlaceFormContainer.classList.toggle('hidden'));
   elements.cancelAddPlaceBtn.addEventListener('click', () => elements.addPlaceFormContainer.classList.add('hidden'));
-
-  // Create Place Submit (REQ-FUNC-16, 17)
-  elements.createPlaceForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const payload = {
-      name: document.getElementById('newPlaceName').value,
-      categoryId: document.getElementById('newPlaceCategory').value,
-      distanceFromCenter: document.getElementById('newPlaceDistance').value,
-      latitude: document.getElementById('newPlaceLat').value,
-      longitude: document.getElementById('newPlaceLon').value,
-      estVisitDurationMins: document.getElementById('newPlaceDuration').value,
-      description: document.getElementById('newPlaceDesc').value
-    };
-
-    try {
-      const res = await fetch('/api/admin/places', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-      const data = await res.json();
-
-      if (data.success) {
-        alert('Destination successfully registered!');
-        elements.createPlaceForm.reset();
-        elements.addPlaceFormContainer.classList.add('hidden');
-        await loadAdminPlaces();
-        await loadPlaces();
-      } else {
-        alert(data.message || 'Error creating destination.');
-      }
-    } catch (err) {
-      alert('Network error registering destination.');
-    }
-  });
 
   // Export Modal Actions
   elements.copyExportTextBtn.addEventListener('click', () => {
@@ -630,6 +762,18 @@ function restoreSavedItinerary() {
     }
   } catch (e) {
     console.warn('[RouteCraft] Could not restore saved session.');
+  }
+}
+
+function restoreSavedUserSession() {
+  try {
+    const savedUser = localStorage.getItem('routecraft_user');
+    if (savedUser) {
+      state.currentUser = JSON.parse(savedUser);
+      updateAuthButtonDisplay();
+    }
+  } catch (e) {
+    console.warn('[RouteCraft] User session restore error.');
   }
 }
 

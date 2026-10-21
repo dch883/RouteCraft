@@ -15,7 +15,7 @@
 <body>
 
   <!-- =========================================================================
-       TOP PERSISTENT NAVIGATION BAR (SRS Figure 3)
+       TOP NAVIGATION BAR
        ========================================================================= -->
   <header class="top-nav">
     <div class="nav-container">
@@ -27,29 +27,28 @@
         </div>
       </div>
 
-      <!-- Quick Text Search Input (REQ-FUNC-03) -->
+      <!-- Quick Text Search Input -->
       <div class="search-box">
         <span class="search-icon">🔍</span>
         <input type="text" id="searchInput" placeholder="Search attractions, heritage sites, nature...">
       </div>
 
-      <!-- Admin & Quick Action Controls -->
+      <!-- User / Admin Auth Portal Button -->
       <div class="nav-actions">
-        <button id="adminLoginBtn" class="btn btn-outline" title="Admin Login">
-          <span class="btn-icon">🔒</span> Admin Portal
+        <button id="authPortalBtn" class="btn btn-outline" title="Sign In or Register">
+          <span class="btn-icon">👤</span> <span id="authBtnLabel">Login / Register</span>
         </button>
       </div>
     </div>
   </header>
 
   <!-- =========================================================================
-       SUB-NAV: CATEGORY CHIPS & TAG FILTERING BAR (SRS Section 4.1)
+       SUB-NAV: CATEGORY CHIPS & TAG FILTERING BAR
        ========================================================================= -->
   <section class="filter-bar">
     <div class="filter-container">
       <div class="chip-group" id="categoryChips">
         <button class="filter-chip active" data-category="All">All Attractions</button>
-        <!-- Populated dynamically via GET /api/taxonomies -->
       </div>
       
       <div class="dropdown-filters">
@@ -71,7 +70,7 @@
        ========================================================================= -->
   <main class="main-workspace">
 
-    <!-- LEFT PANEL: ITINERARY PLANNER WORKSPACE (SRS Figure 3 & Section 4.2) -->
+    <!-- LEFT PANEL: ITINERARY PLANNER WORKSPACE (Positioned to the Left) -->
     <aside class="itinerary-panel" id="itineraryPanel">
       <div class="panel-header">
         <div class="panel-header-title">
@@ -81,7 +80,7 @@
         <p class="panel-desc">Assemble up to 10 stops within the 25 km Kiniyama zone.</p>
       </div>
 
-      <!-- Over-Scheduled 8-Hour Alert Banner (REQ-FUNC-10 & Diagram 2) -->
+      <!-- Over-Scheduled 8-Hour Alert Banner -->
       <div class="alert-banner warning-banner hidden" id="timeWarningBanner">
         <div class="alert-icon">⚠️</div>
         <div class="alert-content">
@@ -90,7 +89,7 @@
         </div>
       </div>
 
-      <!-- Active Selected Stops List (Reorderable) -->
+      <!-- Active Selected Stops List -->
       <div class="itinerary-list" id="itineraryStopsList">
         <div class="empty-state" id="emptyItineraryState">
           <div class="empty-icon">📍</div>
@@ -99,7 +98,7 @@
         </div>
       </div>
 
-      <!-- Route Calculation Metrics Summary (REQ-FUNC-08, REQ-FUNC-09) -->
+      <!-- Route Calculation Metrics Summary -->
       <div class="itinerary-metrics-box" id="metricsBox">
         <div class="metric-row">
           <span class="metric-label">Estimated Road Distance:</span>
@@ -120,13 +119,12 @@
         <button id="exportItineraryBtn" class="btn btn-primary" disabled>Export Summary</button>
       </div>
 
-      <!-- Informational Disclaimer (REQ-NF-05) -->
       <div class="disclaimer-note">
         <strong>Guidance Disclaimer:</strong> Distances and transit durations are Haversine-computed estimations intended strictly for day-trip guidance.
       </div>
     </aside>
 
-    <!-- RIGHT PANEL: DESTINATION DIRECTORY (SRS Section 4.1) -->
+    <!-- RIGHT PANEL: DESTINATION DIRECTORY -->
     <section class="directory-panel">
       <div class="directory-header">
         <div class="directory-heading">
@@ -142,19 +140,22 @@
         </div>
       </div>
 
-      <!-- Cards Grid (REQ-FUNC-01) -->
-      <div class="places-grid" id="placesGrid">
-        <!-- Rendered dynamically via app.js -->
-      </div>
+      <!-- Cards Grid with Photos -->
+      <div class="places-grid" id="placesGrid"></div>
     </section>
 
   </main>
 
   <!-- =========================================================================
-       MODAL 1: PLACE DETAIL VIEW (SRS Figure 4 & REQ-FUNC-02)
+       MODAL 1: PLACE DETAIL VIEW (With Photo)
        ========================================================================= -->
   <div class="modal-overlay hidden" id="placeDetailModal">
     <div class="modal-window">
+      <!-- Modal Place Photo -->
+      <div class="modal-image-wrapper">
+        <img id="modalPlaceImage" src="" alt="Destination Photo">
+      </div>
+
       <div class="modal-header">
         <div class="modal-title-wrap">
           <span class="category-pill" id="modalCategoryBadge">Category</span>
@@ -167,7 +168,6 @@
       <div class="modal-body">
         <p class="modal-description" id="modalPlaceDescription"></p>
 
-        <!-- Detailed Attributes Grid -->
         <div class="attributes-grid">
           <div class="attribute-item">
             <span class="attr-icon">🕒</span>
@@ -210,7 +210,6 @@
           </div>
         </div>
 
-        <!-- Vibe & Activity Tags -->
         <div class="modal-tags-container">
           <h4>Vibes & Activities</h4>
           <div class="tags-wrapper" id="modalTagsWrapper"></div>
@@ -227,36 +226,91 @@
   </div>
 
   <!-- =========================================================================
-       MODAL 2: ADMIN AUTHENTICATION & CONTROL PANEL (SRS Figure 5)
+       MODAL 2: UNIFIED AUTH PORTAL (USER LOGIN / REGISTER / ADMIN LOGIN)
        ========================================================================= -->
-  <div class="modal-overlay hidden" id="adminModal">
+  <div class="modal-overlay hidden" id="authModal">
     <div class="modal-window modal-wide">
       <div class="modal-header">
         <div class="modal-title-wrap">
-          <h3>RouteCraft Administrative Control Panel</h3>
-          <span class="admin-session-text" id="adminSessionStatus">Authentication Required</span>
+          <h3 id="authModalTitle">Welcome to RouteCraft</h3>
+          <span class="admin-session-text" id="authSessionStatus">Sign In or Create Account</span>
         </div>
-        <button class="modal-close-btn" id="closeAdminModalBtn">&times;</button>
+        <button class="modal-close-btn" id="closeAuthModalBtn">&times;</button>
       </div>
 
-      <!-- VIEW A: Login Form -->
-      <div class="modal-body" id="adminLoginFormView">
-        <form id="adminLoginForm" class="admin-form">
-          <p class="form-instruction">Provide administrator credentials to access destination management and soft-delete controls.</p>
+      <!-- AUTH TABS SWITCHER -->
+      <div class="auth-tabs" id="authTabsNav">
+        <button class="auth-tab-btn active" id="tabUserLoginBtn">User Login</button>
+        <button class="auth-tab-btn" id="tabUserRegisterBtn">Register</button>
+        <button class="auth-tab-btn" id="tabAdminLoginBtn">Admin Portal</button>
+      </div>
+
+      <!-- TAB 1: User Login -->
+      <div class="modal-body auth-tab-content" id="tabUserLoginContent">
+        <form id="userLoginForm" class="admin-form">
+          <p class="form-instruction">Log in to your tourist or traveler account to manage your day trips.</p>
           <div class="form-group">
-            <label for="adminUsername">Username</label>
-            <input type="text" id="adminUsername" required placeholder="admin">
+            <label for="userEmail">Email Address</label>
+            <input type="email" id="userEmail" required placeholder="name@example.com">
           </div>
           <div class="form-group">
-            <label for="adminPassword">Password</label>
-            <input type="password" id="adminPassword" required placeholder="••••••••">
+            <label for="userPassword">Password</label>
+            <input type="password" id="userPassword" required placeholder="••••••••">
           </div>
-          <div class="form-error hidden" id="adminLoginError"></div>
-          <button type="submit" class="btn btn-primary btn-block">Sign In to Dashboard</button>
+          <div class="form-error hidden" id="userLoginError"></div>
+          <button type="submit" class="btn btn-primary btn-block">Sign In</button>
         </form>
       </div>
 
-      <!-- VIEW B: Admin Dashboard & CRUD Table -->
+      <!-- TAB 2: User Register -->
+      <div class="modal-body auth-tab-content hidden" id="tabUserRegisterContent">
+        <form id="userRegisterForm" class="admin-form">
+          <p class="form-instruction">Create your traveler profile to plan trips around Kiniyama.</p>
+          <div class="form-group">
+            <label for="regFullName">Full Name *</label>
+            <input type="text" id="regFullName" required placeholder="e.g. Chaminda Silva">
+          </div>
+          <div class="form-group">
+            <label for="regEmail">Email Address *</label>
+            <input type="email" id="regEmail" required placeholder="name@example.com">
+          </div>
+          <div class="form-group">
+            <label for="regUserType">User Category</label>
+            <select id="regUserType">
+              <option value="Domestic Tourist">Domestic Tourist (Local Traveler)</option>
+              <option value="Foreign Visitor">Foreign Visitor (International Tourist)</option>
+              <option value="Educational Group">Educational Group (School/University)</option>
+              <option value="Travel Enthusiast">Travel Enthusiast</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="regPassword">Password * (Min 6 characters)</label>
+            <input type="password" id="regPassword" required minlength="6" placeholder="••••••••">
+          </div>
+          <div class="form-error hidden" id="regError"></div>
+          <div class="form-success hidden" id="regSuccess"></div>
+          <button type="submit" class="btn btn-primary btn-block">Create Account</button>
+        </form>
+      </div>
+
+      <!-- TAB 3: Admin Login -->
+      <div class="modal-body auth-tab-content hidden" id="tabAdminLoginContent">
+        <form id="adminLoginForm" class="admin-form">
+          <p class="form-instruction">Authorized System Administrators only. Enter your back-office credentials.</p>
+          <div class="form-group">
+            <label for="adminUsername">Admin Username</label>
+            <input type="text" id="adminUsername" required placeholder="admin">
+          </div>
+          <div class="form-group">
+            <label for="adminPassword">Admin Password</label>
+            <input type="password" id="adminPassword" required placeholder="••••••••">
+          </div>
+          <div class="form-error hidden" id="adminLoginError"></div>
+          <button type="submit" class="btn btn-primary btn-block">Sign In as Administrator</button>
+        </form>
+      </div>
+
+      <!-- TAB 4: Active Admin Dashboard (Visible only after admin signs in) -->
       <div class="modal-body hidden" id="adminDashboardView">
         <div class="admin-toolbar">
           <div class="admin-user-info">
@@ -268,7 +322,6 @@
           </div>
         </div>
 
-        <!-- Add Place Form (Collapsible) -->
         <div id="addPlaceFormContainer" class="add-place-container hidden">
           <h4>Add New Destination (Max 25 km Kiniyama Scope)</h4>
           <form id="createPlaceForm" class="grid-form">
@@ -279,9 +332,7 @@
 
             <div class="form-group">
               <label>Category *</label>
-              <select id="newPlaceCategory" required>
-                <!-- Populated via API -->
-              </select>
+              <select id="newPlaceCategory" required></select>
             </div>
 
             <div class="form-group">
@@ -305,6 +356,11 @@
             </div>
 
             <div class="form-group full-width">
+              <label>Photo Image URL (Web link or Unsplash)</label>
+              <input type="url" id="newPlaceImage" placeholder="https://images.unsplash.com/...">
+            </div>
+
+            <div class="form-group full-width">
               <label>Description *</label>
               <textarea id="newPlaceDesc" rows="3" required placeholder="Detailed historical/scenic summary..."></textarea>
             </div>
@@ -316,7 +372,6 @@
           </form>
         </div>
 
-        <!-- Destination Records Management Table (SRS Figure 5) -->
         <div class="table-responsive">
           <table class="admin-table">
             <thead>
@@ -329,9 +384,7 @@
                 <th>Actions</th>
               </tr>
             </thead>
-            <tbody id="adminPlacesTableBody">
-              <!-- Populated via GET /api/admin/places -->
-            </tbody>
+            <tbody id="adminPlacesTableBody"></tbody>
           </table>
         </div>
       </div>
@@ -339,7 +392,7 @@
   </div>
 
   <!-- =========================================================================
-       MODAL 3: EXPORT / PRINT SUMMARY (REQ-FUNC-11)
+       MODAL 3: EXPORT / PRINT SUMMARY
        ========================================================================= -->
   <div class="modal-overlay hidden" id="exportModal">
     <div class="modal-window">

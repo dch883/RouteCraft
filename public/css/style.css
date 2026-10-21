@@ -1,7 +1,6 @@
 /**
  * RouteCraft: Modern Responsive Stylesheet
  * Prepared by: H.M.D.C. Herath (Reg: E2410120) - University of Moratuwa
- * Adheres to: WCAG 2.1 Level AA Accessibility Standards & IEEE Std 830-1998 SRS
  */
 
 :root {
@@ -17,11 +16,11 @@
   --accent-warning-border: #fcd34d;
   --accent-warning-text: #92400e;
   --accent-danger: #ef4444;
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  --radius-sm: 4px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
   --transition: all 0.2s ease-in-out;
 }
 
@@ -40,7 +39,7 @@ body {
 }
 
 /* =============================================================================
-   1. NAVIGATION BAR (Figure 3)
+   1. NAVIGATION BAR
    ============================================================================= */
 .top-nav {
   background: var(--surface-color);
@@ -52,9 +51,10 @@ body {
 }
 
 .nav-container {
-  max-width: 1400px;
+  width: 98%;
+  max-width: 1750px;
   margin: 0 auto;
-  padding: 0.75rem 1.5rem;
+  padding: 0.75rem 1rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -87,7 +87,7 @@ body {
 
 .search-box {
   flex: 1;
-  max-width: 500px;
+  max-width: 550px;
   position: relative;
   display: flex;
   align-items: center;
@@ -95,14 +95,14 @@ body {
 
 .search-icon {
   position: absolute;
-  left: 0.75rem;
+  left: 0.85rem;
   color: var(--text-muted);
-  font-size: 0.9rem;
+  font-size: 0.95rem;
 }
 
 .search-box input {
   width: 100%;
-  padding: 0.6rem 0.75rem 0.6rem 2.25rem;
+  padding: 0.6rem 0.75rem 0.6rem 2.4rem;
   border: 1px solid var(--border-color);
   border-radius: 20px;
   font-size: 0.875rem;
@@ -118,16 +118,17 @@ body {
 }
 
 /* =============================================================================
-   2. FILTER BAR (CHIPS & DROPDOWNS)
+   2. FILTER BAR
    ============================================================================= */
 .filter-bar {
   background: var(--surface-color);
   border-bottom: 1px solid var(--border-color);
-  padding: 0.6rem 1.5rem;
+  padding: 0.6rem 1rem;
 }
 
 .filter-container {
-  max-width: 1400px;
+  width: 98%;
+  max-width: 1750px;
   margin: 0 auto;
   display: flex;
   align-items: center;
@@ -173,7 +174,7 @@ body {
 }
 
 .filter-select, .filter-select-sm {
-  padding: 0.35rem 0.6rem;
+  padding: 0.4rem 0.65rem;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border-color);
   background: #fff;
@@ -183,14 +184,15 @@ body {
 }
 
 /* =============================================================================
-   3. DUAL-PANEL WORKSPACE (Figure 3)
+   3. EXPANDED WORKSPACE: SIDEBAR ON FAR-LEFT, WIDE DIRECTORY CANVAS
    ============================================================================= */
 .main-workspace {
-  max-width: 1400px;
-  margin: 1.5rem auto;
-  padding: 0 1.5rem;
+  width: 98%;
+  max-width: 1750px;
+  margin: 1.25rem auto 2rem auto;
+  padding: 0 0.5rem;
   display: grid;
-  grid-template-columns: 380px 1fr;
+  grid-template-columns: 340px 1fr; /* Sidebar pinned left, rest for cards */
   gap: 1.5rem;
   align-items: start;
 }
@@ -217,7 +219,7 @@ body {
 }
 
 .panel-header h3 {
-  font-size: 1.1rem;
+  font-size: 1.05rem;
   font-weight: 700;
 }
 
@@ -236,7 +238,6 @@ body {
   border-radius: 12px;
 }
 
-/* Alert Warning Banner (REQ-FUNC-10) */
 .alert-banner {
   padding: 0.75rem;
   border-radius: var(--radius-sm);
@@ -259,7 +260,6 @@ body {
   line-height: 1;
 }
 
-/* Itinerary Stops List */
 .itinerary-list {
   flex: 1;
   overflow-y: auto;
@@ -296,12 +296,11 @@ body {
   margin-top: 0.25rem;
 }
 
-/* Single Itinerary Stop Item */
 .itinerary-item {
   background: #f8fafc;
   border: 1px solid var(--border-color);
   border-radius: var(--radius-sm);
-  padding: 0.5rem 0.75rem;
+  padding: 0.5rem 0.65rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -327,18 +326,18 @@ body {
 }
 
 .stop-title {
-  font-size: 0.825rem;
+  font-size: 0.8rem;
   font-weight: 600;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   display: inline-block;
   vertical-align: bottom;
-  max-width: 170px;
+  max-width: 150px;
 }
 
 .stop-sub {
-  font-size: 0.7rem;
+  font-size: 0.68rem;
   color: var(--text-muted);
   display: block;
 }
@@ -346,14 +345,14 @@ body {
 .stop-controls {
   display: flex;
   align-items: center;
-  gap: 0.25rem;
+  gap: 0.2rem;
 }
 
 .stop-btn {
   background: none;
   border: none;
   cursor: pointer;
-  padding: 0.2rem 0.4rem;
+  padding: 0.2rem 0.35rem;
   border-radius: var(--radius-sm);
   font-size: 0.75rem;
   color: var(--text-muted);
@@ -370,7 +369,6 @@ body {
   color: var(--accent-danger);
 }
 
-/* Metric Summary */
 .itinerary-metrics-box {
   background: #f8fafc;
   border: 1px solid var(--border-color);
@@ -416,7 +414,7 @@ body {
 }
 
 /* =============================================================================
-   4. RIGHT PANEL: DIRECTORY GRID & PLACE CARDS
+   4. DESTINATION DIRECTORY & CARD WITH PHOTO
    ============================================================================= */
 .directory-panel {
   display: flex;
@@ -442,11 +440,11 @@ body {
 
 .places-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
   gap: 1.25rem;
 }
 
-/* Destination Card */
+/* Destination Card with Thumbnail Photo */
 .place-card {
   background: var(--surface-color);
   border: 1px solid var(--border-color);
@@ -463,6 +461,46 @@ body {
   box-shadow: var(--shadow-md);
 }
 
+.card-image-box {
+  position: relative;
+  width: 100%;
+  height: 165px;
+  background-color: #e2e8f0;
+  overflow: hidden;
+}
+
+.card-image-box img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.place-card:hover .card-image-box img {
+  transform: scale(1.05);
+}
+
+.card-image-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 0.4rem 0.75rem;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.65), transparent);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.card-distance-badge {
+  background: rgba(255, 255, 255, 0.95);
+  color: #1e293b;
+  font-weight: 700;
+  font-size: 0.725rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 12px;
+}
+
 .card-body {
   padding: 1rem;
   flex: 1;
@@ -474,7 +512,7 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.45rem;
 }
 
 .category-tag {
@@ -487,17 +525,11 @@ body {
   border-radius: 4px;
 }
 
-.distance-badge {
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: #475569;
-}
-
 .card-title {
-  font-size: 1rem;
+  font-size: 0.975rem;
   font-weight: 700;
-  line-height: 1.3;
-  margin-bottom: 0.5rem;
+  line-height: 1.35;
+  margin-bottom: 0.45rem;
 }
 
 .card-description {
@@ -507,7 +539,7 @@ body {
   margin-bottom: 0.75rem;
   flex: 1;
   display: -webkit-box;
-  -webkit-line-clamp: 3;
+  -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -602,7 +634,7 @@ body {
 }
 
 /* =============================================================================
-   6. MODAL SYSTEM (Place Detail & Admin)
+   6. MODAL & AUTH TABS SYSTEM
    ============================================================================= */
 .modal-overlay {
   position: fixed;
@@ -610,8 +642,8 @@ body {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(15, 23, 42, 0.5);
-  backdrop-filter: blur(2px);
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(3px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -633,7 +665,20 @@ body {
 }
 
 .modal-wide {
-  max-width: 900px;
+  max-width: 850px;
+}
+
+.modal-image-wrapper {
+  width: 100%;
+  height: 220px;
+  background-color: #cbd5e1;
+  overflow: hidden;
+}
+
+.modal-image-wrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .modal-header {
@@ -677,7 +722,32 @@ body {
   background: #f8fafc;
 }
 
-/* Detail Attributes Grid (Figure 4) */
+/* Auth Modal Tabs */
+.auth-tabs {
+  display: flex;
+  background: #f1f5f9;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.auth-tab-btn {
+  flex: 1;
+  padding: 0.75rem;
+  border: none;
+  background: none;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: var(--transition);
+  border-bottom: 2px solid transparent;
+}
+
+.auth-tab-btn.active {
+  color: var(--primary-color);
+  background: #fff;
+  border-bottom-color: var(--primary-color);
+}
+
 .category-pill, .distance-pill {
   font-size: 0.75rem;
   font-weight: 600;
@@ -744,7 +814,7 @@ body {
   gap: 0.4rem;
 }
 
-/* Admin Panel Table (Figure 5) */
+/* Admin Panel Table */
 .admin-toolbar {
   display: flex;
   justify-content: space-between;
@@ -788,7 +858,13 @@ body {
   color: #b91c1c;
 }
 
-/* Forms */
+/* Form Styling */
+.form-instruction {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-bottom: 1rem;
+}
+
 .form-group {
   margin-bottom: 1rem;
 }
@@ -802,7 +878,7 @@ body {
 
 .form-group input, .form-group select, .form-group textarea {
   width: 100%;
-  padding: 0.5rem 0.75rem;
+  padding: 0.55rem 0.75rem;
   border: 1px solid var(--border-color);
   border-radius: var(--radius-sm);
   font-size: 0.85rem;
@@ -826,8 +902,20 @@ body {
 
 .form-error {
   color: var(--accent-danger);
-  font-size: 0.75rem;
+  font-size: 0.775rem;
   margin-bottom: 0.75rem;
+  background: #fee2e2;
+  padding: 0.5rem;
+  border-radius: 4px;
+}
+
+.form-success {
+  color: var(--accent-green);
+  font-size: 0.775rem;
+  margin-bottom: 0.75rem;
+  background: #dcfce7;
+  padding: 0.5rem;
+  border-radius: 4px;
 }
 
 .export-preview-box {
@@ -858,7 +946,7 @@ body {
 }
 
 /* =============================================================================
-   7. RESPONSIVENESS (REQ-NF-01 & SRS Section 3.1)
+   7. RESPONSIVENESS
    ============================================================================= */
 @media (max-width: 992px) {
   .main-workspace {
