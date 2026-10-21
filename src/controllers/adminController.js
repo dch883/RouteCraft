@@ -1,7 +1,5 @@
 /**
  * RouteCraft - Administrative Management Controller
- * Author: H.M.D.C. Herath (E2410120)
- * References: SRS Section 4.4, Figure 5 (Admin Control Panel) & REQ-NF-07
  */
 
 const bcrypt = require('bcryptjs');

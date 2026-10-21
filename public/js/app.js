@@ -1,6 +1,5 @@
 /**
  * RouteCraft: Client-Side Single Page Application (SPA) Engine
- * Student: H.M.D.C. Herath | Reg: E2410120 | University of Moratuwa
  */
 
 // Application State Management
@@ -204,7 +203,6 @@ function sortAndRenderPlaces() {
     return;
   }
 
-  // Render cards WITH PHOTO thumbnail
   elements.placesGrid.innerHTML = places.map(p => {
     const isAdded = state.itinerary.includes(p.PlaceID);
     const pills = (p.tags || []).slice(0, 3).map(t => `<span class="pill-sm">${t.TagName}</span>`).join('');
@@ -372,7 +370,6 @@ async function openPlaceDetails(placeId) {
 // =============================================================================
 
 function switchAuthTab(tabName) {
-  // Reset tabs
   [elements.tabUserLoginBtn, elements.tabUserRegisterBtn, elements.tabAdminLoginBtn].forEach(b => b.classList.remove('active'));
   [elements.tabUserLoginContent, elements.tabUserRegisterContent, elements.tabAdminLoginContent, elements.adminDashboardView].forEach(c => c.classList.add('hidden'));
 
@@ -506,7 +503,6 @@ elements.adminLoginForm.addEventListener('submit', async (e) => {
   }
 });
 
-// Admin Logout
 elements.adminLogoutBtn.addEventListener('click', () => {
   state.activeAdmin = null;
   updateAuthButtonDisplay();
@@ -598,7 +594,7 @@ elements.createPlaceForm.addEventListener('submit', async (e) => {
 });
 
 // =============================================================================
-// EXPORT SUMMARY GENERATOR
+// CLEAN ITINERARY PRINT / SAVE AS PDF GENERATOR (REQ-FUNC-11)
 // =============================================================================
 
 function generateExportSummary() {
@@ -640,6 +636,214 @@ function generateExportSummary() {
 
   elements.exportContentBox.textContent = text;
   elements.exportModal.classList.remove('hidden');
+}
+
+/**
+ * Creates an elegant, clean document window with ALL stops and triggers native print/PDF save.
+ * Solves the issue of cropped text, scrollbars, and dark screen captures.
+ */
+function printItineraryDocument() {
+  if (!state.currentMetrics || state.itinerary.length === 0) return;
+
+  const m = state.currentMetrics;
+  const orderedPlaces = state.itinerary.map(id => state.allPlaces.find(p => p.PlaceID === id)).filter(Boolean);
+
+  let rowsHtml = '';
+  orderedPlaces.forEach((p, idx) => {
+    rowsHtml += `
+      <tr style="border-bottom: 1px solid #e2e8f0;">
+        <td style="padding: 10px 8px; font-weight: bold; color: #0b6bcb; vertical-align: top;">#${idx + 1}</td>
+        <td style="padding: 10px 8px; vertical-align: top;">
+          <strong style="font-size: 14px; color: #0f172a;">${escapeHtml(p.Name)}</strong>
+          <div style="font-size: 11px; color: #64748b; margin-top: 2px;">
+            <span style="background: #e0f2fe; color: #0369a1; padding: 2px 6px; border-radius: 4px; font-weight: 600;">${escapeHtml(p.CategoryName)}</span>
+            &nbsp;•&nbsp; ${p.DistanceFromCenter} km from Kiniyama
+          </div>
+          <div style="font-size: 11px; color: #475569; margin-top: 4px;">
+            <strong>Hours:</strong> ${escapeHtml(p.OpeningHours)} &nbsp;|&nbsp; 
+            <strong>Fee:</strong> ${escapeHtml(p.EntranceFee)}
+          </div>
+          <div style="font-size: 11px; margin-top: 4px;">
+            <a href="${p.GoogleMapsUrl}" target="_blank" style="color: #0284c7; text-decoration: none;">📍 Open Google Maps Link</a>
+          </div>
+        </td>
+        <td style="padding: 10px 8px; text-align: center; vertical-align: top; font-weight: 600; font-size: 13px;">
+          ${p.EstVisitDurationMins} min
+        </td>
+      </tr>
+    `;
+  });
+
+  const printHtml = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>RouteCraft Itinerary - Kiniyama Day-Trip</title>
+      <meta charset="utf-8">
+      <style>
+        body {
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+          color: #1e293b;
+          margin: 0;
+          padding: 24px;
+          background: #fff;
+        }
+        .header {
+          border-bottom: 2px solid #0b6bcb;
+          padding-bottom: 12px;
+          margin-bottom: 16px;
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-end;
+        }
+        .header-title h1 {
+          margin: 0;
+          font-size: 22px;
+          color: #0b6bcb;
+        }
+        .header-title p {
+          margin: 4px 0 0 0;
+          font-size: 12px;
+          color: #64748b;
+        }
+        .meta-info {
+          text-align: right;
+          font-size: 11px;
+          color: #64748b;
+        }
+        .metrics-card {
+          background: #f8fafc;
+          border: 1px solid #cbd5e1;
+          border-radius: 8px;
+          padding: 12px 16px;
+          margin-bottom: 20px;
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          gap: 12px;
+        }
+        .metric-box strong {
+          display: block;
+          font-size: 11px;
+          color: #64748b;
+          text-transform: uppercase;
+        }
+        .metric-box span {
+          font-size: 16px;
+          font-weight: 700;
+          color: #0f172a;
+        }
+        .warning-box {
+          background: #fffbeb;
+          border: 1px solid #fcd34d;
+          color: #92400e;
+          padding: 8px 12px;
+          border-radius: 6px;
+          font-size: 12px;
+          margin-bottom: 16px;
+        }
+        table {
+          width: 100%;
+          border-collapse: collapse;
+          margin-bottom: 24px;
+        }
+        th {
+          background: #f1f5f9;
+          text-align: left;
+          padding: 8px;
+          font-size: 11px;
+          color: #475569;
+          text-transform: uppercase;
+          border-bottom: 2px solid #cbd5e1;
+        }
+        .footer {
+          margin-top: 30px;
+          border-top: 1px solid #e2e8f0;
+          padding-top: 10px;
+          font-size: 11px;
+          color: #94a3b8;
+          display: flex;
+          justify-content: space-between;
+        }
+        @media print {
+          body { padding: 0; }
+          a { text-decoration: underline; color: #0b6bcb; }
+        }
+      </style>
+    </head>
+    <body>
+      <div class="header">
+        <div class="header-title">
+          <h1>🧭 RouteCraft: Regional Day-Trip Itinerary</h1>
+          <p>Curated Day-Trip Plan for Kiniyama & Surroundings (25 km Scope)</p>
+        </div>
+        <div class="meta-info">
+          <div><strong>Date:</strong> ${new Date().toLocaleDateString()}</div>
+          <div>${state.currentUser ? `<strong>Traveler:</strong> ${escapeHtml(state.currentUser.fullName)}` : 'Guest Planner'}</div>
+        </div>
+      </div>
+
+      <div class="metrics-card">
+        <div class="metric-box">
+          <strong>Total Stops</strong>
+          <span>${m.totalStops} Locations</span>
+        </div>
+        <div class="metric-box">
+          <strong>Road Distance</strong>
+          <span>${m.totalDistanceKm} km</span>
+        </div>
+        <div class="metric-box">
+          <strong>Est. Duration</strong>
+          <span>${m.totalDurationFormatted}</span>
+        </div>
+        <div class="metric-box">
+          <strong>Plan Status</strong>
+          <span style="color: ${m.isOverScheduled ? '#dc2626' : '#16a34a'};">
+            ${m.isOverScheduled ? 'Over-Scheduled' : 'Viable Plan'}
+          </span>
+        </div>
+      </div>
+
+      ${m.warningBanner ? `<div class="warning-box">⚠️ ${escapeHtml(m.warningBanner)}</div>` : ''}
+
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 35px;">#</th>
+            <th>Attraction Details & Directions</th>
+            <th style="width: 90px; text-align: center;">Dwell Time</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rowsHtml}
+        </tbody>
+      </table>
+
+      <div class="footer">
+        <div>RouteCraft System • Prepared by H.M.D.C. Herath (E2410120) • University of Moratuwa</div>
+        <div>Page 1 of 1</div>
+      </div>
+
+      <script>
+        window.onload = function() {
+          window.focus();
+          window.print();
+          window.onafterprint = function() { window.close(); };
+        };
+      <\/script>
+    </body>
+    </html>
+  `;
+
+  // Open in a dedicated, clean window and trigger print dialog
+  const printWindow = window.open('', '_blank', 'width=850,height=900');
+  if (printWindow) {
+    printWindow.document.open();
+    printWindow.document.write(printHtml);
+    printWindow.document.close();
+  } else {
+    // If popup was blocked by browser, fallback to direct print
+    alert('Please allow popups for RouteCraft so the print window can open cleanly.');
+  }
 }
 
 // =============================================================================
@@ -744,8 +948,9 @@ function setupEventListeners() {
       .catch(() => alert('Failed to copy text.'));
   });
 
+  // NEW: Triggers the dedicated clean print document
   elements.printItineraryBtn.addEventListener('click', () => {
-    window.print();
+    printItineraryDocument();
   });
 }
 

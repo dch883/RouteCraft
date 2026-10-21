@@ -1,6 +1,5 @@
 /**
  * RouteCraft: Modern Responsive Stylesheet
- * Prepared by: H.M.D.C. Herath (Reg: E2410120) - University of Moratuwa
  */
 
 :root {
@@ -192,7 +191,7 @@ body {
   margin: 1.25rem auto 2rem auto;
   padding: 0 0.5rem;
   display: grid;
-  grid-template-columns: 340px 1fr; /* Sidebar pinned left, rest for cards */
+  grid-template-columns: 340px 1fr;
   gap: 1.5rem;
   align-items: start;
 }
@@ -532,6 +531,7 @@ body {
   margin-bottom: 0.45rem;
 }
 
+/* Card Description with both vendor prefix and standard line-clamp */
 .card-description {
   font-size: 0.8rem;
   color: var(--text-muted);
@@ -540,6 +540,7 @@ body {
   flex: 1;
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -972,5 +973,36 @@ body {
   .filter-container {
     flex-direction: column;
     align-items: stretch;
+  }
+}
+
+/* =============================================================================
+   8. CLEAN PRINTING & PDF EXPORT ENHANCEMENTS
+   ============================================================================= */
+@media print {
+  /* Hide interactive web chrome, banners, and backdrops during print */
+  .top-nav,
+  .filter-bar,
+  .directory-panel,
+  .panel-actions,
+  .modal-overlay:not(#exportModal),
+  .modal-footer,
+  .modal-close-btn {
+    display: none !important;
+  }
+
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+
+  /* Unclip scrollboxes so full text prints seamlessly */
+  .export-preview-box {
+    max-height: none !important;
+    overflow: visible !important;
+    border: none !important;
+    padding: 0 !important;
+    font-size: 11pt !important;
+    white-space: pre-wrap !important;
   }
 }

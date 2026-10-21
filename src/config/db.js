@@ -1,9 +1,7 @@
 /**
  * RouteCraft - Regional Day-Trip Planning System
  * Database Connection Pool Configuration
- * Author: H.M.D.C. Herath (E2410120)
- * Reference: IEEE Std 830-1998 SRS Section 3.3
- */
+*/
 
 const mysql = require('mysql2/promise');
 require('dotenv').config();

@@ -1,7 +1,6 @@
 /**
  * RouteCraft: An Interactive Web Application for Regional Day-Trip Planning
  * Main Server & RESTful API Routing Engine
- * Student: H.M.D.C. Herath | Reg: E2410120 | University of Moratuwa
  */
 
 const express = require('express');
@@ -39,12 +38,18 @@ app.post('/api/auth/register', authController.registerUser);
 app.post('/api/auth/login', authController.loginUser);
 
 // -----------------------------------------------------------------------------
-// ADMINISTRATIVE API ROUTES
+// ADMINISTRATIVE API ROUTES (Complete CRUD & Admin Management)
 // -----------------------------------------------------------------------------
 app.post('/api/admin/login', adminController.adminLogin);
 app.get('/api/admin/places', adminController.adminListPlaces);
 app.post('/api/admin/places', adminController.createPlace);
+app.put('/api/admin/places/:id', adminController.updatePlace);
 app.put('/api/admin/places/:id/toggle-status', adminController.toggleSoftDelete);
+app.delete('/api/admin/places/:id', adminController.deletePlacePermanent);
+
+// Create another admin & list admins
+app.get('/api/admin/list', adminController.listAdmins);
+app.post('/api/admin/create-admin', adminController.createAdmin);
 
 // Default fallback for client-side SPA routing
 app.get('*', (req, res) => {

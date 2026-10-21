@@ -1,7 +1,5 @@
 /**
  * RouteCraft - Destination Catalog & Filter Controller
- * Author: H.M.D.C. Herath (E2410120)
- * References: SRS Section 4.1 & Sequence Diagram
  */
 
 const db = require('../config/db');
