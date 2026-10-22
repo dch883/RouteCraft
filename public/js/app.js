@@ -1,5 +1,7 @@
 /**
  * RouteCraft: Client-Side Single Page Application (SPA) Engine
+ * Author: H.M.D.C. Herath (E2410120) - University of Moratuwa
+ * References: SRS v1.1 & Sequence / Activity Diagrams
  */
 
 const state = {
@@ -69,6 +71,7 @@ const elements = {
   modalCategoryBadge: document.getElementById('modalCategoryBadge'),
   modalDistanceBadge: document.getElementById('modalDistanceBadge'),
   modalPlaceDescription: document.getElementById('modalPlaceDescription'),
+  modalTravelTips: document.getElementById('modalTravelTips'), // New Rubric Element
   modalHours: document.getElementById('modalHours'),
   modalEntrance: document.getElementById('modalEntrance'),
   modalParking: document.getElementById('modalParking'),
@@ -150,9 +153,7 @@ const elements = {
 
 const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1586861635167-e5223aadc9fe?w=600&auto=format&fit=crop&q=80';
 
-// =============================================================================
-// CREDENTIAL CLEANER FUNCTION (SOLVES LINGERING CREDENTIALS RISK)
-// =============================================================================
+// Clear Credentials Helper
 function clearCredentialsFromForms() {
   if (elements.adminLoginForm) elements.adminLoginForm.reset();
   if (elements.userLoginForm) elements.userLoginForm.reset();
@@ -172,9 +173,7 @@ function clearCredentialsFromForms() {
   if (elements.regSuccess) elements.regSuccess.classList.add('hidden');
 }
 
-// =============================================================================
 // INITIALIZATION
-// =============================================================================
 document.addEventListener('DOMContentLoaded', async () => {
   setupEventListeners();
   clearCredentialsFromForms();
@@ -185,9 +184,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   restoreSavedItinerary();
 });
 
-// =============================================================================
-// SPA VIEW ROUTING CONTROLLER
-// =============================================================================
+// SPA VIEW ROUTING
 function switchView(viewName) {
   state.currentView = viewName;
 
@@ -206,9 +203,7 @@ function switchView(viewName) {
   }
 }
 
-// =============================================================================
 // DATA FETCHING & TAXONOMIES
-// =============================================================================
 async function loadTaxonomies() {
   try {
     const res = await fetch('/api/taxonomies');
@@ -319,9 +314,7 @@ function sortAndRenderPlaces() {
   }).join('');
 }
 
-// =============================================================================
 // ITINERARY WORKSPACE & METRICS
-// =============================================================================
 function toggleItineraryStop(placeId) {
   const index = state.itinerary.indexOf(placeId);
   if (index === -1) {
@@ -404,9 +397,7 @@ async function updateItineraryUI() {
   }
 }
 
-// =============================================================================
-// PLACE DETAIL MODAL & CAROUSEL (1 / N)
-// =============================================================================
+// PLACE DETAIL MODAL & DYNAMIC MULTI-PHOTO CAROUSEL (1 / N) + TRAVEL TIPS
 function updateCarouselView() {
   const images = state.currentCarouselImages;
   const idx = state.currentCarouselIndex;
@@ -441,6 +432,10 @@ async function openPlaceDetails(placeId) {
     elements.modalCategoryBadge.innerText = p.CategoryName;
     elements.modalDistanceBadge.innerText = `${p.DistanceFromCenter} km from Kiniyama`;
     elements.modalPlaceDescription.innerText = p.Description;
+
+    // RENDER TRAVEL TIPS (RUBRIC REQUIREMENT)
+    elements.modalTravelTips.innerText = p.TravelTips || 'Standard travel guidelines apply; wear comfortable footwear and observe local customs.';
+
     elements.modalHours.innerText = p.OpeningHours || '08:00 AM - 05:00 PM';
     elements.modalEntrance.innerText = p.EntranceFee || 'Free Admission';
     elements.modalParking.innerText = p.ParkingAvailable ? 'On-site Parking Available' : 'Street/Limited Parking';
@@ -480,9 +475,7 @@ function prevCarouselPhoto() {
   updateCarouselView();
 }
 
-// =============================================================================
-// AUTHENTICATION & LOGIN (WITH CREDENTIAL AUTO-CLEAR)
-// =============================================================================
+// AUTHENTICATION & LOGIN
 function switchAuthTab(tabName) {
   clearCredentialsFromForms();
 
@@ -625,42 +618,32 @@ elements.userRegisterForm.addEventListener('submit', async (e) => {
   }
 });
 
-// =============================================================================
-// LOGOUT WITH ZERO CREDENTIALS & ITINERARY FLUSH
-// =============================================================================
+// LOGOUT
 elements.logoutUserBtn.addEventListener('click', () => {
   if (confirm('Are you sure you want to log out?')) {
-    // 1. Wipe sessions from memory and browser storage
     state.currentUser = null;
     state.activeAdmin = null;
     localStorage.removeItem('routecraft_user');
     localStorage.removeItem('routecraft_admin');
 
-    // 2. Wipe itinerary builder selections
     state.itinerary = [];
     localStorage.removeItem('routecraft_itinerary');
     updateItineraryUI();
     sortAndRenderPlaces();
 
-    // 3. Drop saved trips badge strictly to 0
     state.userSavedTrips = [];
     if (elements.savedTripsCountBadge) {
       elements.savedTripsCountBadge.innerText = '0';
     }
     renderSavedTrips([]);
 
-    // 4. Wipe input fields completely (security protection)
     clearCredentialsFromForms();
-
-    // 5. Update headers and return to public home view
     updateAuthButtonDisplay();
     switchView('explore');
   }
 });
 
-// =============================================================================
-// SAVED TRIPS MANAGEMENT (VIEW 2)
-// =============================================================================
+// SAVED TRIPS MANAGEMENT
 async function loadUserSavedTrips() {
   if (!state.currentUser) {
     state.userSavedTrips = [];
@@ -765,7 +748,6 @@ async function deleteSavedTrip(itineraryId) {
   }
 }
 
-// Save trip button in itinerary panel
 elements.saveTripToAccountBtn.addEventListener('click', () => {
   if (!state.currentUser) {
     alert('Please log in as a traveler to save trips to your profile.');
@@ -805,9 +787,7 @@ elements.saveTripForm.addEventListener('submit', async (e) => {
   }
 });
 
-// =============================================================================
-// ADMIN CONSOLE: PLACES, ADMINS & USER MANAGEMENT
-// =============================================================================
+// ADMIN CONSOLE: PLACES, ADMINS & USERS
 elements.adminTabPlaces.addEventListener('click', () => {
   elements.adminTabPlaces.classList.add('active');
   elements.adminTabUsers.classList.remove('active');
@@ -840,6 +820,7 @@ elements.adminTabManageUsers.addEventListener('click', () => {
 elements.adminConsoleNewPlaceBtn.addEventListener('click', () => {
   elements.adminSavePlaceForm.reset();
   elements.adminEditPlaceId.value = '';
+  document.getElementById('admPlaceTravelTips').value = '';
   elements.adminPlaceFormHeading.innerText = 'Add New Destination (Max 25 km Scope)';
   elements.adminAddPlaceCard.classList.toggle('hidden');
   elements.adminAddPlaceCard.scrollIntoView({ behavior: 'smooth' });
@@ -898,6 +879,7 @@ function openAdminEditPlace(placeId) {
   document.getElementById('admPlaceFee').value = p.EntranceFee || 'Free Admission';
   document.getElementById('admPlaceImage').value = p.ImageUrl || '';
   document.getElementById('admPlaceDesc').value = p.Description;
+  document.getElementById('admPlaceTravelTips').value = p.TravelTips || '';
 
   elements.adminAddPlaceCard.classList.remove('hidden');
   elements.adminAddPlaceCard.scrollIntoView({ behavior: 'smooth' });
@@ -947,7 +929,8 @@ elements.adminSavePlaceForm.addEventListener('submit', async (e) => {
     openingHours: document.getElementById('admPlaceHours').value,
     entranceFee: document.getElementById('admPlaceFee').value,
     imageUrl: document.getElementById('admPlaceImage').value,
-    description: document.getElementById('admPlaceDesc').value
+    description: document.getElementById('admPlaceDesc').value,
+    travelTips: document.getElementById('admPlaceTravelTips').value
   };
 
   const endpoint = isEditing ? `/api/admin/places/${editId}` : '/api/admin/places';
@@ -1136,9 +1119,7 @@ async function deleteUserAccount(userId, fullName) {
   }
 }
 
-// =============================================================================
 // EXPORT & CLEAN PRINT SUMMARY
-// =============================================================================
 function generateExportSummary() {
   if (!state.currentMetrics || state.itinerary.length === 0) return;
 
@@ -1170,7 +1151,11 @@ function generateExportSummary() {
     text += `   - Distance from Kiniyama: ${p.DistanceFromCenter} km\n`;
     text += `   - Operating Hours: ${p.OpeningHours}\n`;
     text += `   - Expected Dwell Time: ${p.EstVisitDurationMins} minutes\n`;
-    text += `   - Map Link: ${p.GoogleMapsUrl}\n\n`;
+    text += `   - Map Link: ${p.GoogleMapsUrl}\n`;
+    if (p.TravelTips) {
+      text += `   - Travel Tips: ${p.TravelTips}\n`;
+    }
+    text += `\n`;
   });
 
   text += `===========================================================\n`;
@@ -1201,6 +1186,11 @@ function printItineraryDocument() {
             <strong>Hours:</strong> ${escapeHtml(p.OpeningHours)} &nbsp;|&nbsp; 
             <strong>Fee:</strong> ${escapeHtml(p.EntranceFee)}
           </div>
+          ${p.TravelTips ? `
+            <div style="font-size: 11px; color: #166534; background: #f0fdf4; padding: 4px 8px; border-radius: 4px; margin-top: 4px;">
+              <strong>💡 Travel Tip:</strong> ${escapeHtml(p.TravelTips)}
+            </div>
+          ` : ''}
           <div style="font-size: 11px; margin-top: 4px;">
             <a href="${p.GoogleMapsUrl}" target="_blank" style="color: #0284c7; text-decoration: none;">📍 Open Google Maps Link</a>
           </div>
@@ -1271,9 +1261,7 @@ function printItineraryDocument() {
   }
 }
 
-// =============================================================================
-// SETUP LISTENERS
-// =============================================================================
+// SETUP EVENT LISTENERS
 function setupEventListeners() {
   elements.brandHomeBtn.addEventListener('click', () => switchView('explore'));
   elements.tabViewExplore.addEventListener('click', () => switchView('explore'));

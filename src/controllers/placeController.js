@@ -9,19 +9,16 @@ const db = require('../config/db');
 const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1586861635167-e5223aadc9fe?w=600&auto=format&fit=crop&q=80';
 
 /**
- * Helper: Discovers all existing photo files on disk for a given place.
- * Searches for all files starting with the base filename (e.g., kadigawa.jpg, kadigawa2.jpg, kadigawa3.jpg, kadigawa_x.jpg)
+ * Discovers all existing photo files on disk for a given place.
  */
 function discoverPhotosForPlace(imageUrl) {
   if (!imageUrl || imageUrl.startsWith('http')) {
     return [imageUrl || FALLBACK_IMAGE];
   }
 
-  // Extract base name without extension, e.g. "kadigawa" from "assets/places/kadigawa.jpg"
   const fileName = path.basename(imageUrl);
-  const baseName = fileName.replace(/\.[^/.]+$/, '').replace(/\d+$/, ''); // strips trailing numbers if any
+  const baseName = fileName.replace(/\.[^/.]+$/, '').replace(/\d+$/, '');
 
-  // Possible folders where images might reside
   const searchDirs = [
     path.join(process.cwd(), 'public/assets/places'),
     path.join(process.cwd(), 'assets/places')
@@ -33,7 +30,6 @@ function discoverPhotosForPlace(imageUrl) {
     if (fs.existsSync(dir)) {
       try {
         const files = fs.readdirSync(dir);
-        // Find all files starting with the base name (case-insensitive)
         const matches = files.filter(f => {
           const lower = f.toLowerCase();
           const target = baseName.toLowerCase();
@@ -41,10 +37,9 @@ function discoverPhotosForPlace(imageUrl) {
         });
 
         if (matches.length > 0) {
-          // Sort numerically/alphabetically (e.g., kadigawa.jpg, kadigawa2.jpg, kadigawa3.jpg)
           matches.sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
           foundFiles = matches.map(f => `assets/places/${f}`);
-          break; // Stop once we find the populated directory
+          break;
         }
       } catch (err) {
         console.warn('[placeController] Folder read warning:', err.message);
@@ -52,13 +47,12 @@ function discoverPhotosForPlace(imageUrl) {
     }
   }
 
-  // If no disk photos matched, use the configured imageUrl or fallback
   return foundFiles.length > 0 ? foundFiles : [imageUrl];
 }
 
 /**
  * GET /api/places
- * Retrieves catalog destinations with multi-criteria filtering and photo discovery
+ * Retrieves catalog destinations including TravelTips
  */
 async function getAllPlaces(req, res) {
   try {
@@ -69,6 +63,7 @@ async function getAllPlaces(req, res) {
         p.PlaceID,
         p.Name,
         p.Description,
+        p.TravelTips,
         p.DistanceFromCenter,
         p.Latitude,
         p.Longitude,
@@ -90,20 +85,17 @@ async function getAllPlaces(req, res) {
 
     const params = [];
 
-    // Category Filter (REQ-FUNC-04)
     if (category && category !== 'All') {
       sql += ` AND (c.CategoryName = ? OR c.CategoryID = ?)`;
       params.push(category, category);
     }
 
-    // Keyword Search (REQ-FUNC-03)
     if (search && search.trim() !== '') {
       const searchTerm = `%${search.trim()}%`;
       sql += ` AND (p.Name LIKE ? OR p.Description LIKE ?)`;
       params.push(searchTerm, searchTerm);
     }
 
-    // Tag Filter (REQ-FUNC-05)
     if (tag && tag.trim() !== '') {
       sql += ` AND t.TagName = ?`;
       params.push(tag.trim());
@@ -113,7 +105,6 @@ async function getAllPlaces(req, res) {
 
     const [rows] = await db.query(sql, params);
 
-    // Attach tags and discovered photos
     for (let place of rows) {
       const [tags] = await db.query(
         `SELECT t.TagID, t.TagName, t.TagType 
@@ -139,7 +130,6 @@ async function getAllPlaces(req, res) {
 
 /**
  * GET /api/places/:id
- * Retrieves full single-destination profile with all available photos
  */
 async function getPlaceById(req, res) {
   try {

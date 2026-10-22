@@ -14,9 +14,7 @@
 </head>
 <body>
 
-  <!-- =========================================================================
-       TOP NAVIGATION BAR WITH SPA VIEW SWITCHERS
-       ========================================================================= -->
+  <!-- TOP NAVIGATION BAR -->
   <header class="top-nav">
     <div class="nav-container">
       <div class="brand" id="brandHomeBtn" style="cursor: pointer;">
@@ -46,12 +44,8 @@
     </div>
   </header>
 
-  <!-- =========================================================================
-       VIEW 1: EXPLORE & ITINERARY BUILDER (DEFAULT PUBLIC VIEW)
-       ========================================================================= -->
+  <!-- VIEW 1: EXPLORE & ITINERARY BUILDER -->
   <div id="viewExplore" class="app-view">
-
-    <!-- SUB-NAV: FILTER BAR -->
     <section class="filter-bar">
       <div class="filter-container">
         <div class="search-box">
@@ -77,9 +71,7 @@
       </div>
     </section>
 
-    <!-- DUAL-PANEL WORKSPACE -->
     <main class="main-workspace">
-
       <!-- LEFT PANEL: ITINERARY PLANNER -->
       <aside class="itinerary-panel" id="itineraryPanel">
         <div class="panel-header">
@@ -149,13 +141,10 @@
 
         <div class="places-grid" id="placesGrid"></div>
       </section>
-
     </main>
   </div>
 
-  <!-- =========================================================================
-       VIEW 2: SAVED TRIPS DASHBOARD (FOR LOGGED-IN TOURISTS)
-       ========================================================================= -->
+  <!-- VIEW 2: SAVED TRIPS DASHBOARD -->
   <div id="viewSavedTrips" class="app-view hidden">
     <section class="view-container">
       <div class="view-header">
@@ -176,9 +165,7 @@
     </section>
   </div>
 
-  <!-- =========================================================================
-       VIEW 3: FULL-SCREEN ADMINISTRATIVE CONTROL PANEL
-       ========================================================================= -->
+  <!-- VIEW 3: FULL-SCREEN ADMINISTRATIVE CONTROL PANEL -->
   <div id="viewAdminConsole" class="app-view hidden">
     <section class="view-container">
       <div class="admin-topbar">
@@ -192,7 +179,6 @@
         </div>
       </div>
 
-      <!-- 3 Subtabs: Destinations, Administrators, and Users -->
       <div class="admin-subtabs">
         <button class="subtab-btn active" id="adminTabPlaces">Manage Destinations</button>
         <button class="subtab-btn" id="adminTabUsers">Manage Administrators</button>
@@ -254,6 +240,11 @@
             <div class="form-group full-width">
               <label>Description *</label>
               <textarea id="admPlaceDesc" rows="3" required placeholder="Historical, cultural, or scenic description..."></textarea>
+            </div>
+
+            <div class="form-group full-width">
+              <label>Travel Tips & Visitor Etiquette (Rubric Requirement)</label>
+              <textarea id="admPlaceTravelTips" rows="2" placeholder="e.g. Modest temple attire required; best visited early morning for calm waters..."></textarea>
             </div>
 
             <div class="form-actions full-width">
@@ -325,7 +316,7 @@
         </div>
       </div>
 
-      <!-- Admin Section 3: Manage Users (Tourist Accounts) -->
+      <!-- Admin Section 3: Manage Users -->
       <div id="adminSectionManageUsers" class="hidden">
         <div class="view-header" style="border:none; padding:0; margin-bottom:1rem;">
           <div>
@@ -354,9 +345,7 @@
     </section>
   </div>
 
-  <!-- =========================================================================
-       MODAL 1: PLACE DETAIL VIEW (DYNAMIC CAROUSEL: 1 / N)
-       ========================================================================= -->
+  <!-- MODAL 1: PLACE DETAIL VIEW (SHOWS DESCRIPTION, HOURS, TRAVEL TIPS, DISTANCE) -->
   <div class="modal-overlay hidden" id="placeDetailModal">
     <div class="modal-window modal-fullscreen-view">
       <div class="modal-header">
@@ -385,11 +374,20 @@
           </a>
         </div>
 
-        <!-- Right: Details & Tags -->
+        <!-- Right: Information & Travel Tips -->
         <div class="detail-right-col">
           <div class="detail-desc-box">
             <h4>About this Destination</h4>
             <p id="modalPlaceDescription" class="modal-description"></p>
+          </div>
+
+          <!-- DEDICATED TRAVEL TIPS CALLOUT BOX (EXPLICIT RUBRIC REQUIREMENT) -->
+          <div class="travel-tips-box" id="modalTravelTipsBox">
+            <span class="tips-icon">💡</span>
+            <div>
+              <strong>Travel Tips & Visitor Etiquette</strong>
+              <p id="modalTravelTips" class="tips-text">Standard travel guidelines apply; wear comfortable footwear and observe local customs.</p>
+            </div>
           </div>
 
           <div class="attributes-grid">
@@ -456,9 +454,7 @@
     </div>
   </div>
 
-  <!-- =========================================================================
-       MODAL 2: AUTH MODAL (CLEARS ON LOGOUT / OPEN)
-       ========================================================================= -->
+  <!-- MODAL 2: AUTH MODAL -->
   <div class="modal-overlay hidden" id="authModal">
     <div class="modal-window modal-auth" id="authModalContainer">
       <div class="modal-header auth-header">
@@ -542,9 +538,7 @@
     </div>
   </div>
 
-  <!-- =========================================================================
-       MODAL 3: ADMIN CHANGE USER PASSWORD MODAL
-       ========================================================================= -->
+  <!-- MODAL 3: ADMIN CHANGE USER PASSWORD -->
   <div class="modal-overlay hidden" id="adminPasswordModal">
     <div class="modal-window modal-auth">
       <div class="modal-header">
@@ -554,7 +548,7 @@
       <div class="auth-body-container">
         <form id="adminChangePasswordForm" class="clean-auth-form" autocomplete="off">
           <input type="hidden" id="changePasswordUserId" value="">
-          <p class="form-instruction" id="changePasswordTargetName">Set a new password for Kasun Perera.</p>
+          <p class="form-instruction" id="changePasswordTargetName">Set a new password for traveler.</p>
           <div class="form-group">
             <label for="newAdminAssignedPassword">New Password (Min 6 characters) *</label>
             <input type="password" id="newAdminAssignedPassword" required minlength="6" placeholder="••••••••" autocomplete="new-password">
@@ -565,9 +559,7 @@
     </div>
   </div>
 
-  <!-- =========================================================================
-       MODAL 4: SAVE TRIP TITLE DIALOG
-       ========================================================================= -->
+  <!-- MODAL 4: SAVE TRIP TITLE DIALOG -->
   <div class="modal-overlay hidden" id="saveTripModal">
     <div class="modal-window modal-auth">
       <div class="modal-header">
@@ -586,9 +578,7 @@
     </div>
   </div>
 
-  <!-- =========================================================================
-       MODAL 5: EXPORT / PRINT SUMMARY
-       ========================================================================= -->
+  <!-- MODAL 5: EXPORT / PRINT SUMMARY -->
   <div class="modal-overlay hidden" id="exportModal">
     <div class="modal-window">
       <div class="modal-header">

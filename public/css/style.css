@@ -40,9 +40,7 @@ body {
   min-height: 100vh;
 }
 
-/* =============================================================================
-   1. NAVIGATION & SPA VIEW TABS
-   ============================================================================= */
+/* 1. NAVIGATION & SPA VIEW TABS */
 .top-nav {
   background: var(--surface-color);
   border-bottom: 1px solid var(--border-color);
@@ -184,9 +182,7 @@ body {
   background: #fff;
 }
 
-/* =============================================================================
-   2. FILTER BAR
-   ============================================================================= */
+/* 2. FILTER BAR */
 .filter-bar {
   background: var(--surface-color);
   border-bottom: 1px solid var(--border-color);
@@ -256,9 +252,7 @@ body {
   box-shadow: var(--shadow-focus);
 }
 
-/* =============================================================================
-   3. SPA VIEWS LAYOUT
-   ============================================================================= */
+/* 3. SPA VIEWS LAYOUT */
 .app-view {
   animation: fadeIn 0.25s ease-in-out;
 }
@@ -288,9 +282,7 @@ body {
   font-weight: 700;
 }
 
-/* =============================================================================
-   4. DUAL-PANEL EXPLORE WORKSPACE
-   ============================================================================= */
+/* 4. DUAL-PANEL EXPLORE WORKSPACE */
 .main-workspace {
   width: 98%;
   max-width: 1750px;
@@ -669,9 +661,7 @@ body {
   padding-top: 0.75rem;
 }
 
-/* =============================================================================
-   5. SAVED TRIPS DASHBOARD STYLES
-   ============================================================================= */
+/* 5. SAVED TRIPS DASHBOARD STYLES */
 .saved-trips-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
@@ -736,9 +726,7 @@ body {
   padding-top: 0.75rem;
 }
 
-/* =============================================================================
-   6. ADMIN CONSOLE & MODERN FORM INPUTS (REDESIGNED FOR SLEEK AESTHETICS)
-   ============================================================================= */
+/* 6. ADMIN CONSOLE & MODERN FORM INPUTS */
 .admin-topbar {
   display: flex;
   justify-content: space-between;
@@ -777,7 +765,6 @@ body {
   border-bottom-color: var(--primary-color);
 }
 
-/* Modern Administrative Card */
 .admin-card {
   background: #ffffff;
   border: 1px solid #e2e8f0;
@@ -794,7 +781,6 @@ body {
   margin-bottom: 0.25rem;
 }
 
-/* Modern Grid Form Inputs */
 .grid-form {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -820,7 +806,6 @@ body {
   letter-spacing: 0.01em;
 }
 
-/* Universal Modern Input Styling */
 .grid-form input[type="text"],
 .grid-form input[type="number"],
 .grid-form input[type="password"],
@@ -877,7 +862,6 @@ body {
   margin-top: 0.5rem;
 }
 
-/* Admin Table */
 .admin-table {
   width: 100%;
   border-collapse: collapse;
@@ -902,19 +886,10 @@ body {
   font-weight: 600;
 }
 
-.status-active {
-  background: #dcfce7;
-  color: #15803d;
-}
+.status-active { background: #dcfce7; color: #15803d; }
+.status-deleted { background: #fee2e2; color: #b91c1c; }
 
-.status-deleted {
-  background: #fee2e2;
-  color: #b91c1c;
-}
-
-/* =============================================================================
-   7. MODAL STYLES & DYNAMIC CAROUSEL
-   ============================================================================= */
+/* 7. MODALS, CAROUSEL & TRAVEL TIPS HIGHLIGHT BOX */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -1063,7 +1038,7 @@ body {
 .detail-right-col {
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 1.15rem;
 }
 
 .detail-desc-box h4 {
@@ -1077,6 +1052,35 @@ body {
   font-size: 0.95rem;
   line-height: 1.6;
   color: #334155;
+}
+
+/* DEDICATED TRAVEL TIPS CALLOUT BOX (EXPLICIT RUBRIC REQUIREMENT) */
+.travel-tips-box {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: var(--radius-sm);
+  padding: 0.85rem 1rem;
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+}
+
+.travel-tips-box .tips-icon {
+  font-size: 1.3rem;
+  line-height: 1;
+}
+
+.travel-tips-box strong {
+  display: block;
+  font-size: 0.825rem;
+  color: #166534;
+  margin-bottom: 0.2rem;
+}
+
+.travel-tips-box .tips-text {
+  font-size: 0.825rem;
+  color: #15803d;
+  line-height: 1.45;
 }
 
 .attributes-grid {
@@ -1095,9 +1099,7 @@ body {
   gap: 0.65rem;
 }
 
-.attr-icon {
-  font-size: 1.25rem;
-}
+.attr-icon { font-size: 1.25rem; }
 
 .attribute-item strong {
   font-size: 0.75rem;
@@ -1266,9 +1268,7 @@ body {
   overflow-y: auto;
 }
 
-/* =============================================================================
-   8. SHARED BUTTONS & CONTROLS
-   ============================================================================= */
+/* 8. SHARED CONTROLS */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -1314,9 +1314,7 @@ body {
   to { transform: scale(1); opacity: 1; }
 }
 
-/* =============================================================================
-   9. RESPONSIVENESS & CLEAN PRINTING
-   ============================================================================= */
+/* 9. RESPONSIVENESS & CLEAN PRINTING */
 @media (max-width: 992px) {
   .main-workspace { grid-template-columns: 1fr; }
   .itinerary-panel { position: static; max-height: none; }

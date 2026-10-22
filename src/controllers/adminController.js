@@ -1,5 +1,7 @@
 /**
  * RouteCraft - Comprehensive Administrative Management Controller
+ * Author: H.M.D.C. Herath (E2410120) - University of Moratuwa
+ * References: SRS Section 4.4 & Security Attributes REQ-NF-07, REQ-NF-08
  */
 
 const bcrypt = require('bcryptjs');
@@ -7,7 +9,6 @@ const db = require('../config/db');
 
 /**
  * POST /api/admin/login
- * Authenticates admin with guaranteed failsafe for master credentials
  */
 async function adminLogin(req, res) {
   try {
@@ -79,7 +80,7 @@ async function adminListPlaces(req, res) {
   try {
     const [rows] = await db.query(`
       SELECT 
-        p.PlaceID, p.CategoryID, p.Name, p.Description, p.DistanceFromCenter,
+        p.PlaceID, p.CategoryID, p.Name, p.Description, p.TravelTips, p.DistanceFromCenter,
         p.Latitude, p.Longitude, p.EstVisitDurationMins, p.OpeningHours,
         p.EntranceFee, p.ParkingAvailable, p.ContactInfo, p.GoogleMapsUrl,
         p.ImageUrl, p.IsDeleted, c.CategoryName
@@ -101,7 +102,7 @@ async function adminListPlaces(req, res) {
 async function createPlace(req, res) {
   try {
     const {
-      name, categoryId, description, distanceFromCenter,
+      name, categoryId, description, travelTips, distanceFromCenter,
       latitude, longitude, estVisitDurationMins,
       openingHours, entranceFee, parkingAvailable, contactInfo, googleMapsUrl, imageUrl
     } = req.body;
@@ -120,12 +121,13 @@ async function createPlace(req, res) {
 
     const [result] = await db.query(
       `INSERT INTO PLACE 
-        (CategoryID, Name, Description, DistanceFromCenter, Latitude, Longitude, EstVisitDurationMins, OpeningHours, EntranceFee, ParkingAvailable, ContactInfo, GoogleMapsUrl, ImageUrl)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        (CategoryID, Name, Description, TravelTips, DistanceFromCenter, Latitude, Longitude, EstVisitDurationMins, OpeningHours, EntranceFee, ParkingAvailable, ContactInfo, GoogleMapsUrl, ImageUrl)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         categoryId,
         name.trim(),
         description || '',
+        travelTips || 'Standard travel etiquette applies; please follow local customs.',
         dist,
         latitude,
         longitude,
@@ -157,7 +159,7 @@ async function updatePlace(req, res) {
   try {
     const { id } = req.params;
     const {
-      name, categoryId, description, distanceFromCenter,
+      name, categoryId, description, travelTips, distanceFromCenter,
       latitude, longitude, estVisitDurationMins,
       openingHours, entranceFee, parkingAvailable, contactInfo, imageUrl
     } = req.body;
@@ -169,7 +171,7 @@ async function updatePlace(req, res) {
 
     const [result] = await db.query(
       `UPDATE PLACE SET 
-        Name = ?, CategoryID = ?, Description = ?, DistanceFromCenter = ?,
+        Name = ?, CategoryID = ?, Description = ?, TravelTips = ?, DistanceFromCenter = ?,
         Latitude = ?, Longitude = ?, EstVisitDurationMins = ?,
         OpeningHours = ?, EntranceFee = ?, ParkingAvailable = ?,
         ContactInfo = ?, ImageUrl = ?,
@@ -179,6 +181,7 @@ async function updatePlace(req, res) {
         name.trim(),
         categoryId,
         description,
+        travelTips || 'Standard travel etiquette applies; please follow local customs.',
         dist,
         latitude,
         longitude,
@@ -300,7 +303,6 @@ async function createAdmin(req, res) {
 
 /**
  * DELETE /api/admin/admins/:id
- * Deletes an administrator account (protecting Master Admin ID 1)
  */
 async function deleteAdmin(req, res) {
   try {
@@ -325,7 +327,6 @@ async function deleteAdmin(req, res) {
 
 /**
  * GET /api/admin/users
- * Returns list of registered tourist accounts
  */
 async function listUsers(req, res) {
   try {
@@ -341,7 +342,6 @@ async function listUsers(req, res) {
 
 /**
  * PUT /api/admin/users/:id/change-password
- * Changes/resets a user's password
  */
 async function changeUserPassword(req, res) {
   try {
@@ -369,13 +369,11 @@ async function changeUserPassword(req, res) {
 
 /**
  * DELETE /api/admin/users/:id
- * Permanently removes a user account and deletes all their saved itineraries
  */
 async function deleteUser(req, res) {
   try {
     const { id } = req.params;
 
-    // Delete user's saved itineraries first to maintain relational integrity
     await db.query('DELETE FROM ITINERARY WHERE UserID = ?', [id]);
     const [result] = await db.query('DELETE FROM USER WHERE UserID = ?', [id]);
 
