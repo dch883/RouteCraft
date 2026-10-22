@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <!-- Leaflet.js: Free & Open-Source In-App Map (Zero API Keys) -->
+  <!-- Leaflet.js: Free & Open-Source Map Engine -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 </head>
@@ -20,6 +20,7 @@
   <!-- TOP NAVIGATION BAR -->
   <header class="top-nav">
     <div class="nav-container">
+      <!-- 1. Left: Brand Title -->
       <div class="brand" id="brandHomeBtn" style="cursor: pointer;">
         <span class="brand-icon">🧭</span>
         <div class="brand-text">
@@ -28,18 +29,25 @@
         </div>
       </div>
 
-      <!-- App View Switcher Tabs -->
+      <!-- 2. Weather Pill Positioned in the Exact Indicated Spot -->
+      <div class="weather-pill" id="kiniyamaWeatherPill" title="Live weather for Kiniyama (7°39'36.8''N 80°00'17.9''E)">
+        <span id="weatherIcon">🌤️</span> <span id="weatherText">Kiniyama: Loading...</span>
+      </div>
+
+      <!-- 3. Navigation View Switcher Tabs -->
       <nav class="spa-nav-tabs">
         <button class="nav-tab active" id="tabViewExplore">🧭 Explore & Plan</button>
         <button class="nav-tab" id="tabViewSavedTrips">📋 My Saved Trips <span class="tab-badge" id="savedTripsCountBadge">0</span></button>
         <button class="nav-tab admin-nav-tab hidden" id="tabViewAdmin">⚙️ Admin Console</button>
       </nav>
 
+      <!-- 4. Right: User Profile & Login Buttons -->
       <div class="nav-actions">
         <div id="userProfileBadge" class="user-badge hidden">
           <span id="userBadgeLabel">👤 Tourist</span>
           <button id="logoutUserBtn" class="btn btn-text btn-sm" title="Log out of account">Logout</button>
         </div>
+
         <button id="authPortalBtn" class="btn btn-outline" title="Sign In or Register">
           <span class="btn-icon">👤</span> <span id="authBtnLabel">Login / Register</span>
         </button>
@@ -85,6 +93,16 @@
           <p class="panel-desc">Assemble up to 10 stops within the 25 km Kiniyama zone.</p>
         </div>
 
+        <!-- Quick Route Actions: Route Map (Idea 1) & Optimize Order (Idea 2) -->
+        <div class="itinerary-quick-actions">
+          <button id="btnViewRouteMap" class="btn btn-outline btn-sm" disabled title="View all stops connected on a full map">
+            🗺️ View Route Map
+          </button>
+          <button id="btnOptimizeRoute" class="btn btn-outline btn-sm" disabled title="Reorder stops by shortest road distance">
+            ⚡ Optimize Sequence
+          </button>
+        </div>
+
         <div class="alert-banner warning-banner hidden" id="timeWarningBanner">
           <div class="alert-icon">⚠️</div>
           <div class="alert-content">
@@ -101,6 +119,7 @@
           </div>
         </div>
 
+        <!-- Metrics Box with Budget / Expense Estimator (Idea 3) -->
         <div class="itinerary-metrics-box" id="metricsBox">
           <div class="metric-row">
             <span class="metric-label">Estimated Road Distance:</span>
@@ -110,8 +129,12 @@
             <span class="metric-label">Cumulative Duration:</span>
             <span class="metric-value" id="metricDuration">0h 0m</span>
           </div>
+          <div class="metric-row">
+            <span class="metric-label">Estimated Admission Cost:</span>
+            <span class="metric-value highlight-cost" id="metricBudget">Free Admission</span>
+          </div>
           <div class="metric-subtext">
-            <small>Includes dwell exploration time & estimated rural transit speeds (~35 km/h).</small>
+            <small>Includes dwell time, rural transit (~35 km/h), & domestic ticket prices.</small>
           </div>
         </div>
 
@@ -182,7 +205,6 @@
         </div>
       </div>
 
-      <!-- 3 Subtabs -->
       <div class="admin-subtabs">
         <button class="subtab-btn active" id="adminTabPlaces">Manage Destinations</button>
         <button class="subtab-btn" id="adminTabUsers">Manage Administrators</button>
@@ -206,7 +228,7 @@
               <select id="admPlaceCategory" required></select>
             </div>
 
-            <!-- Row 1: Distance & Visit Duration (Swapped) -->
+            <!-- Row 1: Distance & Duration -->
             <div class="form-group">
               <label>Distance From Kiniyama (&le; 25.0 km) *</label>
               <input type="number" step="0.01" max="25.00" min="0" id="admPlaceDistance" required placeholder="e.g. 8.50">
@@ -217,7 +239,7 @@
               <input type="number" id="admPlaceDuration" value="60" required placeholder="60">
             </div>
 
-            <!-- Row 2: Latitude & Longitude (Optional for In-App Map) -->
+            <!-- Row 2: Optional Coordinates -->
             <div class="form-group">
               <label>Latitude <span class="text-muted">(Optional - Enables In-App Map)</span></label>
               <input type="number" step="0.0000001" id="admPlaceLat" placeholder="e.g. 7.5954000">
@@ -228,7 +250,7 @@
               <input type="number" step="0.0000001" id="admPlaceLon" placeholder="e.g. 80.0987000">
             </div>
 
-            <!-- Row 3: Google Maps Link Input (Positioned exactly as indicated) -->
+            <!-- Row 3: Google Maps Link Input -->
             <div class="form-group full-width">
               <label>Google Maps Link (URL) *</label>
               <input type="text" id="admPlaceMapsUrl" required placeholder="https://maps.app.goo.gl/... or https://maps.google.com/?q=...">
@@ -357,7 +379,7 @@
     </section>
   </div>
 
-  <!-- MODAL 1: PLACE DETAIL VIEW (WITH IN-APP MAP & PHOTO SWITCHER) -->
+  <!-- MODAL 1: PLACE DETAIL VIEW (IN-APP MAP & PHOTOS) -->
   <div class="modal-overlay hidden" id="placeDetailModal">
     <div class="modal-window modal-fullscreen-view">
       <div class="modal-header">
@@ -372,15 +394,13 @@
       </div>
 
       <div class="modal-body-split">
-        <!-- Left: Photo Carousel / In-App Map Toggle -->
+        <!-- Left: Carousel / Map Switcher -->
         <div class="detail-left-col">
-          <!-- View switcher between Photos and In-App Map -->
           <div class="media-toggle-bar">
             <button class="media-tab active" id="btnShowPhotos">📷 Photos</button>
             <button class="media-tab" id="btnShowMap">🗺️ In-App Map</button>
           </div>
 
-          <!-- Container 1: Photo Carousel Frame -->
           <div class="detail-photo-frame" id="modalPhotoContainer">
             <img id="modalPlaceImage" src="" alt="Place Photo">
             <button class="carousel-btn carousel-prev" id="carouselPrevBtn" title="Previous photo" aria-label="Previous photo">&#10094;</button>
@@ -388,7 +408,6 @@
             <div class="carousel-counter" id="carouselCounterBadge">1 / 1</div>
           </div>
 
-          <!-- Container 2: Embedded Leaflet In-App Map Frame -->
           <div class="detail-photo-frame hidden" id="modalMapContainer">
             <div id="modalInteractiveMap" style="width: 100%; height: 100%;"></div>
           </div>
@@ -477,7 +496,34 @@
     </div>
   </div>
 
-  <!-- MODAL 2: AUTH MODAL -->
+  <!-- MODAL 2: FULL-DAY INTERACTIVE ROUTE MAP (IDEA 1) -->
+  <div class="modal-overlay hidden" id="routeMapModal">
+    <div class="modal-window modal-fullscreen-view">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <div class="modal-badges-row">
+            <span class="category-pill">Interactive Day-Trip Route</span>
+            <span class="distance-pill" id="routeMapMetricsBadge">0 stops | 0.00 km</span>
+          </div>
+          <h2>Full Itinerary Journey Map</h2>
+        </div>
+        <button class="modal-close-btn" id="closeRouteMapModalBtn">&times;</button>
+      </div>
+
+      <div class="modal-body" style="padding: 1rem; flex: 1; display: flex; flex-direction: column;">
+        <div id="routeMapCanvas" style="width: 100%; height: 100%; min-height: 520px; border-radius: var(--radius-md); border: 1px solid var(--border-color);"></div>
+      </div>
+
+      <div class="modal-footer" style="justify-content: space-between;">
+        <span class="text-muted" style="font-size: 0.8rem;">
+          Stops are ordered sequentially. Dashed lines connect consecutive attractions.
+        </span>
+        <button class="btn btn-secondary" id="closeRouteMapFooterBtn">Close Map</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 3: AUTH MODAL -->
   <div class="modal-overlay hidden" id="authModal">
     <div class="modal-window modal-auth" id="authModalContainer">
       <div class="modal-header auth-header">
@@ -558,7 +604,7 @@
     </div>
   </div>
 
-  <!-- MODAL 3: ADMIN CHANGE USER PASSWORD -->
+  <!-- MODAL 4: ADMIN CHANGE USER PASSWORD -->
   <div class="modal-overlay hidden" id="adminPasswordModal">
     <div class="modal-window modal-auth">
       <div class="modal-header">
@@ -579,7 +625,7 @@
     </div>
   </div>
 
-  <!-- MODAL 4: SAVE TRIP TITLE DIALOG -->
+  <!-- MODAL 5: SAVE TRIP TITLE DIALOG -->
   <div class="modal-overlay hidden" id="saveTripModal">
     <div class="modal-window modal-auth">
       <div class="modal-header">
@@ -598,7 +644,7 @@
     </div>
   </div>
 
-  <!-- MODAL 5: EXPORT / PRINT SUMMARY -->
+  <!-- MODAL 6: EXPORT / PRINT SUMMARY -->
   <div class="modal-overlay hidden" id="exportModal">
     <div class="modal-window">
       <div class="modal-header">

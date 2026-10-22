@@ -58,7 +58,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1.5rem;
+  gap: 1.25rem;
 }
 
 .brand {
@@ -136,6 +136,43 @@ body {
   padding: 0.1rem 0.45rem;
   border-radius: 10px;
   font-weight: 700;
+}
+
+/* Live Weather Pill Positioned Beside Brand */
+.weather-pill {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #0369a1;
+  background: #e0f2fe;
+  border: 1px solid #bae6fd;
+  padding: 0.35rem 0.85rem;
+  border-radius: 20px;
+  white-space: nowrap;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  transition: var(--transition);
+}
+
+.weather-pill:hover {
+  background: #d0ebff;
+  border-color: #7dd3fc;
+}
+
+@media (max-width: 900px) {
+  .nav-container {
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+  .weather-pill {
+    order: 2;
+  }
+  .spa-nav-tabs {
+    order: 3;
+    width: 100%;
+    justify-content: center;
+  }
 }
 
 .user-badge {
@@ -322,7 +359,7 @@ body {
 .panel-desc {
   font-size: 0.75rem;
   color: var(--text-muted);
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
 }
 
 .counter-badge {
@@ -332,6 +369,20 @@ body {
   font-weight: 600;
   padding: 0.2rem 0.5rem;
   border-radius: 12px;
+}
+
+/* Quick Route Map & Optimize Actions (Ideas 1 & 2) */
+.itinerary-quick-actions {
+  display: flex;
+  gap: 0.4rem;
+  margin-bottom: 0.85rem;
+}
+
+.itinerary-quick-actions button {
+  flex: 1;
+  font-size: 0.725rem;
+  padding: 0.4rem 0.5rem;
+  white-space: nowrap;
 }
 
 .alert-banner {
@@ -360,7 +411,7 @@ body {
   flex: 1;
   overflow-y: auto;
   min-height: 160px;
-  max-height: 280px;
+  max-height: 250px;
   border: 1px dashed var(--border-color);
   border-radius: var(--radius-sm);
   padding: 0.5rem;
@@ -487,6 +538,10 @@ body {
 .metric-value {
   font-weight: 700;
   color: var(--text-main);
+}
+
+.highlight-cost {
+  color: #059669;
 }
 
 .metric-subtext small {
@@ -889,7 +944,7 @@ body {
 .status-active { background: #dcfce7; color: #15803d; }
 .status-deleted { background: #fee2e2; color: #b91c1c; }
 
-/* 7. MODALS, IN-APP MAP & MEDIA TOGGLES */
+/* 7. MODALS, IN-APP MAP & NUMBERED ROUTE MARKERS */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -975,7 +1030,6 @@ body {
   flex-direction: column;
 }
 
-/* Photo vs In-App Map Switcher */
 .media-toggle-bar {
   display: flex;
   gap: 0.4rem;
@@ -1111,6 +1165,22 @@ body {
   font-size: 0.825rem;
   color: #15803d;
   line-height: 1.45;
+}
+
+/* Custom Numbered Route Badge Marker for Leaflet Map */
+.route-map-marker {
+  background: #0b6bcb;
+  color: #ffffff;
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+  width: 28px !important;
+  height: 28px !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 700;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
 }
 
 .attributes-grid {

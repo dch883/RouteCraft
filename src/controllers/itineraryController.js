@@ -3,11 +3,10 @@
  */
 
 const db = require('../config/db');
-const { processItineraryMetrics } = require('../utils/haversine');
+const { processItineraryMetrics, optimizeVisitingOrder } = require('../utils/haversine');
 
 /**
  * POST /api/itinerary/calculate
- * Accepts ordered array of place IDs: { placeIds: [1, 6, 4] }
  */
 async function calculateItinerary(req, res) {
   try {
@@ -57,8 +56,56 @@ async function calculateItinerary(req, res) {
 }
 
 /**
+ * POST /api/itinerary/optimize
+ * Nearest-neighbor sequence optimization (Idea 2)
+ */
+async function optimizeItinerary(req, res) {
+  try {
+    const { placeIds } = req.body;
+
+    if (!Array.isArray(placeIds) || placeIds.length <= 2) {
+      return res.status(200).json({ success: true, optimizedPlaceIds: placeIds });
+    }
+
+    const placeholders = placeIds.map(() => '?').join(',');
+    const [rows] = await db.query(
+      `SELECT PlaceID, Name, DistanceFromCenter, Latitude, Longitude, EstVisitDurationMins, OpeningHours, EntranceFee, GoogleMapsUrl, ImageUrl
+       FROM PLACE
+       WHERE PlaceID IN (${placeholders}) AND IsDeleted = 0`,
+      placeIds
+    );
+
+    const placeMap = new Map();
+    rows.forEach((p) => placeMap.set(Number(p.PlaceID), p));
+    const currentOrder = placeIds.map((id) => placeMap.get(Number(id))).filter(Boolean);
+
+    // Initial metrics
+    const initialMetrics = processItineraryMetrics(currentOrder);
+
+    // Optimized order
+    const optimizedPlaces = optimizeVisitingOrder(currentOrder);
+    const optimizedMetrics = processItineraryMetrics(optimizedPlaces);
+    const optimizedPlaceIds = optimizedPlaces.map((p) => p.PlaceID);
+
+    const distanceSaved = Number((initialMetrics.totalDistanceKm - optimizedMetrics.totalDistanceKm).toFixed(2));
+
+    return res.status(200).json({
+      success: true,
+      optimizedPlaceIds,
+      initialDistanceKm: initialMetrics.totalDistanceKm,
+      optimizedDistanceKm: optimizedMetrics.totalDistanceKm,
+      distanceSavedKm: Math.max(0, distanceSaved),
+      orderedPlaces: optimizedPlaces,
+      metrics: optimizedMetrics
+    });
+  } catch (error) {
+    console.error('[itineraryController.optimizeItinerary] Error:', error);
+    return res.status(500).json({ success: false, message: 'Failed to optimize itinerary order.' });
+  }
+}
+
+/**
  * POST /api/itinerary/save
- * Persists an assembled itinerary into the database
  */
 async function saveItinerary(req, res) {
   try {
@@ -68,10 +115,9 @@ async function saveItinerary(req, res) {
       return res.status(400).json({ success: false, message: 'Itinerary must include at least one destination.' });
     }
 
-    // Calculate metrics before saving
     const placeholders = placeIds.map(() => '?').join(',');
     const [rows] = await db.query(
-      `SELECT PlaceID, Name, DistanceFromCenter, Latitude, Longitude, EstVisitDurationMins FROM PLACE WHERE PlaceID IN (${placeholders})`,
+      `SELECT PlaceID, Name, DistanceFromCenter, Latitude, Longitude, EstVisitDurationMins, EntranceFee FROM PLACE WHERE PlaceID IN (${placeholders})`,
       placeIds
     );
 
@@ -108,7 +154,6 @@ async function saveItinerary(req, res) {
 
 /**
  * GET /api/itinerary/user/:userId
- * Retrieves past saved itineraries for a registered tourist
  */
 async function getUserItineraries(req, res) {
   try {
@@ -130,7 +175,6 @@ async function getUserItineraries(req, res) {
 
 /**
  * DELETE /api/itinerary/:id
- * Deletes a saved itinerary
  */
 async function deleteItinerary(req, res) {
   try {
@@ -145,6 +189,7 @@ async function deleteItinerary(req, res) {
 
 module.exports = {
   calculateItinerary,
+  optimizeItinerary,
   saveItinerary,
   getUserItineraries,
   deleteItinerary

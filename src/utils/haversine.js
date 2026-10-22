@@ -1,8 +1,6 @@
 /**
  * RouteCraft - Geolocation & Itinerary Computation Engine
- * Author: H.M.D.C. Herath (E2410120)
- * References: SRS Section 4.2 & Analysis Diagram 3 / Diagram 4
- */
+*/
 
 // Earth's mean radius in kilometers
 const EARTH_RADIUS_KM = 6371.0;
@@ -24,10 +22,7 @@ function toRadians(degrees) {
 }
 
 /**
- * Calculates straight-line spherical distance between two coordinate pairs using Haversine formula.
- * Formula: a = sin²(Δlat/2) + cos(lat1) * cos(lat2) * sin²(Δlon/2)
- *          c = 2 * atan2(√a, √(1-a))
- *          d = R * c
+ * Calculates straight-line spherical distance between two coordinates using Haversine formula
  */
 function calculateHaversineDistance(lat1, lon1, lat2, lon2) {
   const dLat = toRadians(lat2 - lat1);
@@ -43,7 +38,6 @@ function calculateHaversineDistance(lat1, lon1, lat2, lon2) {
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   const straightLineDistance = EARTH_RADIUS_KM * c;
 
-  // Multiply by road detour factor for realistic regional transit distance
   const estimatedRoadDistance = straightLineDistance * ROAD_DETOUR_FACTOR;
   return Number(estimatedRoadDistance.toFixed(2));
 }
@@ -57,19 +51,30 @@ function estimateTransitDuration(distanceKm) {
 }
 
 /**
+ * Helper: Extracts numeric LKR entrance fee from description string (Idea 3)
+ * e.g. "LKR 250 (Domestic)" -> 250, "Free Admission" -> 0
+ */
+function parseEntranceFee(feeString) {
+  if (!feeString || typeof feeString !== 'string') return 0;
+  const match = feeString.match(/LKR\s*(\d+)/i);
+  return match ? parseInt(match[1], 10) : 0;
+}
+
+/**
  * Evaluates an entire ordered itinerary sequence.
- * Aggregates visit times, calculates segment-by-segment travel times, and validates 8-hour limit.
- * 
- * @param {Array} orderedPlaces - Ordered array of place objects with { Latitude, Longitude, EstVisitDurationMins }
+ * Includes distance, dwell time, transit time, budget tally, and 8-hour alert.
  */
 function processItineraryMetrics(orderedPlaces) {
   if (!orderedPlaces || orderedPlaces.length === 0) {
     return {
+      totalStops: 0,
       totalDistanceKm: 0,
       totalVisitMinutes: 0,
       totalTransitMinutes: 0,
       totalDurationMinutes: 0,
       totalDurationFormatted: '0h 0m',
+      totalBudgetLKR: 0,
+      totalBudgetFormatted: 'Free Admission',
       isOverScheduled: false,
       warningBanner: null,
       segments: []
@@ -79,15 +84,17 @@ function processItineraryMetrics(orderedPlaces) {
   let totalDistanceKm = 0;
   let totalVisitMinutes = 0;
   let totalTransitMinutes = 0;
+  let totalBudgetLKR = 0;
   const segments = [];
 
-  // 1. Sum visit durations for all selected stops
+  // Sum visit durations and entrance fees
   for (let i = 0; i < orderedPlaces.length; i++) {
     const dwell = Number(orderedPlaces[i].EstVisitDurationMins) || 60;
     totalVisitMinutes += dwell;
+    totalBudgetLKR += parseEntranceFee(orderedPlaces[i].EntranceFee);
   }
 
-  // 2. Compute inter-stop distance and travel time for consecutive places
+  // Compute inter-stop distance and transit
   for (let i = 0; i < orderedPlaces.length - 1; i++) {
     const fromPlace = orderedPlaces[i];
     const toPlace = orderedPlaces[i + 1];
@@ -117,12 +124,10 @@ function processItineraryMetrics(orderedPlaces) {
   totalDistanceKm = Number(totalDistanceKm.toFixed(2));
   const totalDurationMinutes = totalVisitMinutes + totalTransitMinutes;
 
-  // Format into hours and minutes
   const hours = Math.floor(totalDurationMinutes / 60);
   const minutes = totalDurationMinutes % 60;
   const totalDurationFormatted = `${hours}h ${minutes}m`;
 
-  // Check 8-Hour Rule (REQ-FUNC-10 & Diagram 2)
   const isOverScheduled = totalDurationMinutes > MAX_DAILY_TIME_THRESHOLD_MINUTES;
   let warningBanner = null;
 
@@ -139,14 +144,56 @@ function processItineraryMetrics(orderedPlaces) {
     totalTransitMinutes,
     totalDurationMinutes,
     totalDurationFormatted,
+    totalBudgetLKR,
+    totalBudgetFormatted: totalBudgetLKR > 0 ? `LKR ${totalBudgetLKR}` : 'Free Admission',
     isOverScheduled,
     warningBanner,
     segments
   };
 }
 
+/**
+ * Optimizes visiting order using Nearest-Neighbor heuristic (Idea 2)
+ * Keeps the starting point selected by the user and orders remaining stops by minimum distance.
+ */
+function optimizeVisitingOrder(places) {
+  if (!places || places.length <= 2) return places;
+
+  const unvisited = [...places];
+  const optimized = [];
+
+  // Start with the first place selected by the tourist
+  let current = unvisited.shift();
+  optimized.push(current);
+
+  while (unvisited.length > 0) {
+    let nearestIdx = 0;
+    let minDistance = Infinity;
+
+    for (let i = 0; i < unvisited.length; i++) {
+      const dist = calculateHaversineDistance(
+        Number(current.Latitude),
+        Number(current.Longitude),
+        Number(unvisited[i].Latitude),
+        Number(unvisited[i].Longitude)
+      );
+
+      if (dist < minDistance) {
+        minDistance = dist;
+        nearestIdx = i;
+      }
+    }
+
+    current = unvisited.splice(nearestIdx, 1)[0];
+    optimized.push(current);
+  }
+
+  return optimized;
+}
+
 module.exports = {
   calculateHaversineDistance,
   estimateTransitDuration,
-  processItineraryMetrics
+  processItineraryMetrics,
+  optimizeVisitingOrder
 };

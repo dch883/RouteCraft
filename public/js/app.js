@@ -1,6 +1,6 @@
 /**
  * RouteCraft: Client-Side Single Page Application (SPA) Engine
-  */
+ */
 
 const state = {
   currentView: 'explore', // 'explore' | 'savedTrips' | 'adminConsole'
@@ -22,9 +22,12 @@ const state = {
   // Multi-Photo Carousel State
   currentCarouselImages: [],
   currentCarouselIndex: 0,
-  // Leaflet In-App Map Instance
+  // Leaflet Map Instances
   leafletModalMap: null,
-  leafletModalMarker: null
+  leafletModalMarker: null,
+  leafletRouteMap: null,
+  routePolylineLayer: null,
+  routeMarkersGroup: null
 };
 
 const elements = {
@@ -40,6 +43,10 @@ const elements = {
   userProfileBadge: document.getElementById('userProfileBadge'),
   userBadgeLabel: document.getElementById('userBadgeLabel'),
   logoutUserBtn: document.getElementById('logoutUserBtn'),
+  // Weather Badge (Idea 4)
+  kiniyamaWeatherPill: document.getElementById('kiniyamaWeatherPill'),
+  weatherIcon: document.getElementById('weatherIcon'),
+  weatherText: document.getElementById('weatherText'),
   // Catalog & Filters
   placesGrid: document.getElementById('placesGrid'),
   resultsCount: document.getElementById('resultsCount'),
@@ -49,18 +56,21 @@ const elements = {
   activityFilter: document.getElementById('activityFilter'),
   resetFiltersBtn: document.getElementById('resetFiltersBtn'),
   sortOrder: document.getElementById('sortOrder'),
-  // Itinerary UI
+  // Itinerary UI & Quick Actions (Ideas 1, 2, 3)
+  btnViewRouteMap: document.getElementById('btnViewRouteMap'),
+  btnOptimizeRoute: document.getElementById('btnOptimizeRoute'),
   itineraryStopsList: document.getElementById('itineraryStopsList'),
   emptyItineraryState: document.getElementById('emptyItineraryState'),
   itineraryCountBadge: document.getElementById('itineraryCountBadge'),
   metricDistance: document.getElementById('metricDistance'),
   metricDuration: document.getElementById('metricDuration'),
+  metricBudget: document.getElementById('metricBudget'),
   timeWarningBanner: document.getElementById('timeWarningBanner'),
   warningBannerText: document.getElementById('warningBannerText'),
   clearItineraryBtn: document.getElementById('clearItineraryBtn'),
   saveTripToAccountBtn: document.getElementById('saveTripToAccountBtn'),
   exportItineraryBtn: document.getElementById('exportItineraryBtn'),
-  // Place Detail Modal & Media (Photo Carousel / Leaflet Map)
+  // Place Detail Modal & Media
   placeDetailModal: document.getElementById('placeDetailModal'),
   closeDetailModalBtn: document.getElementById('closeDetailModalBtn'),
   modalCloseActionBtn: document.getElementById('modalCloseActionBtn'),
@@ -86,6 +96,12 @@ const elements = {
   modalTagsWrapper: document.getElementById('modalTagsWrapper'),
   modalMapsLink: document.getElementById('modalMapsLink'),
   modalAddToTripBtn: document.getElementById('modalAddToTripBtn'),
+  // Route Map Modal (Idea 1)
+  routeMapModal: document.getElementById('routeMapModal'),
+  closeRouteMapModalBtn: document.getElementById('closeRouteMapModalBtn'),
+  closeRouteMapFooterBtn: document.getElementById('closeRouteMapFooterBtn'),
+  routeMapCanvas: document.getElementById('routeMapCanvas'),
+  routeMapMetricsBadge: document.getElementById('routeMapMetricsBadge'),
   // Auth Modal
   authModal: document.getElementById('authModal'),
   authPortalBtn: document.getElementById('authPortalBtn'),
@@ -180,12 +196,52 @@ function clearCredentialsFromForms() {
   if (elements.regSuccess) elements.regSuccess.classList.add('hidden');
 }
 
+// LIVE WEATHER ENGINE FOR KINIYAMA (7°39'36.8"N 80°00'17.9"E)
+async function fetchLiveKiniyamaWeather() {
+  try {
+    // 7°39'36.8"N, 80°00'17.9"E -> 7.660222, 80.004972
+    const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=7.660222&longitude=80.004972&current_weather=true');
+    const data = await res.json();
+
+    if (data && data.current_weather) {
+      const temp = Math.round(data.current_weather.temperature);
+      const code = data.current_weather.weathercode;
+
+      let icon = '☀️';
+      let desc = 'Clear';
+
+      if (code === 1 || code === 2 || code === 3) {
+        icon = '⛅';
+        desc = 'Partly Cloudy';
+      } else if (code >= 45 && code <= 48) {
+        icon = '🌫️';
+        desc = 'Misty';
+      } else if (code >= 51 && code <= 67) {
+        icon = '🌧️';
+        desc = 'Showers';
+      } else if (code >= 80 && code <= 82) {
+        icon = '⛈️';
+        desc = 'Rain';
+      } else if (code >= 95) {
+        icon = '⚡';
+        desc = 'Thunderstorms';
+      }
+
+      elements.weatherIcon.innerText = icon;
+      elements.weatherText.innerText = `Kiniyama: ${temp}°C | ${desc}`;
+    }
+  } catch (err) {
+    elements.weatherText.innerText = 'Kiniyama: 28°C | Clear';
+  }
+}
+
 // INITIALIZATION
 document.addEventListener('DOMContentLoaded', async () => {
   setupEventListeners();
   clearCredentialsFromForms();
   restoreSavedUserSession();
   restoreSavedAdminSession();
+  fetchLiveKiniyamaWeather();
   await loadTaxonomies();
   await loadPlaces();
   restoreSavedItinerary();
@@ -321,7 +377,7 @@ function sortAndRenderPlaces() {
   }).join('');
 }
 
-// ITINERARY WORKSPACE & METRICS
+// ITINERARY WORKSPACE, BUDGET & ROUTE METRICS (IDEA 3)
 function toggleItineraryStop(placeId) {
   const index = state.itinerary.indexOf(placeId);
   if (index === -1) {
@@ -352,12 +408,15 @@ async function updateItineraryUI() {
   elements.clearItineraryBtn.disabled = count === 0;
   elements.saveTripToAccountBtn.disabled = count === 0;
   elements.exportItineraryBtn.disabled = count === 0;
+  elements.btnViewRouteMap.disabled = count === 0;
+  elements.btnOptimizeRoute.disabled = count <= 2; // Optimization useful for 3+ stops
 
   if (count === 0) {
     elements.itineraryStopsList.innerHTML = '';
     elements.itineraryStopsList.appendChild(elements.emptyItineraryState);
     elements.metricDistance.innerText = '0.00 km';
     elements.metricDuration.innerText = '0h 0m';
+    elements.metricBudget.innerText = 'Free Admission';
     elements.timeWarningBanner.classList.add('hidden');
     return;
   }
@@ -379,7 +438,7 @@ async function updateItineraryUI() {
           <div class="stop-info">
             <span class="stop-index">#${idx + 1}</span>
             <span class="stop-title" title="${escapeHtml(item.Name)}">${escapeHtml(item.Name)}</span>
-            <span class="stop-sub">Dwell: ${item.EstVisitDurationMins}m | Ref Dist: ${item.DistanceFromCenter}km</span>
+            <span class="stop-sub">Dwell: ${item.EstVisitDurationMins}m | Ref Dist: ${item.DistanceFromCenter}km | Fee: ${item.EntranceFee || 'Free'}</span>
           </div>
           <div class="stop-controls">
             <button class="stop-btn" onclick="moveItineraryItem(${idx}, -1)" ${idx === 0 ? 'disabled' : ''} title="Move Up">▲</button>
@@ -391,6 +450,7 @@ async function updateItineraryUI() {
 
       elements.metricDistance.innerText = `${result.metrics.totalDistanceKm} km`;
       elements.metricDuration.innerText = result.metrics.totalDurationFormatted;
+      elements.metricBudget.innerText = result.metrics.totalBudgetFormatted;
 
       if (result.metrics.isOverScheduled) {
         elements.timeWarningBanner.classList.remove('hidden');
@@ -404,7 +464,117 @@ async function updateItineraryUI() {
   }
 }
 
-// IN-APP LEAFLET MAP & PHOTO SWITCHING LOGIC
+// ROUTE OPTIMIZATION HANDLER (IDEA 2)
+async function triggerRouteOptimization() {
+  if (state.itinerary.length <= 2) return;
+
+  try {
+    elements.btnOptimizeRoute.innerText = '⚡ Optimizing...';
+    elements.btnOptimizeRoute.disabled = true;
+
+    const res = await fetch('/api/itinerary/optimize', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ placeIds: state.itinerary })
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      state.itinerary = data.optimizedPlaceIds;
+      saveItineraryState();
+      await updateItineraryUI();
+
+      if (data.distanceSavedKm > 0) {
+        alert(`Route successfully optimized! Reduced road distance by ${data.distanceSavedKm} km (from ${data.initialDistanceKm} km to ${data.optimizedDistanceKm} km).`);
+      } else {
+        alert('Your current sequence is already travel-optimized!');
+      }
+    }
+  } catch (err) {
+    alert('Could not optimize route order.');
+  } finally {
+    elements.btnOptimizeRoute.innerText = '⚡ Optimize Sequence';
+    elements.btnOptimizeRoute.disabled = state.itinerary.length <= 2;
+  }
+}
+
+// FULL ROUTE MAP RENDERING (IDEA 1)
+function openRouteMapModal() {
+  if (state.itinerary.length === 0) return;
+
+  elements.routeMapMetricsBadge.innerText = `${state.currentMetrics.totalStops} stops | ${state.currentMetrics.totalDistanceKm} km road travel`;
+  elements.routeMapModal.classList.remove('hidden');
+
+  setTimeout(() => renderConnectedRouteMap(), 150);
+}
+
+function renderConnectedRouteMap() {
+  const container = elements.routeMapCanvas;
+  if (!container) return;
+
+  // Ordered places from current itinerary
+  const orderedPlaces = state.itinerary.map(id => state.allPlaces.find(p => p.PlaceID === id)).filter(Boolean);
+  if (orderedPlaces.length === 0) return;
+
+  if (!state.leafletRouteMap) {
+    state.leafletRouteMap = L.map(container);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(state.leafletRouteMap);
+
+    state.routeMarkersGroup = L.featureGroup().addTo(state.leafletRouteMap);
+  } else {
+    state.routeMarkersGroup.clearLayers();
+    if (state.routePolylineLayer) {
+      state.leafletRouteMap.removeLayer(state.routePolylineLayer);
+    }
+  }
+
+  const latLngs = [];
+
+  orderedPlaces.forEach((p, idx) => {
+    const lat = parseFloat(p.Latitude);
+    const lon = parseFloat(p.Longitude);
+
+    if (!isNaN(lat) && !isNaN(lon)) {
+      const pt = [lat, lon];
+      latLngs.push(pt);
+
+      // Numbered badge marker icon
+      const customIcon = L.divIcon({
+        className: 'route-map-marker',
+        html: `<span>${idx + 1}</span>`,
+        iconSize: [28, 28],
+        iconAnchor: [14, 14]
+      });
+
+      const marker = L.marker(pt, { icon: customIcon }).bindPopup(`
+        <strong>#${idx + 1}: ${escapeHtml(p.Name)}</strong><br>
+        <small>${escapeHtml(p.CategoryName)} • ${p.DistanceFromCenter} km</small><br>
+        <em>Expected Dwell: ${p.EstVisitDurationMins}m</em>
+      `);
+      state.routeMarkersGroup.addLayer(marker);
+    }
+  });
+
+  // Draw connected polyline if at least 2 coordinate points exist
+  if (latLngs.length >= 2) {
+    state.routePolylineLayer = L.polyline(latLngs, {
+      color: '#0b6bcb',
+      weight: 4,
+      dashArray: '8, 8',
+      opacity: 0.85
+    }).addTo(state.leafletRouteMap);
+  }
+
+  state.leafletRouteMap.invalidateSize();
+
+  if (latLngs.length > 0) {
+    state.leafletRouteMap.fitBounds(state.routeMarkersGroup.getBounds(), { padding: [50, 50] });
+  }
+}
+
+// PLACE DETAIL MODAL (LEAFLET MAP & PHOTOS)
 function showModalMedia(type) {
   if (type === 'photos') {
     elements.btnShowPhotos.classList.add('active');
@@ -417,7 +587,6 @@ function showModalMedia(type) {
     elements.modalMapContainer.classList.remove('hidden');
     elements.modalPhotoContainer.classList.add('hidden');
 
-    // Recompute Leaflet dimensions upon revealing container
     if (state.leafletModalMap) {
       setTimeout(() => state.leafletModalMap.invalidateSize(), 150);
     }
@@ -475,10 +644,8 @@ async function openPlaceDetails(placeId) {
     state.currentCarouselIndex = 0;
     updateCarouselView();
 
-    // Default to photos view
     showModalMedia('photos');
 
-    // If coordinates exist, enable in-app Leaflet map; otherwise hide the map tab
     const lat = parseFloat(p.Latitude);
     const lon = parseFloat(p.Longitude);
     const hasCoordinates = !isNaN(lat) && !isNaN(lon) && (lat !== 0 || lon !== 0);
@@ -1199,6 +1366,7 @@ function generateExportSummary() {
   text += `• Total Stops: ${m.totalStops}\n`;
   text += `• Cumulative Road Distance: ${m.totalDistanceKm} km\n`;
   text += `• Total Day Duration: ${m.totalDurationFormatted} (${m.totalDurationMinutes} mins)\n`;
+  text += `• Estimated Admission Budget: ${m.totalBudgetFormatted}\n`;
   text += `• Viability Status: ${m.isOverScheduled ? 'OVER-SCHEDULED (> 8.0 hrs)' : 'VIABLE SINGLE-DAY PLAN'}\n\n`;
 
   if (m.warningBanner) {
@@ -1212,6 +1380,7 @@ function generateExportSummary() {
     text += `${idx + 1}. ${p.Name} (${p.CategoryName})\n`;
     text += `   - Distance from Kiniyama: ${p.DistanceFromCenter} km\n`;
     text += `   - Operating Hours: ${p.OpeningHours}\n`;
+    text += `   - Entrance Fee: ${p.EntranceFee || 'Free Admission'}\n`;
     text += `   - Expected Dwell Time: ${p.EstVisitDurationMins} minutes\n`;
     text += `   - Map Link: ${p.GoogleMapsUrl}\n`;
     if (p.TravelTips) {
@@ -1295,7 +1464,7 @@ function printItineraryDocument() {
         <div><strong>Total Stops:</strong><br>${m.totalStops} Locations</div>
         <div><strong>Road Distance:</strong><br>${m.totalDistanceKm} km</div>
         <div><strong>Est. Duration:</strong><br>${m.totalDurationFormatted}</div>
-        <div><strong>Status:</strong><br><span style="color: ${m.isOverScheduled ? '#dc2626' : '#16a34a'};">${m.isOverScheduled ? 'Over-Scheduled' : 'Viable Plan'}</span></div>
+        <div><strong>Admission Budget:</strong><br>${m.totalBudgetFormatted}</div>
       </div>
       <table>
         <thead>
@@ -1329,6 +1498,10 @@ function setupEventListeners() {
   elements.tabViewExplore.addEventListener('click', () => switchView('explore'));
   elements.tabViewSavedTrips.addEventListener('click', () => switchView('savedTrips'));
   elements.tabViewAdmin.addEventListener('click', () => switchView('adminConsole'));
+
+  // Quick Action Buttons (Ideas 1 & 2)
+  elements.btnViewRouteMap.addEventListener('click', openRouteMapModal);
+  elements.btnOptimizeRoute.addEventListener('click', triggerRouteOptimization);
 
   // In-App Media Switcher (Photos vs. Map)
   elements.btnShowPhotos.addEventListener('click', () => showModalMedia('photos'));
@@ -1401,8 +1574,11 @@ function setupEventListeners() {
     nextCarouselPhoto();
   });
 
+  // Modal Closers
   elements.closeDetailModalBtn.addEventListener('click', () => elements.placeDetailModal.classList.add('hidden'));
   elements.modalCloseActionBtn.addEventListener('click', () => elements.placeDetailModal.classList.add('hidden'));
+  elements.closeRouteMapModalBtn.addEventListener('click', () => elements.routeMapModal.classList.add('hidden'));
+  elements.closeRouteMapFooterBtn.addEventListener('click', () => elements.routeMapModal.classList.add('hidden'));
   elements.closeExportModalBtn.addEventListener('click', () => elements.exportModal.classList.add('hidden'));
   elements.closeAuthModalBtn.addEventListener('click', () => {
     elements.authModal.classList.add('hidden');

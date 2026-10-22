@@ -1,6 +1,7 @@
 /**
  * RouteCraft: An Interactive Web Application for Regional Day-Trip Planning
- */
+ * Main Server & RESTful API Routing Engine
+*/
 
 const express = require('express');
 const cors = require('cors');
@@ -36,8 +37,9 @@ app.get('/api/places', placeController.getAllPlaces);
 app.get('/api/places/:id', placeController.getPlaceById);
 app.get('/api/taxonomies', placeController.getTaxonomies);
 
-// Itinerary Engine & Trip Persistence
+// Itinerary Engine, Route Optimization & Persistence (Ideas 1, 2, 3)
 app.post('/api/itinerary/calculate', itineraryController.calculateItinerary);
+app.post('/api/itinerary/optimize', itineraryController.optimizeItinerary);
 app.post('/api/itinerary/save', itineraryController.saveItinerary);
 app.get('/api/itinerary/user/:userId', itineraryController.getUserItineraries);
 app.delete('/api/itinerary/:id', itineraryController.deleteItinerary);
@@ -47,7 +49,7 @@ app.post('/api/auth/register', authController.registerUser);
 app.post('/api/auth/login', authController.loginUser);
 
 // -----------------------------------------------------------------------------
-// ADMINISTRATIVE API ROUTES (Places, Admins, and User Management)
+// ADMINISTRATIVE API ROUTES
 // -----------------------------------------------------------------------------
 app.post('/api/admin/login', adminController.adminLogin);
 app.get('/api/admin/places', adminController.adminListPlaces);
@@ -61,7 +63,7 @@ app.get('/api/admin/list', adminController.listAdmins);
 app.post('/api/admin/create-admin', adminController.createAdmin);
 app.delete('/api/admin/admins/:id', adminController.deleteAdmin);
 
-// User Management (New Functionality)
+// User Management
 app.get('/api/admin/users', adminController.listUsers);
 app.put('/api/admin/users/:id/change-password', adminController.changeUserPassword);
 app.delete('/api/admin/users/:id', adminController.deleteUser);
