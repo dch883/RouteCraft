@@ -11,6 +11,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Leaflet.js: Free & Open-Source In-App Map (Zero API Keys) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 </head>
 <body>
 
@@ -179,6 +182,7 @@
         </div>
       </div>
 
+      <!-- 3 Subtabs -->
       <div class="admin-subtabs">
         <button class="subtab-btn active" id="adminTabPlaces">Manage Destinations</button>
         <button class="subtab-btn" id="adminTabUsers">Manage Administrators</button>
@@ -202,24 +206,32 @@
               <select id="admPlaceCategory" required></select>
             </div>
 
+            <!-- Row 1: Distance & Visit Duration (Swapped) -->
             <div class="form-group">
               <label>Distance From Kiniyama (&le; 25.0 km) *</label>
               <input type="number" step="0.01" max="25.00" min="0" id="admPlaceDistance" required placeholder="e.g. 8.50">
             </div>
 
             <div class="form-group">
-              <label>Latitude *</label>
-              <input type="number" step="0.0000001" id="admPlaceLat" required placeholder="e.g. 7.5954000">
+              <label>Visit Duration (minutes) *</label>
+              <input type="number" id="admPlaceDuration" value="60" required placeholder="60">
+            </div>
+
+            <!-- Row 2: Latitude & Longitude (Optional for In-App Map) -->
+            <div class="form-group">
+              <label>Latitude <span class="text-muted">(Optional - Enables In-App Map)</span></label>
+              <input type="number" step="0.0000001" id="admPlaceLat" placeholder="e.g. 7.5954000">
             </div>
 
             <div class="form-group">
-              <label>Longitude *</label>
-              <input type="number" step="0.0000001" id="admPlaceLon" required placeholder="e.g. 80.0987000">
+              <label>Longitude <span class="text-muted">(Optional - Enables In-App Map)</span></label>
+              <input type="number" step="0.0000001" id="admPlaceLon" placeholder="e.g. 80.0987000">
             </div>
 
-            <div class="form-group">
-              <label>Visit Duration (minutes)</label>
-              <input type="number" id="admPlaceDuration" value="60" required>
+            <!-- Row 3: Google Maps Link Input (Positioned exactly as indicated) -->
+            <div class="form-group full-width">
+              <label>Google Maps Link (URL) *</label>
+              <input type="text" id="admPlaceMapsUrl" required placeholder="https://maps.app.goo.gl/... or https://maps.google.com/?q=...">
             </div>
 
             <div class="form-group">
@@ -243,8 +255,8 @@
             </div>
 
             <div class="form-group full-width">
-              <label>Travel Tips & Visitor Etiquette (Rubric Requirement)</label>
-              <textarea id="admPlaceTravelTips" rows="2" placeholder="e.g. Modest temple attire required; best visited early morning for calm waters..."></textarea>
+              <label>Travel Tips & Visitor Etiquette</label>
+              <textarea id="admPlaceTravelTips" rows="2" placeholder="e.g. Modest attire required; best visited in morning..."></textarea>
             </div>
 
             <div class="form-actions full-width">
@@ -345,7 +357,7 @@
     </section>
   </div>
 
-  <!-- MODAL 1: PLACE DETAIL VIEW (SHOWS DESCRIPTION, HOURS, TRAVEL TIPS, DISTANCE) -->
+  <!-- MODAL 1: PLACE DETAIL VIEW (WITH IN-APP MAP & PHOTO SWITCHER) -->
   <div class="modal-overlay hidden" id="placeDetailModal">
     <div class="modal-window modal-fullscreen-view">
       <div class="modal-header">
@@ -360,17 +372,29 @@
       </div>
 
       <div class="modal-body-split">
-        <!-- Left: Carousel -->
+        <!-- Left: Photo Carousel / In-App Map Toggle -->
         <div class="detail-left-col">
-          <div class="detail-photo-frame">
+          <!-- View switcher between Photos and In-App Map -->
+          <div class="media-toggle-bar">
+            <button class="media-tab active" id="btnShowPhotos">📷 Photos</button>
+            <button class="media-tab" id="btnShowMap">🗺️ In-App Map</button>
+          </div>
+
+          <!-- Container 1: Photo Carousel Frame -->
+          <div class="detail-photo-frame" id="modalPhotoContainer">
             <img id="modalPlaceImage" src="" alt="Place Photo">
             <button class="carousel-btn carousel-prev" id="carouselPrevBtn" title="Previous photo" aria-label="Previous photo">&#10094;</button>
             <button class="carousel-btn carousel-next" id="carouselNextBtn" title="Next photo" aria-label="Next photo">&#10095;</button>
             <div class="carousel-counter" id="carouselCounterBadge">1 / 1</div>
           </div>
 
+          <!-- Container 2: Embedded Leaflet In-App Map Frame -->
+          <div class="detail-photo-frame hidden" id="modalMapContainer">
+            <div id="modalInteractiveMap" style="width: 100%; height: 100%;"></div>
+          </div>
+
           <a id="modalMapsLink" href="#" target="_blank" rel="noopener noreferrer" class="btn btn-outline btn-block mt-2">
-            📍 Open Location in Google Maps
+            📍 Open External Google Maps (Turn-by-Turn)
           </a>
         </div>
 
@@ -381,7 +405,6 @@
             <p id="modalPlaceDescription" class="modal-description"></p>
           </div>
 
-          <!-- DEDICATED TRAVEL TIPS CALLOUT BOX (EXPLICIT RUBRIC REQUIREMENT) -->
           <div class="travel-tips-box" id="modalTravelTipsBox">
             <span class="tips-icon">💡</span>
             <div>
@@ -471,7 +494,6 @@
         <button class="auth-tab-btn" id="tabAdminLoginBtn">Admin Portal</button>
       </div>
 
-      <!-- Tab 1: User Login -->
       <div class="auth-body-container" id="tabUserLoginContent">
         <form id="userLoginForm" class="clean-auth-form" autocomplete="off">
           <p class="form-instruction text-center">Log in to save day trips and access trip history.</p>
@@ -488,7 +510,6 @@
         </form>
       </div>
 
-      <!-- Tab 2: User Registration -->
       <div class="auth-body-container hidden" id="tabUserRegisterContent">
         <form id="userRegisterForm" class="clean-auth-form" autocomplete="off">
           <p class="form-instruction text-center">Create your traveler profile for planning trips around Kiniyama.</p>
@@ -519,7 +540,6 @@
         </form>
       </div>
 
-      <!-- Tab 3: Admin Login -->
       <div class="auth-body-container hidden" id="tabAdminLoginContent">
         <form id="adminLoginForm" class="clean-auth-form" autocomplete="off">
           <p class="form-instruction text-center">System Administrators only. Enter your credentials.</p>

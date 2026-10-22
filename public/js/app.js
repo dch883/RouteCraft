@@ -1,8 +1,6 @@
 /**
  * RouteCraft: Client-Side Single Page Application (SPA) Engine
- * Author: H.M.D.C. Herath (E2410120) - University of Moratuwa
- * References: SRS v1.1 & Sequence / Activity Diagrams
- */
+  */
 
 const state = {
   currentView: 'explore', // 'explore' | 'savedTrips' | 'adminConsole'
@@ -23,7 +21,10 @@ const state = {
   userSavedTrips: [],
   // Multi-Photo Carousel State
   currentCarouselImages: [],
-  currentCarouselIndex: 0
+  currentCarouselIndex: 0,
+  // Leaflet In-App Map Instance
+  leafletModalMap: null,
+  leafletModalMarker: null
 };
 
 const elements = {
@@ -59,10 +60,15 @@ const elements = {
   clearItineraryBtn: document.getElementById('clearItineraryBtn'),
   saveTripToAccountBtn: document.getElementById('saveTripToAccountBtn'),
   exportItineraryBtn: document.getElementById('exportItineraryBtn'),
-  // Place Detail Modal & Carousel
+  // Place Detail Modal & Media (Photo Carousel / Leaflet Map)
   placeDetailModal: document.getElementById('placeDetailModal'),
   closeDetailModalBtn: document.getElementById('closeDetailModalBtn'),
   modalCloseActionBtn: document.getElementById('modalCloseActionBtn'),
+  btnShowPhotos: document.getElementById('btnShowPhotos'),
+  btnShowMap: document.getElementById('btnShowMap'),
+  modalPhotoContainer: document.getElementById('modalPhotoContainer'),
+  modalMapContainer: document.getElementById('modalMapContainer'),
+  modalInteractiveMap: document.getElementById('modalInteractiveMap'),
   modalPlaceImage: document.getElementById('modalPlaceImage'),
   carouselPrevBtn: document.getElementById('carouselPrevBtn'),
   carouselNextBtn: document.getElementById('carouselNextBtn'),
@@ -71,7 +77,7 @@ const elements = {
   modalCategoryBadge: document.getElementById('modalCategoryBadge'),
   modalDistanceBadge: document.getElementById('modalDistanceBadge'),
   modalPlaceDescription: document.getElementById('modalPlaceDescription'),
-  modalTravelTips: document.getElementById('modalTravelTips'), // New Rubric Element
+  modalTravelTips: document.getElementById('modalTravelTips'),
   modalHours: document.getElementById('modalHours'),
   modalEntrance: document.getElementById('modalEntrance'),
   modalParking: document.getElementById('modalParking'),
@@ -126,6 +132,7 @@ const elements = {
   adminEditPlaceId: document.getElementById('adminEditPlaceId'),
   adminCancelPlaceBtn: document.getElementById('adminCancelPlaceBtn'),
   admPlaceCategory: document.getElementById('admPlaceCategory'),
+  admPlaceMapsUrl: document.getElementById('admPlaceMapsUrl'),
   adminConsolePlacesBody: document.getElementById('adminConsolePlacesBody'),
   adminCreateAdminForm: document.getElementById('adminCreateAdminForm'),
   adminConsoleUsersBody: document.getElementById('adminConsoleUsersBody'),
@@ -397,7 +404,47 @@ async function updateItineraryUI() {
   }
 }
 
-// PLACE DETAIL MODAL & DYNAMIC MULTI-PHOTO CAROUSEL (1 / N) + TRAVEL TIPS
+// IN-APP LEAFLET MAP & PHOTO SWITCHING LOGIC
+function showModalMedia(type) {
+  if (type === 'photos') {
+    elements.btnShowPhotos.classList.add('active');
+    elements.btnShowMap.classList.remove('active');
+    elements.modalPhotoContainer.classList.remove('hidden');
+    elements.modalMapContainer.classList.add('hidden');
+  } else if (type === 'map') {
+    elements.btnShowMap.classList.add('active');
+    elements.btnShowPhotos.classList.remove('active');
+    elements.modalMapContainer.classList.remove('hidden');
+    elements.modalPhotoContainer.classList.add('hidden');
+
+    // Recompute Leaflet dimensions upon revealing container
+    if (state.leafletModalMap) {
+      setTimeout(() => state.leafletModalMap.invalidateSize(), 150);
+    }
+  }
+}
+
+function initializeOrUpdateLeafletMap(lat, lon, placeName) {
+  const mapElement = elements.modalInteractiveMap;
+  if (!mapElement) return;
+
+  if (!state.leafletModalMap) {
+    state.leafletModalMap = L.map(mapElement).setView([lat, lon], 14);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(state.leafletModalMap);
+
+    state.leafletModalMarker = L.marker([lat, lon]).addTo(state.leafletModalMap)
+      .bindPopup(`<strong>${escapeHtml(placeName)}</strong>`).openPopup();
+  } else {
+    state.leafletModalMap.setView([lat, lon], 14);
+    if (state.leafletModalMarker) {
+      state.leafletModalMarker.setLatLng([lat, lon])
+        .setPopupContent(`<strong>${escapeHtml(placeName)}</strong>`).openPopup();
+    }
+  }
+}
+
 function updateCarouselView() {
   const images = state.currentCarouselImages;
   const idx = state.currentCarouselIndex;
@@ -428,14 +475,26 @@ async function openPlaceDetails(placeId) {
     state.currentCarouselIndex = 0;
     updateCarouselView();
 
+    // Default to photos view
+    showModalMedia('photos');
+
+    // If coordinates exist, enable in-app Leaflet map; otherwise hide the map tab
+    const lat = parseFloat(p.Latitude);
+    const lon = parseFloat(p.Longitude);
+    const hasCoordinates = !isNaN(lat) && !isNaN(lon) && (lat !== 0 || lon !== 0);
+
+    if (hasCoordinates) {
+      elements.btnShowMap.style.display = 'block';
+      initializeOrUpdateLeafletMap(lat, lon, p.Name);
+    } else {
+      elements.btnShowMap.style.display = 'none';
+    }
+
     elements.modalPlaceTitle.innerText = p.Name;
     elements.modalCategoryBadge.innerText = p.CategoryName;
     elements.modalDistanceBadge.innerText = `${p.DistanceFromCenter} km from Kiniyama`;
     elements.modalPlaceDescription.innerText = p.Description;
-
-    // RENDER TRAVEL TIPS (RUBRIC REQUIREMENT)
     elements.modalTravelTips.innerText = p.TravelTips || 'Standard travel guidelines apply; wear comfortable footwear and observe local customs.';
-
     elements.modalHours.innerText = p.OpeningHours || '08:00 AM - 05:00 PM';
     elements.modalEntrance.innerText = p.EntranceFee || 'Free Admission';
     elements.modalParking.innerText = p.ParkingAvailable ? 'On-site Parking Available' : 'Street/Limited Parking';
@@ -446,7 +505,7 @@ async function openPlaceDetails(placeId) {
       `<span class="pill-sm">${escapeHtml(t.TagName)} (${escapeHtml(t.TagType)})</span>`
     ).join('') || '<span class="text-muted" style="font-size: 0.8rem;">No tags assigned.</span>';
 
-    elements.modalMapsLink.href = p.GoogleMapsUrl || `https://maps.google.com/?q=${p.Latitude},${p.Longitude}`;
+    elements.modalMapsLink.href = p.GoogleMapsUrl || `https://maps.google.com/?q=${lat},${lon}`;
 
     const isAdded = state.itinerary.includes(p.PlaceID);
     elements.modalAddToTripBtn.innerText = isAdded ? 'Remove from Itinerary' : '+ Add to Itinerary';
@@ -787,7 +846,7 @@ elements.saveTripForm.addEventListener('submit', async (e) => {
   }
 });
 
-// ADMIN CONSOLE: PLACES, ADMINS & USERS
+// ADMIN CONSOLE
 elements.adminTabPlaces.addEventListener('click', () => {
   elements.adminTabPlaces.classList.add('active');
   elements.adminTabUsers.classList.remove('active');
@@ -821,6 +880,7 @@ elements.adminConsoleNewPlaceBtn.addEventListener('click', () => {
   elements.adminSavePlaceForm.reset();
   elements.adminEditPlaceId.value = '';
   document.getElementById('admPlaceTravelTips').value = '';
+  elements.admPlaceMapsUrl.value = '';
   elements.adminPlaceFormHeading.innerText = 'Add New Destination (Max 25 km Scope)';
   elements.adminAddPlaceCard.classList.toggle('hidden');
   elements.adminAddPlaceCard.scrollIntoView({ behavior: 'smooth' });
@@ -872,9 +932,10 @@ function openAdminEditPlace(placeId) {
   document.getElementById('admPlaceName').value = p.Name;
   document.getElementById('admPlaceCategory').value = p.CategoryID;
   document.getElementById('admPlaceDistance').value = p.DistanceFromCenter;
-  document.getElementById('admPlaceLat').value = p.Latitude;
-  document.getElementById('admPlaceLon').value = p.Longitude;
   document.getElementById('admPlaceDuration').value = p.EstVisitDurationMins;
+  document.getElementById('admPlaceLat').value = p.Latitude || '';
+  document.getElementById('admPlaceLon').value = p.Longitude || '';
+  elements.admPlaceMapsUrl.value = p.GoogleMapsUrl || '';
   document.getElementById('admPlaceHours').value = p.OpeningHours || '08:00 AM - 05:00 PM';
   document.getElementById('admPlaceFee').value = p.EntranceFee || 'Free Admission';
   document.getElementById('admPlaceImage').value = p.ImageUrl || '';
@@ -923,9 +984,10 @@ elements.adminSavePlaceForm.addEventListener('submit', async (e) => {
     name: document.getElementById('admPlaceName').value,
     categoryId: document.getElementById('admPlaceCategory').value,
     distanceFromCenter: document.getElementById('admPlaceDistance').value,
+    estVisitDurationMins: document.getElementById('admPlaceDuration').value,
     latitude: document.getElementById('admPlaceLat').value,
     longitude: document.getElementById('admPlaceLon').value,
-    estVisitDurationMins: document.getElementById('admPlaceDuration').value,
+    googleMapsUrl: elements.admPlaceMapsUrl.value.trim(),
     openingHours: document.getElementById('admPlaceHours').value,
     entranceFee: document.getElementById('admPlaceFee').value,
     imageUrl: document.getElementById('admPlaceImage').value,
@@ -959,7 +1021,7 @@ elements.adminSavePlaceForm.addEventListener('submit', async (e) => {
   }
 });
 
-// Admin Accounts Table (With Delete Support)
+// Admin Accounts Table
 async function loadAdminUsers() {
   try {
     const res = await fetch('/api/admin/list');
@@ -1033,7 +1095,7 @@ elements.adminCreateAdminForm.addEventListener('submit', async (e) => {
   }
 });
 
-// Registered Users Table Management (View, Change Password, Delete User)
+// Registered Users Table Management
 async function loadRegisteredUsers() {
   try {
     const res = await fetch('/api/admin/users');
@@ -1267,6 +1329,10 @@ function setupEventListeners() {
   elements.tabViewExplore.addEventListener('click', () => switchView('explore'));
   elements.tabViewSavedTrips.addEventListener('click', () => switchView('savedTrips'));
   elements.tabViewAdmin.addEventListener('click', () => switchView('adminConsole'));
+
+  // In-App Media Switcher (Photos vs. Map)
+  elements.btnShowPhotos.addEventListener('click', () => showModalMedia('photos'));
+  elements.btnShowMap.addEventListener('click', () => showModalMedia('map'));
 
   let debounceTimer;
   elements.searchInput.addEventListener('input', (e) => {

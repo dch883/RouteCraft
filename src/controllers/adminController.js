@@ -1,11 +1,13 @@
 /**
  * RouteCraft - Comprehensive Administrative Management Controller
- * Author: H.M.D.C. Herath (E2410120) - University of Moratuwa
- * References: SRS Section 4.4 & Security Attributes REQ-NF-07, REQ-NF-08
  */
 
 const bcrypt = require('bcryptjs');
 const db = require('../config/db');
+
+// Kiniyama default center coordinates
+const KINIYAMA_DEFAULT_LAT = 7.5942000;
+const KINIYAMA_DEFAULT_LON = 80.0917000;
 
 /**
  * POST /api/admin/login
@@ -97,7 +99,30 @@ async function adminListPlaces(req, res) {
 }
 
 /**
- * POST /api/admin/places
+ * Helper to parse coordinates from Google Maps URLs if omitted
+ */
+function resolveCoordinates(latInput, lonInput, mapsUrl) {
+  let lat = parseFloat(latInput);
+  let lon = parseFloat(lonInput);
+
+  if ((isNaN(lat) || isNaN(lon)) && mapsUrl) {
+    // Attempt match patterns: @lat,lon or q=lat,lon
+    const match = mapsUrl.match(/[@?&]q?=?(-?\d+\.\d+),(-?\d+\.\d+)/);
+    if (match) {
+      lat = parseFloat(match[1]);
+      lon = parseFloat(match[2]);
+    }
+  }
+
+  // Fallback to Kiniyama center
+  if (isNaN(lat)) lat = KINIYAMA_DEFAULT_LAT;
+  if (isNaN(lon)) lon = KINIYAMA_DEFAULT_LON;
+
+  return { lat, lon };
+}
+
+/**
+ * POST /api/admin/places (Latitude & Longitude Optional)
  */
 async function createPlace(req, res) {
   try {
@@ -107,8 +132,8 @@ async function createPlace(req, res) {
       openingHours, entranceFee, parkingAvailable, contactInfo, googleMapsUrl, imageUrl
     } = req.body;
 
-    if (!name || !categoryId || latitude === undefined || longitude === undefined) {
-      return res.status(400).json({ success: false, message: 'Name, Category, Latitude and Longitude are mandatory.' });
+    if (!name || !categoryId) {
+      return res.status(400).json({ success: false, message: 'Place Name and Category are mandatory.' });
     }
 
     const dist = parseFloat(distanceFromCenter) || 0;
@@ -118,6 +143,9 @@ async function createPlace(req, res) {
         message: 'Scope Violation: Only destinations within 25 km of Kiniyama can be registered (Rule-01).'
       });
     }
+
+    const mapsUrl = (googleMapsUrl && googleMapsUrl.trim()) ? googleMapsUrl.trim() : `https://maps.google.com/?q=${KINIYAMA_DEFAULT_LAT},${KINIYAMA_DEFAULT_LON}`;
+    const { lat, lon } = resolveCoordinates(latitude, longitude, mapsUrl);
 
     const [result] = await db.query(
       `INSERT INTO PLACE 
@@ -129,14 +157,14 @@ async function createPlace(req, res) {
         description || '',
         travelTips || 'Standard travel etiquette applies; please follow local customs.',
         dist,
-        latitude,
-        longitude,
+        lat,
+        lon,
         estVisitDurationMins || 60,
         openingHours || '08:00 AM - 05:00 PM',
         entranceFee || 'Free Admission',
         parkingAvailable ? 1 : 0,
         contactInfo || 'Not Available',
-        googleMapsUrl || `https://maps.google.com/?q=${latitude},${longitude}`,
+        mapsUrl,
         imageUrl || 'assets/places/kadigawa.jpg'
       ]
     );
@@ -153,7 +181,7 @@ async function createPlace(req, res) {
 }
 
 /**
- * PUT /api/admin/places/:id
+ * PUT /api/admin/places/:id (Latitude & Longitude Optional)
  */
 async function updatePlace(req, res) {
   try {
@@ -161,13 +189,16 @@ async function updatePlace(req, res) {
     const {
       name, categoryId, description, travelTips, distanceFromCenter,
       latitude, longitude, estVisitDurationMins,
-      openingHours, entranceFee, parkingAvailable, contactInfo, imageUrl
+      openingHours, entranceFee, parkingAvailable, contactInfo, googleMapsUrl, imageUrl
     } = req.body;
 
     const dist = parseFloat(distanceFromCenter) || 0;
     if (dist > 25.0) {
       return res.status(400).json({ success: false, message: 'Scope Violation: Maximum distance is 25.0 km.' });
     }
+
+    const mapsUrl = (googleMapsUrl && googleMapsUrl.trim()) ? googleMapsUrl.trim() : `https://maps.google.com/?q=${KINIYAMA_DEFAULT_LAT},${KINIYAMA_DEFAULT_LON}`;
+    const { lat, lon } = resolveCoordinates(latitude, longitude, mapsUrl);
 
     const [result] = await db.query(
       `UPDATE PLACE SET 
@@ -183,15 +214,15 @@ async function updatePlace(req, res) {
         description,
         travelTips || 'Standard travel etiquette applies; please follow local customs.',
         dist,
-        latitude,
-        longitude,
+        lat,
+        lon,
         estVisitDurationMins || 60,
         openingHours || '08:00 AM - 05:00 PM',
         entranceFee || 'Free Admission',
         parkingAvailable ? 1 : 0,
         contactInfo || 'Not Available',
         imageUrl || '',
-        `https://maps.google.com/?q=${latitude},${longitude}`,
+        mapsUrl,
         id
       ]
     );

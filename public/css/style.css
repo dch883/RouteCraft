@@ -889,7 +889,7 @@ body {
 .status-active { background: #dcfce7; color: #15803d; }
 .status-deleted { background: #fee2e2; color: #b91c1c; }
 
-/* 7. MODALS, CAROUSEL & TRAVEL TIPS HIGHLIGHT BOX */
+/* 7. MODALS, IN-APP MAP & MEDIA TOGGLES */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -975,6 +975,37 @@ body {
   flex-direction: column;
 }
 
+/* Photo vs In-App Map Switcher */
+.media-toggle-bar {
+  display: flex;
+  gap: 0.4rem;
+  margin-bottom: 0.65rem;
+}
+
+.media-tab {
+  flex: 1;
+  padding: 0.4rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border: 1px solid var(--border-color);
+  background: #ffffff;
+  color: var(--text-muted);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.media-tab:hover {
+  background: #f1f5f9;
+  color: var(--text-main);
+}
+
+.media-tab.active {
+  background: var(--primary-color);
+  color: #ffffff;
+  border-color: var(--primary-color);
+}
+
 .detail-photo-frame {
   position: relative;
   width: 100%;
@@ -1054,7 +1085,6 @@ body {
   color: #334155;
 }
 
-/* DEDICATED TRAVEL TIPS CALLOUT BOX (EXPLICIT RUBRIC REQUIREMENT) */
 .travel-tips-box {
   background: #f0fdf4;
   border: 1px solid #bbf7d0;
