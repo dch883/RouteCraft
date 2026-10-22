@@ -15,11 +15,11 @@
 <body>
 
   <!-- =========================================================================
-       TOP NAVIGATION BAR
+       TOP NAVIGATION BAR WITH SPA VIEW SWITCHERS
        ========================================================================= -->
   <header class="top-nav">
     <div class="nav-container">
-      <div class="brand">
+      <div class="brand" id="brandHomeBtn" style="cursor: pointer;">
         <span class="brand-icon">🧭</span>
         <div class="brand-text">
           <span class="brand-title">RouteCraft</span>
@@ -27,12 +27,18 @@
         </div>
       </div>
 
-      <div class="search-box">
-        <span class="search-icon">🔍</span>
-        <input type="text" id="searchInput" placeholder="Search attractions, heritage sites, nature...">
-      </div>
+      <!-- App View Switcher Tabs -->
+      <nav class="spa-nav-tabs">
+        <button class="nav-tab active" id="tabViewExplore">🧭 Explore & Plan</button>
+        <button class="nav-tab" id="tabViewSavedTrips">📋 My Saved Trips <span class="tab-badge" id="savedTripsCountBadge">0</span></button>
+        <button class="nav-tab admin-nav-tab hidden" id="tabViewAdmin">⚙️ Admin Console</button>
+      </nav>
 
       <div class="nav-actions">
+        <div id="userProfileBadge" class="user-badge hidden">
+          <span id="userBadgeLabel">👤 Tourist</span>
+          <button id="logoutUserBtn" class="btn btn-text btn-sm" title="Log out of account">Logout</button>
+        </div>
         <button id="authPortalBtn" class="btn btn-outline" title="Sign In or Register">
           <span class="btn-icon">👤</span> <span id="authBtnLabel">Login / Register</span>
         </button>
@@ -41,106 +47,315 @@
   </header>
 
   <!-- =========================================================================
-       SUB-NAV: CATEGORY CHIPS & TAG FILTERING BAR
+       VIEW 1: EXPLORE & ITINERARY BUILDER (DEFAULT PUBLIC VIEW)
        ========================================================================= -->
-  <section class="filter-bar">
-    <div class="filter-container">
-      <div class="chip-group" id="categoryChips">
-        <button class="filter-chip active" data-category="All">All Attractions</button>
-      </div>
-      
-      <div class="dropdown-filters">
-        <select id="vibeFilter" class="filter-select">
-          <option value="">Filter by Vibe (Atmosphere)</option>
-        </select>
+  <div id="viewExplore" class="app-view">
 
-        <select id="activityFilter" class="filter-select">
-          <option value="">Filter by Activity</option>
-        </select>
+    <!-- SUB-NAV: FILTER BAR -->
+    <section class="filter-bar">
+      <div class="filter-container">
+        <div class="search-box">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="searchInput" placeholder="Search attractions, heritage sites, nature...">
+        </div>
+
+        <div class="chip-group" id="categoryChips">
+          <button class="filter-chip active" data-category="All">All Attractions</button>
+        </div>
         
-        <button id="resetFiltersBtn" class="btn btn-text" title="Reset all filters">Reset</button>
-      </div>
-    </div>
-  </section>
-
-  <!-- =========================================================================
-       MAIN WORKSPACE (DUAL-PANEL: ITINERARY ON FAR-LEFT & DIRECTORY GRID)
-       ========================================================================= -->
-  <main class="main-workspace">
-
-    <!-- LEFT PANEL: ITINERARY PLANNER WORKSPACE -->
-    <aside class="itinerary-panel" id="itineraryPanel">
-      <div class="panel-header">
-        <div class="panel-header-title">
-          <h3>Your Single-Day Itinerary</h3>
-          <span class="counter-badge" id="itineraryCountBadge">0 stops</span>
-        </div>
-        <p class="panel-desc">Assemble up to 10 stops within the 25 km Kiniyama zone.</p>
-      </div>
-
-      <div class="alert-banner warning-banner hidden" id="timeWarningBanner">
-        <div class="alert-icon">⚠️</div>
-        <div class="alert-content">
-          <strong>Over-Scheduled Warning</strong>
-          <p id="warningBannerText">Plan exceeds realistic single-day limit (8.0 active hours).</p>
-        </div>
-      </div>
-
-      <div class="itinerary-list" id="itineraryStopsList">
-        <div class="empty-state" id="emptyItineraryState">
-          <div class="empty-icon">📍</div>
-          <p>No places added yet.</p>
-          <span>Select "+ Add to Trip" on any destination card to begin crafting your route.</span>
-        </div>
-      </div>
-
-      <div class="itinerary-metrics-box" id="metricsBox">
-        <div class="metric-row">
-          <span class="metric-label">Estimated Road Distance:</span>
-          <span class="metric-value" id="metricDistance">0.00 km</span>
-        </div>
-        <div class="metric-row">
-          <span class="metric-label">Cumulative Duration:</span>
-          <span class="metric-value" id="metricDuration">0h 0m</span>
-        </div>
-        <div class="metric-subtext">
-          <small>Includes dwell exploration time & estimated rural transit speeds (~35 km/h).</small>
-        </div>
-      </div>
-
-      <div class="panel-actions">
-        <button id="clearItineraryBtn" class="btn btn-secondary" disabled>Clear Plan</button>
-        <button id="exportItineraryBtn" class="btn btn-primary" disabled>Export Summary</button>
-      </div>
-
-      <div class="disclaimer-note">
-        <strong>Guidance Disclaimer:</strong> Distances and transit durations are Haversine-computed estimations intended strictly for day-trip guidance.
-      </div>
-    </aside>
-
-    <!-- RIGHT PANEL: DESTINATION DIRECTORY -->
-    <section class="directory-panel">
-      <div class="directory-header">
-        <div class="directory-heading">
-          <h2>Destinations within 25 km of Kiniyama</h2>
-          <span id="resultsCount" class="results-count">Loading places...</span>
-        </div>
-        <div class="sort-selector">
-          <label for="sortOrder">Sort by:</label>
-          <select id="sortOrder" class="filter-select-sm">
-            <option value="distance">Distance from Center (Nearest)</option>
-            <option value="name">Alphabetical (A - Z)</option>
+        <div class="dropdown-filters">
+          <select id="vibeFilter" class="filter-select">
+            <option value="">Filter by Vibe (Atmosphere)</option>
           </select>
+
+          <select id="activityFilter" class="filter-select">
+            <option value="">Filter by Activity</option>
+          </select>
+          
+          <button id="resetFiltersBtn" class="btn btn-text" title="Reset all filters">Reset</button>
         </div>
       </div>
-
-      <div class="places-grid" id="placesGrid"></div>
     </section>
 
-  </main>
+    <!-- DUAL-PANEL WORKSPACE -->
+    <main class="main-workspace">
+
+      <!-- LEFT PANEL: ITINERARY PLANNER -->
+      <aside class="itinerary-panel" id="itineraryPanel">
+        <div class="panel-header">
+          <div class="panel-header-title">
+            <h3>Your Single-Day Itinerary</h3>
+            <span class="counter-badge" id="itineraryCountBadge">0 stops</span>
+          </div>
+          <p class="panel-desc">Assemble up to 10 stops within the 25 km Kiniyama zone.</p>
+        </div>
+
+        <div class="alert-banner warning-banner hidden" id="timeWarningBanner">
+          <div class="alert-icon">⚠️</div>
+          <div class="alert-content">
+            <strong>Over-Scheduled Warning</strong>
+            <p id="warningBannerText">Plan exceeds realistic single-day limit (8.0 active hours).</p>
+          </div>
+        </div>
+
+        <div class="itinerary-list" id="itineraryStopsList">
+          <div class="empty-state" id="emptyItineraryState">
+            <div class="empty-icon">📍</div>
+            <p>No places added yet.</p>
+            <span>Select "+ Add to Trip" on any destination card to begin crafting your route.</span>
+          </div>
+        </div>
+
+        <div class="itinerary-metrics-box" id="metricsBox">
+          <div class="metric-row">
+            <span class="metric-label">Estimated Road Distance:</span>
+            <span class="metric-value" id="metricDistance">0.00 km</span>
+          </div>
+          <div class="metric-row">
+            <span class="metric-label">Cumulative Duration:</span>
+            <span class="metric-value" id="metricDuration">0h 0m</span>
+          </div>
+          <div class="metric-subtext">
+            <small>Includes dwell exploration time & estimated rural transit speeds (~35 km/h).</small>
+          </div>
+        </div>
+
+        <div class="panel-actions">
+          <button id="clearItineraryBtn" class="btn btn-secondary" disabled>Clear</button>
+          <button id="saveTripToAccountBtn" class="btn btn-outline" disabled title="Save to your profile">💾 Save Trip</button>
+          <button id="exportItineraryBtn" class="btn btn-primary" disabled>Export</button>
+        </div>
+
+        <div class="disclaimer-note">
+          <strong>Guidance Disclaimer:</strong> Distances and transit durations are Haversine-computed estimations intended strictly for day-trip guidance.
+        </div>
+      </aside>
+
+      <!-- RIGHT PANEL: DESTINATION DIRECTORY -->
+      <section class="directory-panel">
+        <div class="directory-header">
+          <div class="directory-heading">
+            <h2>Destinations within 25 km of Kiniyama</h2>
+            <span id="resultsCount" class="results-count">Loading places...</span>
+          </div>
+          <div class="sort-selector">
+            <label for="sortOrder">Sort by:</label>
+            <select id="sortOrder" class="filter-select-sm">
+              <option value="distance">Distance from Center (Nearest)</option>
+              <option value="name">Alphabetical (A - Z)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="places-grid" id="placesGrid"></div>
+      </section>
+
+    </main>
+  </div>
 
   <!-- =========================================================================
-       MODAL 1: PLACE DETAIL VIEW (With Multi-Photo Carousel)
+       VIEW 2: SAVED TRIPS DASHBOARD (FOR LOGGED-IN TOURISTS)
+       ========================================================================= -->
+  <div id="viewSavedTrips" class="app-view hidden">
+    <section class="view-container">
+      <div class="view-header">
+        <div>
+          <h2>My Saved Day-Trip Itineraries</h2>
+          <p class="text-muted">Review, reload, or print previously assembled trips for the Kiniyama region.</p>
+        </div>
+        <button class="btn btn-outline" onclick="switchView('explore')">← Return to Trip Planner</button>
+      </div>
+
+      <div id="savedTripsGrid" class="saved-trips-grid">
+        <div class="empty-state">
+          <div class="empty-icon">🧳</div>
+          <p>No saved trips found.</p>
+          <span>Craft a day-trip in the planner and click "💾 Save Trip" to store it in your account.</span>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- =========================================================================
+       VIEW 3: FULL-SCREEN ADMINISTRATIVE CONTROL PANEL
+       ========================================================================= -->
+  <div id="viewAdminConsole" class="app-view hidden">
+    <section class="view-container">
+      <div class="admin-topbar">
+        <div>
+          <h2>Administrative Control Center</h2>
+          <p class="text-muted">Logged in as: <strong id="adminConsoleUser">admin</strong> (Full Privileges)</p>
+        </div>
+        <div class="admin-topbar-actions">
+          <button class="btn btn-primary btn-sm" id="adminConsoleNewPlaceBtn">+ Add Destination</button>
+          <button class="btn btn-outline btn-sm" onclick="switchView('explore')">← Back to Public Planner</button>
+        </div>
+      </div>
+
+      <!-- 3 Subtabs: Destinations, Administrators, and Users -->
+      <div class="admin-subtabs">
+        <button class="subtab-btn active" id="adminTabPlaces">Manage Destinations</button>
+        <button class="subtab-btn" id="adminTabUsers">Manage Administrators</button>
+        <button class="subtab-btn" id="adminTabManageUsers">Manage Users</button>
+      </div>
+
+      <!-- Admin Section 1: Places CRUD -->
+      <div id="adminSectionPlaces">
+        <div id="adminAddPlaceCard" class="admin-card hidden">
+          <h4 id="adminPlaceFormHeading">Add New Destination (Max 25 km Scope)</h4>
+          <form id="adminSavePlaceForm" class="grid-form">
+            <input type="hidden" id="adminEditPlaceId" value="">
+
+            <div class="form-group">
+              <label>Place Name *</label>
+              <input type="text" id="admPlaceName" required placeholder="e.g. Kiniyama Lake Reserve">
+            </div>
+
+            <div class="form-group">
+              <label>Category *</label>
+              <select id="admPlaceCategory" required></select>
+            </div>
+
+            <div class="form-group">
+              <label>Distance From Kiniyama (&le; 25.0 km) *</label>
+              <input type="number" step="0.01" max="25.00" min="0" id="admPlaceDistance" required placeholder="e.g. 8.50">
+            </div>
+
+            <div class="form-group">
+              <label>Latitude *</label>
+              <input type="number" step="0.0000001" id="admPlaceLat" required placeholder="e.g. 7.5954000">
+            </div>
+
+            <div class="form-group">
+              <label>Longitude *</label>
+              <input type="number" step="0.0000001" id="admPlaceLon" required placeholder="e.g. 80.0987000">
+            </div>
+
+            <div class="form-group">
+              <label>Visit Duration (minutes)</label>
+              <input type="number" id="admPlaceDuration" value="60" required>
+            </div>
+
+            <div class="form-group">
+              <label>Opening Hours</label>
+              <input type="text" id="admPlaceHours" value="08:00 AM - 05:00 PM">
+            </div>
+
+            <div class="form-group">
+              <label>Entrance Fee</label>
+              <input type="text" id="admPlaceFee" value="Free Admission">
+            </div>
+
+            <div class="form-group full-width">
+              <label>Photo File Path (e.g. assets/places/kadigawa.jpg)</label>
+              <input type="text" id="admPlaceImage" placeholder="assets/places/my_photo.jpg">
+            </div>
+
+            <div class="form-group full-width">
+              <label>Description *</label>
+              <textarea id="admPlaceDesc" rows="3" required placeholder="Historical, cultural, or scenic description..."></textarea>
+            </div>
+
+            <div class="form-actions full-width">
+              <button type="submit" class="btn btn-primary btn-sm">Save Destination</button>
+              <button type="button" class="btn btn-secondary btn-sm" id="adminCancelPlaceBtn">Cancel</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="table-responsive">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Destination Name</th>
+                <th>Category</th>
+                <th>Distance</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="adminConsolePlacesBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Admin Section 2: Manage Administrators -->
+      <div id="adminSectionUsers" class="hidden">
+        <div class="admin-card">
+          <h4>Create New Administrator Account</h4>
+          <form id="adminCreateAdminForm" class="grid-form" autocomplete="off">
+            <div class="form-group">
+              <label>Username *</label>
+              <input type="text" id="admNewUsername" required placeholder="e.g. admin2" autocomplete="off">
+            </div>
+            <div class="form-group">
+              <label>Full Name *</label>
+              <input type="text" id="admNewFullName" required placeholder="e.g. Ruwan Perera">
+            </div>
+            <div class="form-group">
+              <label>Email Address *</label>
+              <input type="email" id="admNewEmail" required placeholder="admin2@routecraft.lk" autocomplete="off">
+            </div>
+            <div class="form-group">
+              <label>Password *</label>
+              <input type="password" id="admNewPassword" required placeholder="••••••••" autocomplete="new-password">
+            </div>
+            <div class="form-actions full-width">
+              <button type="submit" class="btn btn-primary btn-sm">+ Create Administrator</button>
+            </div>
+          </form>
+        </div>
+
+        <h4 class="mt-3">Registered Administrators</h4>
+        <div class="table-responsive">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Username</th>
+                <th>Full Name</th>
+                <th>Email</th>
+                <th>Last Login</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="adminConsoleUsersBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Admin Section 3: Manage Users (Tourist Accounts) -->
+      <div id="adminSectionManageUsers" class="hidden">
+        <div class="view-header" style="border:none; padding:0; margin-bottom:1rem;">
+          <div>
+            <h4>Registered Traveler / User Accounts</h4>
+            <p class="text-muted">View registered accounts, change passwords, or delete users and their saved trips.</p>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Full Name</th>
+                <th>Email Address</th>
+                <th>User Category</th>
+                <th>Registered Date</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="adminConsoleManageUsersBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </section>
+  </div>
+
+  <!-- =========================================================================
+       MODAL 1: PLACE DETAIL VIEW (DYNAMIC CAROUSEL: 1 / N)
        ========================================================================= -->
   <div class="modal-overlay hidden" id="placeDetailModal">
     <div class="modal-window modal-fullscreen-view">
@@ -156,16 +371,12 @@
       </div>
 
       <div class="modal-body-split">
-        <!-- Left Column: Photo Carousel with Prev/Next Controls -->
+        <!-- Left: Carousel -->
         <div class="detail-left-col">
           <div class="detail-photo-frame">
             <img id="modalPlaceImage" src="" alt="Place Photo">
-            
-            <!-- Carousel Navigation Arrows -->
             <button class="carousel-btn carousel-prev" id="carouselPrevBtn" title="Previous photo" aria-label="Previous photo">&#10094;</button>
             <button class="carousel-btn carousel-next" id="carouselNextBtn" title="Next photo" aria-label="Next photo">&#10095;</button>
-            
-            <!-- Photo Counter Badge (e.g. 1 / 3) -->
             <div class="carousel-counter" id="carouselCounterBadge">1 / 1</div>
           </div>
 
@@ -174,7 +385,7 @@
           </a>
         </div>
 
-        <!-- Right Column: Information, Attributes & Tags -->
+        <!-- Right: Details & Tags -->
         <div class="detail-right-col">
           <div class="detail-desc-box">
             <h4>About this Destination</h4>
@@ -246,60 +457,53 @@
   </div>
 
   <!-- =========================================================================
-       MODAL 2: REDESIGNED AUTH POPUP (COMPACT, CENTERED & BALANCED)
+       MODAL 2: AUTH MODAL (CLEARS ON LOGOUT / OPEN)
        ========================================================================= -->
   <div class="modal-overlay hidden" id="authModal">
     <div class="modal-window modal-auth" id="authModalContainer">
       <div class="modal-header auth-header">
         <div class="modal-title-wrap">
-          <h3 id="authModalTitle">Welcome to RouteCraft</h3>
-          <span class="admin-session-text" id="authSessionStatus">Sign In or Create Account</span>
+          <h3 id="authModalTitle">Sign In to RouteCraft</h3>
+          <span class="admin-session-text" id="authSessionStatus">Access Planner Features</span>
         </div>
         <button class="modal-close-btn" id="closeAuthModalBtn">&times;</button>
       </div>
 
-      <!-- Auth Tabs Switcher -->
       <div class="auth-tabs" id="authTabsNav">
         <button class="auth-tab-btn active" id="tabUserLoginBtn">User Login</button>
         <button class="auth-tab-btn" id="tabUserRegisterBtn">Register</button>
         <button class="auth-tab-btn" id="tabAdminLoginBtn">Admin Portal</button>
       </div>
 
-      <!-- TAB 1: User Login (Centered & Balanced) -->
-      <div class="auth-body-container auth-tab-content" id="tabUserLoginContent">
-        <form id="userLoginForm" class="clean-auth-form">
-          <p class="form-instruction text-center">Log in to your account to craft and manage your day trips.</p>
-          
+      <!-- Tab 1: User Login -->
+      <div class="auth-body-container" id="tabUserLoginContent">
+        <form id="userLoginForm" class="clean-auth-form" autocomplete="off">
+          <p class="form-instruction text-center">Log in to save day trips and access trip history.</p>
           <div class="form-group">
             <label for="userEmail">Email Address</label>
-            <input type="email" id="userEmail" required placeholder="name@example.com">
+            <input type="email" id="userEmail" required placeholder="name@example.com" autocomplete="off">
           </div>
-          
           <div class="form-group">
             <label for="userPassword">Password</label>
-            <input type="password" id="userPassword" required placeholder="••••••••">
+            <input type="password" id="userPassword" required placeholder="••••••••" autocomplete="new-password">
           </div>
-          
           <div class="form-error hidden" id="userLoginError"></div>
           <button type="submit" class="btn btn-primary btn-auth">Sign In</button>
         </form>
       </div>
 
-      <!-- TAB 2: User Register (Centered & Balanced) -->
-      <div class="auth-body-container auth-tab-content hidden" id="tabUserRegisterContent">
-        <form id="userRegisterForm" class="clean-auth-form">
+      <!-- Tab 2: User Registration -->
+      <div class="auth-body-container hidden" id="tabUserRegisterContent">
+        <form id="userRegisterForm" class="clean-auth-form" autocomplete="off">
           <p class="form-instruction text-center">Create your traveler profile for planning trips around Kiniyama.</p>
-          
           <div class="form-group">
             <label for="regFullName">Full Name *</label>
-            <input type="text" id="regFullName" required placeholder="e.g. Kasun Perera">
+            <input type="text" id="regFullName" required placeholder="e.g. Kasun Perera" autocomplete="off">
           </div>
-          
           <div class="form-group">
             <label for="regEmail">Email Address *</label>
-            <input type="email" id="regEmail" required placeholder="name@example.com">
+            <input type="email" id="regEmail" required placeholder="name@example.com" autocomplete="off">
           </div>
-          
           <div class="form-group">
             <label for="regUserType">User Category</label>
             <select id="regUserType">
@@ -309,186 +513,81 @@
               <option value="Travel Enthusiast">Travel Enthusiast</option>
             </select>
           </div>
-          
           <div class="form-group">
             <label for="regPassword">Password * (Min 6 characters)</label>
-            <input type="password" id="regPassword" required minlength="6" placeholder="••••••••">
+            <input type="password" id="regPassword" required minlength="6" placeholder="••••••••" autocomplete="new-password">
           </div>
-          
           <div class="form-error hidden" id="regError"></div>
           <div class="form-success hidden" id="regSuccess"></div>
           <button type="submit" class="btn btn-primary btn-auth">Create Account</button>
         </form>
       </div>
 
-      <!-- TAB 3: Admin Login (No Credentials Hint Shown on Screen) -->
-      <div class="auth-body-container auth-tab-content hidden" id="tabAdminLoginContent">
-        <form id="adminLoginForm" class="clean-auth-form">
-          <p class="form-instruction text-center">Authorized System Administrators only. Enter your credentials.</p>
-          
+      <!-- Tab 3: Admin Login -->
+      <div class="auth-body-container hidden" id="tabAdminLoginContent">
+        <form id="adminLoginForm" class="clean-auth-form" autocomplete="off">
+          <p class="form-instruction text-center">System Administrators only. Enter your credentials.</p>
           <div class="form-group">
             <label for="adminUsername">Admin Username</label>
-            <input type="text" id="adminUsername" required placeholder="Enter username">
+            <input type="text" id="adminUsername" required placeholder="admin" autocomplete="off">
           </div>
-          
           <div class="form-group">
             <label for="adminPassword">Admin Password</label>
-            <input type="password" id="adminPassword" required placeholder="••••••••">
+            <input type="password" id="adminPassword" required placeholder="••••••••" autocomplete="new-password">
           </div>
-          
           <div class="form-error hidden" id="adminLoginError"></div>
           <button type="submit" class="btn btn-primary btn-auth">Sign In as Administrator</button>
         </form>
-      </div>
-
-      <!-- TAB 4: Active Admin Dashboard (Expands only when admin logs in) -->
-      <div class="modal-body hidden" id="adminDashboardView">
-        <div class="admin-toolbar">
-          <div class="admin-user-info">
-            Logged in as: <strong id="adminUserDisplayName">admin</strong>
-          </div>
-          <div class="admin-toolbar-actions">
-            <button id="showAddPlaceFormBtn" class="btn btn-primary btn-sm">+ Create New Place</button>
-            <button id="adminLogoutBtn" class="btn btn-outline btn-sm">Log Out</button>
-          </div>
-        </div>
-
-        <div class="admin-subtabs">
-          <button class="subtab-btn active" id="subtabPlacesBtn">Manage Destinations</button>
-          <button class="subtab-btn" id="subtabAdminsBtn">Manage Administrators</button>
-        </div>
-
-        <!-- Section A: Destinations Management -->
-        <div id="adminPlacesSection">
-          <div id="addPlaceFormContainer" class="add-place-container hidden">
-            <h4 id="placeFormTitle">Add New Destination (Max 25 km Kiniyama Scope)</h4>
-            <form id="createPlaceForm" class="grid-form">
-              <input type="hidden" id="editPlaceId" value="">
-
-              <div class="form-group">
-                <label>Place Name *</label>
-                <input type="text" id="newPlaceName" required placeholder="e.g. Kiniyama Lake Reserve">
-              </div>
-
-              <div class="form-group">
-                <label>Category *</label>
-                <select id="newPlaceCategory" required></select>
-              </div>
-
-              <div class="form-group">
-                <label>Distance From Kiniyama (km, &le; 25.0) *</label>
-                <input type="number" step="0.01" max="25.00" min="0" id="newPlaceDistance" required placeholder="e.g. 8.50">
-              </div>
-
-              <div class="form-group">
-                <label>Latitude *</label>
-                <input type="number" step="0.0000001" id="newPlaceLat" required placeholder="e.g. 7.5954000">
-              </div>
-
-              <div class="form-group">
-                <label>Longitude *</label>
-                <input type="number" step="0.0000001" id="newPlaceLon" required placeholder="e.g. 80.0987000">
-              </div>
-
-              <div class="form-group">
-                <label>Est. Visit Duration (minutes)</label>
-                <input type="number" id="newPlaceDuration" value="60" required>
-              </div>
-
-              <div class="form-group">
-                <label>Opening Hours</label>
-                <input type="text" id="newPlaceHours" value="08:00 AM - 05:00 PM">
-              </div>
-
-              <div class="form-group">
-                <label>Entrance Fee</label>
-                <input type="text" id="newPlaceFee" value="Free Admission">
-              </div>
-
-              <div class="form-group full-width">
-                <label>Photo Image Path (e.g. assets/places/kadigawa.jpg)</label>
-                <input type="text" id="newPlaceImage" placeholder="assets/places/my_photo.jpg">
-              </div>
-
-              <div class="form-group full-width">
-                <label>Description *</label>
-                <textarea id="newPlaceDesc" rows="3" required placeholder="Detailed historical/scenic summary..."></textarea>
-              </div>
-
-              <div class="form-actions full-width">
-                <button type="submit" id="savePlaceBtn" class="btn btn-primary btn-sm">Save Record</button>
-                <button type="button" id="cancelAddPlaceBtn" class="btn btn-secondary btn-sm">Cancel</button>
-              </div>
-            </form>
-          </div>
-
-          <div class="table-responsive">
-            <table class="admin-table">
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Place Name</th>
-                  <th>Category</th>
-                  <th>Distance</th>
-                  <th>Status</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody id="adminPlacesTableBody"></tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- Section B: Admin Management -->
-        <div id="adminManagementSection" class="hidden">
-          <div class="create-admin-box">
-            <h4>Create New Administrator Account</h4>
-            <form id="createAdminForm" class="grid-form">
-              <div class="form-group">
-                <label>Username *</label>
-                <input type="text" id="newAdminUsername" required placeholder="e.g. admin2">
-              </div>
-              <div class="form-group">
-                <label>Full Name *</label>
-                <input type="text" id="newAdminFullName" required placeholder="e.g. Kasun Perera">
-              </div>
-              <div class="form-group">
-                <label>Email Address *</label>
-                <input type="email" id="newAdminEmail" required placeholder="admin2@routecraft.lk">
-              </div>
-              <div class="form-group">
-                <label>Password *</label>
-                <input type="password" id="newAdminPassword" required placeholder="••••••••">
-              </div>
-              <div class="form-actions full-width">
-                <button type="submit" class="btn btn-primary btn-sm">+ Create Administrator</button>
-              </div>
-            </form>
-          </div>
-
-          <h4 class="mt-3">Registered System Administrators</h4>
-          <div class="table-responsive">
-            <table class="admin-table">
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Username</th>
-                  <th>Full Name</th>
-                  <th>Email</th>
-                  <th>Last Login</th>
-                </tr>
-              </thead>
-              <tbody id="adminUsersTableBody"></tbody>
-            </table>
-          </div>
-        </div>
-
       </div>
     </div>
   </div>
 
   <!-- =========================================================================
-       MODAL 3: EXPORT / PRINT SUMMARY
+       MODAL 3: ADMIN CHANGE USER PASSWORD MODAL
+       ========================================================================= -->
+  <div class="modal-overlay hidden" id="adminPasswordModal">
+    <div class="modal-window modal-auth">
+      <div class="modal-header">
+        <h3 id="adminPasswordModalTitle">Reset User Password</h3>
+        <button class="modal-close-btn" id="closeAdminPasswordModalBtn">&times;</button>
+      </div>
+      <div class="auth-body-container">
+        <form id="adminChangePasswordForm" class="clean-auth-form" autocomplete="off">
+          <input type="hidden" id="changePasswordUserId" value="">
+          <p class="form-instruction" id="changePasswordTargetName">Set a new password for Kasun Perera.</p>
+          <div class="form-group">
+            <label for="newAdminAssignedPassword">New Password (Min 6 characters) *</label>
+            <input type="password" id="newAdminAssignedPassword" required minlength="6" placeholder="••••••••" autocomplete="new-password">
+          </div>
+          <button type="submit" class="btn btn-primary btn-auth">Update Password</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       MODAL 4: SAVE TRIP TITLE DIALOG
+       ========================================================================= -->
+  <div class="modal-overlay hidden" id="saveTripModal">
+    <div class="modal-window modal-auth">
+      <div class="modal-header">
+        <h3>Save Itinerary</h3>
+        <button class="modal-close-btn" id="closeSaveTripModalBtn">&times;</button>
+      </div>
+      <div class="auth-body-container">
+        <form id="saveTripForm" class="clean-auth-form">
+          <div class="form-group">
+            <label for="saveTripTitleInput">Trip Name / Title</label>
+            <input type="text" id="saveTripTitleInput" required placeholder="e.g. Saturday Heritage & Lake Tour">
+          </div>
+          <button type="submit" class="btn btn-primary btn-auth">Confirm & Save</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       MODAL 5: EXPORT / PRINT SUMMARY
        ========================================================================= -->
   <div class="modal-overlay hidden" id="exportModal">
     <div class="modal-window">

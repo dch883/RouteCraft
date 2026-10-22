@@ -3,6 +3,7 @@
  */
 
 const state = {
+  currentView: 'explore', // 'explore' | 'savedTrips' | 'adminConsole'
   allPlaces: [],
   adminPlaces: [],
   categories: [],
@@ -17,12 +18,26 @@ const state = {
   currentMetrics: null,
   activeAdmin: null,
   currentUser: null,
-  // Carousel State for Current Place
+  userSavedTrips: [],
+  // Multi-Photo Carousel State
   currentCarouselImages: [],
   currentCarouselIndex: 0
 };
 
 const elements = {
+  // Views
+  viewExplore: document.getElementById('viewExplore'),
+  viewSavedTrips: document.getElementById('viewSavedTrips'),
+  viewAdminConsole: document.getElementById('viewAdminConsole'),
+  tabViewExplore: document.getElementById('tabViewExplore'),
+  tabViewSavedTrips: document.getElementById('tabViewSavedTrips'),
+  tabViewAdmin: document.getElementById('tabViewAdmin'),
+  brandHomeBtn: document.getElementById('brandHomeBtn'),
+  savedTripsCountBadge: document.getElementById('savedTripsCountBadge'),
+  userProfileBadge: document.getElementById('userProfileBadge'),
+  userBadgeLabel: document.getElementById('userBadgeLabel'),
+  logoutUserBtn: document.getElementById('logoutUserBtn'),
+  // Catalog & Filters
   placesGrid: document.getElementById('placesGrid'),
   resultsCount: document.getElementById('resultsCount'),
   searchInput: document.getElementById('searchInput'),
@@ -40,8 +55,9 @@ const elements = {
   timeWarningBanner: document.getElementById('timeWarningBanner'),
   warningBannerText: document.getElementById('warningBannerText'),
   clearItineraryBtn: document.getElementById('clearItineraryBtn'),
+  saveTripToAccountBtn: document.getElementById('saveTripToAccountBtn'),
   exportItineraryBtn: document.getElementById('exportItineraryBtn'),
-  // Wide Place Detail Modal & Carousel
+  // Place Detail Modal & Carousel
   placeDetailModal: document.getElementById('placeDetailModal'),
   closeDetailModalBtn: document.getElementById('closeDetailModalBtn'),
   modalCloseActionBtn: document.getElementById('modalCloseActionBtn'),
@@ -61,9 +77,8 @@ const elements = {
   modalTagsWrapper: document.getElementById('modalTagsWrapper'),
   modalMapsLink: document.getElementById('modalMapsLink'),
   modalAddToTripBtn: document.getElementById('modalAddToTripBtn'),
-  // Auth Portal Modal
+  // Auth Modal
   authModal: document.getElementById('authModal'),
-  authModalContainer: document.getElementById('authModalContainer'),
   authPortalBtn: document.getElementById('authPortalBtn'),
   authBtnLabel: document.getElementById('authBtnLabel'),
   closeAuthModalBtn: document.getElementById('closeAuthModalBtn'),
@@ -76,8 +91,7 @@ const elements = {
   tabUserLoginContent: document.getElementById('tabUserLoginContent'),
   tabUserRegisterContent: document.getElementById('tabUserRegisterContent'),
   tabAdminLoginContent: document.getElementById('tabAdminLoginContent'),
-  adminDashboardView: document.getElementById('adminDashboardView'),
-  // User Forms
+  // User Form Elements
   userLoginForm: document.getElementById('userLoginForm'),
   userEmail: document.getElementById('userEmail'),
   userPassword: document.getElementById('userPassword'),
@@ -89,27 +103,43 @@ const elements = {
   regPassword: document.getElementById('regPassword'),
   regError: document.getElementById('regError'),
   regSuccess: document.getElementById('regSuccess'),
-  // Admin Dashboard Elements
+  // Admin Login
   adminLoginForm: document.getElementById('adminLoginForm'),
   adminUsername: document.getElementById('adminUsername'),
   adminPassword: document.getElementById('adminPassword'),
   adminLoginError: document.getElementById('adminLoginError'),
-  adminUserDisplayName: document.getElementById('adminUserDisplayName'),
-  adminLogoutBtn: document.getElementById('adminLogoutBtn'),
-  subtabPlacesBtn: document.getElementById('subtabPlacesBtn'),
-  subtabAdminsBtn: document.getElementById('subtabAdminsBtn'),
-  adminPlacesSection: document.getElementById('adminPlacesSection'),
-  adminManagementSection: document.getElementById('adminManagementSection'),
-  adminPlacesTableBody: document.getElementById('adminPlacesTableBody'),
-  adminUsersTableBody: document.getElementById('adminUsersTableBody'),
-  showAddPlaceFormBtn: document.getElementById('showAddPlaceFormBtn'),
-  addPlaceFormContainer: document.getElementById('addPlaceFormContainer'),
-  placeFormTitle: document.getElementById('placeFormTitle'),
-  createPlaceForm: document.getElementById('createPlaceForm'),
-  editPlaceId: document.getElementById('editPlaceId'),
-  cancelAddPlaceBtn: document.getElementById('cancelAddPlaceBtn'),
-  newPlaceCategory: document.getElementById('newPlaceCategory'),
-  createAdminForm: document.getElementById('createAdminForm'),
+  // Admin Console View Elements
+  adminConsoleUser: document.getElementById('adminConsoleUser'),
+  adminConsoleNewPlaceBtn: document.getElementById('adminConsoleNewPlaceBtn'),
+  adminTabPlaces: document.getElementById('adminTabPlaces'),
+  adminTabUsers: document.getElementById('adminTabUsers'),
+  adminTabManageUsers: document.getElementById('adminTabManageUsers'),
+  adminSectionPlaces: document.getElementById('adminSectionPlaces'),
+  adminSectionUsers: document.getElementById('adminSectionUsers'),
+  adminSectionManageUsers: document.getElementById('adminSectionManageUsers'),
+  adminAddPlaceCard: document.getElementById('adminAddPlaceCard'),
+  adminPlaceFormHeading: document.getElementById('adminPlaceFormHeading'),
+  adminSavePlaceForm: document.getElementById('adminSavePlaceForm'),
+  adminEditPlaceId: document.getElementById('adminEditPlaceId'),
+  adminCancelPlaceBtn: document.getElementById('adminCancelPlaceBtn'),
+  admPlaceCategory: document.getElementById('admPlaceCategory'),
+  adminConsolePlacesBody: document.getElementById('adminConsolePlacesBody'),
+  adminCreateAdminForm: document.getElementById('adminCreateAdminForm'),
+  adminConsoleUsersBody: document.getElementById('adminConsoleUsersBody'),
+  adminConsoleManageUsersBody: document.getElementById('adminConsoleManageUsersBody'),
+  // Admin Change Password Modal
+  adminPasswordModal: document.getElementById('adminPasswordModal'),
+  closeAdminPasswordModalBtn: document.getElementById('closeAdminPasswordModalBtn'),
+  adminChangePasswordForm: document.getElementById('adminChangePasswordForm'),
+  changePasswordUserId: document.getElementById('changePasswordUserId'),
+  changePasswordTargetName: document.getElementById('changePasswordTargetName'),
+  newAdminAssignedPassword: document.getElementById('newAdminAssignedPassword'),
+  // Saved Trips View
+  savedTripsGrid: document.getElementById('savedTripsGrid'),
+  saveTripModal: document.getElementById('saveTripModal'),
+  closeSaveTripModalBtn: document.getElementById('closeSaveTripModalBtn'),
+  saveTripForm: document.getElementById('saveTripForm'),
+  saveTripTitleInput: document.getElementById('saveTripTitleInput'),
   // Export Modal
   exportModal: document.getElementById('exportModal'),
   closeExportModalBtn: document.getElementById('closeExportModalBtn'),
@@ -121,16 +151,64 @@ const elements = {
 const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1586861635167-e5223aadc9fe?w=600&auto=format&fit=crop&q=80';
 
 // =============================================================================
+// CREDENTIAL CLEANER FUNCTION (SOLVES LINGERING CREDENTIALS RISK)
+// =============================================================================
+function clearCredentialsFromForms() {
+  if (elements.adminLoginForm) elements.adminLoginForm.reset();
+  if (elements.userLoginForm) elements.userLoginForm.reset();
+  if (elements.userRegisterForm) elements.userRegisterForm.reset();
+
+  if (elements.adminUsername) elements.adminUsername.value = '';
+  if (elements.adminPassword) elements.adminPassword.value = '';
+  if (elements.userEmail) elements.userEmail.value = '';
+  if (elements.userPassword) elements.userPassword.value = '';
+  if (elements.regFullName) elements.regFullName.value = '';
+  if (elements.regEmail) elements.regEmail.value = '';
+  if (elements.regPassword) elements.regPassword.value = '';
+
+  if (elements.adminLoginError) elements.adminLoginError.classList.add('hidden');
+  if (elements.userLoginError) elements.userLoginError.classList.add('hidden');
+  if (elements.regError) elements.regError.classList.add('hidden');
+  if (elements.regSuccess) elements.regSuccess.classList.add('hidden');
+}
+
+// =============================================================================
 // INITIALIZATION
 // =============================================================================
 document.addEventListener('DOMContentLoaded', async () => {
   setupEventListeners();
+  clearCredentialsFromForms();
   restoreSavedUserSession();
+  restoreSavedAdminSession();
   await loadTaxonomies();
   await loadPlaces();
   restoreSavedItinerary();
 });
 
+// =============================================================================
+// SPA VIEW ROUTING CONTROLLER
+// =============================================================================
+function switchView(viewName) {
+  state.currentView = viewName;
+
+  elements.tabViewExplore.classList.toggle('active', viewName === 'explore');
+  elements.tabViewSavedTrips.classList.toggle('active', viewName === 'savedTrips');
+  elements.tabViewAdmin.classList.toggle('active', viewName === 'adminConsole');
+
+  elements.viewExplore.classList.toggle('hidden', viewName !== 'explore');
+  elements.viewSavedTrips.classList.toggle('hidden', viewName !== 'savedTrips');
+  elements.viewAdminConsole.classList.toggle('hidden', viewName !== 'adminConsole');
+
+  if (viewName === 'savedTrips') {
+    loadUserSavedTrips();
+  } else if (viewName === 'adminConsole') {
+    loadAdminPlaces();
+  }
+}
+
+// =============================================================================
+// DATA FETCHING & TAXONOMIES
+// =============================================================================
 async function loadTaxonomies() {
   try {
     const res = await fetch('/api/taxonomies');
@@ -182,7 +260,7 @@ function renderTaxonomyControls() {
   elements.activityFilter.innerHTML = `<option value="">Filter by Activity</option>` +
     state.activities.map(a => `<option value="${a.TagName}">${a.TagName}</option>`).join('');
 
-  elements.newPlaceCategory.innerHTML = state.categories.map(c => 
+  elements.admPlaceCategory.innerHTML = state.categories.map(c => 
     `<option value="${c.CategoryID}">${c.CategoryName}</option>`
   ).join('');
 }
@@ -211,7 +289,7 @@ function sortAndRenderPlaces() {
   elements.placesGrid.innerHTML = places.map(p => {
     const isAdded = state.itinerary.includes(p.PlaceID);
     const pills = (p.tags || []).slice(0, 3).map(t => `<span class="pill-sm">${escapeHtml(t.TagName)}</span>`).join('');
-    const photoUrl = p.ImageUrl && p.ImageUrl.trim() !== '' ? p.ImageUrl : FALLBACK_IMAGE;
+    const photoUrl = (p.photos && p.photos.length > 0) ? p.photos[0] : (p.ImageUrl || FALLBACK_IMAGE);
 
     return `
       <article class="place-card">
@@ -242,9 +320,8 @@ function sortAndRenderPlaces() {
 }
 
 // =============================================================================
-// ITINERARY WORKSPACE
+// ITINERARY WORKSPACE & METRICS
 // =============================================================================
-
 function toggleItineraryStop(placeId) {
   const index = state.itinerary.indexOf(placeId);
   if (index === -1) {
@@ -273,6 +350,7 @@ async function updateItineraryUI() {
   const count = state.itinerary.length;
   elements.itineraryCountBadge.innerText = `${count} stop${count === 1 ? '' : 's'}`;
   elements.clearItineraryBtn.disabled = count === 0;
+  elements.saveTripToAccountBtn.disabled = count === 0;
   elements.exportItineraryBtn.disabled = count === 0;
 
   if (count === 0) {
@@ -327,40 +405,25 @@ async function updateItineraryUI() {
 }
 
 // =============================================================================
-// PLACE DETAIL MODAL & CAROUSEL
+// PLACE DETAIL MODAL & CAROUSEL (1 / N)
 // =============================================================================
-
-function buildImageListForPlace(baseImageUrl) {
-  const list = [];
-  const primary = (baseImageUrl && baseImageUrl.trim()) ? baseImageUrl.trim() : FALLBACK_IMAGE;
-  list.push(primary);
-
-  // Generate potential secondary/tertiary image paths matching naming convention
-  if (primary.match(/(\.[\w\d]+)$/)) {
-    const img2 = primary.replace(/(\.[\w\d]+)$/, '2$1');
-    const img3 = primary.replace(/(\.[\w\d]+)$/, '3$1');
-    list.push(img2);
-    list.push(img3);
-  }
-
-  return list;
-}
-
 function updateCarouselView() {
   const images = state.currentCarouselImages;
   const idx = state.currentCarouselIndex;
 
   elements.modalPlaceImage.style.opacity = '0.3';
   setTimeout(() => {
-    elements.modalPlaceImage.src = images[idx];
+    elements.modalPlaceImage.src = images[idx] || FALLBACK_IMAGE;
     elements.modalPlaceImage.onerror = () => {
-      // If secondary image is absent, gracefully cycle back to primary
       elements.modalPlaceImage.src = images[0] || FALLBACK_IMAGE;
     };
     elements.modalPlaceImage.style.opacity = '1';
   }, 100);
 
   elements.carouselCounterBadge.innerText = `${idx + 1} / ${images.length}`;
+  const hasMultiple = images.length > 1;
+  elements.carouselPrevBtn.style.display = hasMultiple ? 'flex' : 'none';
+  elements.carouselNextBtn.style.display = hasMultiple ? 'flex' : 'none';
 }
 
 async function openPlaceDetails(placeId) {
@@ -370,9 +433,7 @@ async function openPlaceDetails(placeId) {
     if (!result.success) return;
 
     const p = result.data;
-
-    // Initialize Multi-Photo Carousel
-    state.currentCarouselImages = buildImageListForPlace(p.ImageUrl);
+    state.currentCarouselImages = (p.photos && p.photos.length > 0) ? p.photos : [p.ImageUrl || FALLBACK_IMAGE];
     state.currentCarouselIndex = 0;
     updateCarouselView();
 
@@ -407,78 +468,64 @@ async function openPlaceDetails(placeId) {
 
 function nextCarouselPhoto() {
   const len = state.currentCarouselImages.length;
+  if (len <= 1) return;
   state.currentCarouselIndex = (state.currentCarouselIndex + 1) % len;
   updateCarouselView();
 }
 
 function prevCarouselPhoto() {
   const len = state.currentCarouselImages.length;
+  if (len <= 1) return;
   state.currentCarouselIndex = (state.currentCarouselIndex - 1 + len) % len;
   updateCarouselView();
 }
 
 // =============================================================================
-// AUTH & ADMIN PORTAL
+// AUTHENTICATION & LOGIN (WITH CREDENTIAL AUTO-CLEAR)
 // =============================================================================
-
 function switchAuthTab(tabName) {
+  clearCredentialsFromForms();
+
   [elements.tabUserLoginBtn, elements.tabUserRegisterBtn, elements.tabAdminLoginBtn].forEach(b => b.classList.remove('active'));
-  [elements.tabUserLoginContent, elements.tabUserRegisterContent, elements.tabAdminLoginContent, elements.adminDashboardView].forEach(c => c.classList.add('hidden'));
+  [elements.tabUserLoginContent, elements.tabUserRegisterContent, elements.tabAdminLoginContent].forEach(c => c.classList.add('hidden'));
 
-  elements.authTabsNav.classList.remove('hidden');
-
-  // Adjust modal width dynamically: compact for forms, wide only for dashboard
-  if (tabName === 'adminDashboard') {
-    elements.authModalContainer.classList.add('admin-expanded');
-    elements.authTabsNav.classList.add('hidden');
-    elements.adminDashboardView.classList.remove('hidden');
-    elements.authModalTitle.innerText = 'Administrative Control Panel';
-  } else {
-    elements.authModalContainer.classList.remove('admin-expanded');
-
-    if (tabName === 'userLogin') {
-      elements.tabUserLoginBtn.classList.add('active');
-      elements.tabUserLoginContent.classList.remove('hidden');
-      elements.authModalTitle.innerText = 'User Login';
-    } else if (tabName === 'userRegister') {
-      elements.tabUserRegisterBtn.classList.add('active');
-      elements.tabUserRegisterContent.classList.remove('hidden');
-      elements.authModalTitle.innerText = 'Create Traveler Account';
-    } else if (tabName === 'adminLogin') {
-      elements.tabAdminLoginBtn.classList.add('active');
-      elements.tabAdminLoginContent.classList.remove('hidden');
-      elements.authModalTitle.innerText = 'Admin Portal';
-    }
+  if (tabName === 'userLogin') {
+    elements.tabUserLoginBtn.classList.add('active');
+    elements.tabUserLoginContent.classList.remove('hidden');
+    elements.authModalTitle.innerText = 'User Login';
+  } else if (tabName === 'userRegister') {
+    elements.tabUserRegisterBtn.classList.add('active');
+    elements.tabUserRegisterContent.classList.remove('hidden');
+    elements.authModalTitle.innerText = 'Create Traveler Account';
+  } else if (tabName === 'adminLogin') {
+    elements.tabAdminLoginBtn.classList.add('active');
+    elements.tabAdminLoginContent.classList.remove('hidden');
+    elements.authModalTitle.innerText = 'Admin Portal Access';
   }
 }
 
 function updateAuthButtonDisplay() {
   if (state.activeAdmin) {
-    elements.authBtnLabel.innerText = `🔒 Admin (${state.activeAdmin.username})`;
+    elements.tabViewAdmin.classList.remove('hidden');
+    elements.authPortalBtn.classList.add('hidden');
+    elements.userProfileBadge.classList.remove('hidden');
+    elements.userBadgeLabel.innerText = `🔒 Admin: ${state.activeAdmin.username}`;
+    elements.adminConsoleUser.innerText = state.activeAdmin.username;
   } else if (state.currentUser) {
-    elements.authBtnLabel.innerText = `👤 ${state.currentUser.fullName}`;
+    elements.tabViewAdmin.classList.add('hidden');
+    elements.authPortalBtn.classList.add('hidden');
+    elements.userProfileBadge.classList.remove('hidden');
+    elements.userBadgeLabel.innerText = `👤 ${state.currentUser.fullName}`;
+    loadUserSavedTrips();
   } else {
+    elements.tabViewAdmin.classList.add('hidden');
+    elements.authPortalBtn.classList.remove('hidden');
+    elements.userProfileBadge.classList.add('hidden');
     elements.authBtnLabel.innerText = 'Login / Register';
   }
 }
 
-// Subtabs
-elements.subtabPlacesBtn.addEventListener('click', () => {
-  elements.subtabPlacesBtn.classList.add('active');
-  elements.subtabAdminsBtn.classList.remove('active');
-  elements.adminPlacesSection.classList.remove('hidden');
-  elements.adminManagementSection.classList.add('hidden');
-});
-
-elements.subtabAdminsBtn.addEventListener('click', () => {
-  elements.subtabAdminsBtn.classList.add('active');
-  elements.subtabPlacesBtn.classList.remove('active');
-  elements.adminManagementSection.classList.remove('hidden');
-  elements.adminPlacesSection.classList.add('hidden');
-  loadAdminUsers();
-});
-
-// Admin Login Handler (Fix for Issue 1: elements.authSessionStatus)
+// Admin Login Form
 elements.adminLoginForm.addEventListener('submit', async (e) => {
   e.preventDefault();
   elements.adminLoginError.classList.add('hidden');
@@ -496,16 +543,11 @@ elements.adminLoginForm.addEventListener('submit', async (e) => {
 
     if (data.success) {
       state.activeAdmin = data.admin;
+      localStorage.setItem('routecraft_admin', JSON.stringify(data.admin));
+      clearCredentialsFromForms();
       updateAuthButtonDisplay();
-
-      // Safe update preventing undefined property crash
-      if (elements.authSessionStatus) {
-        elements.authSessionStatus.innerText = 'Admin Session Active';
-      }
-
-      elements.adminUserDisplayName.innerText = data.admin.username;
-      switchAuthTab('adminDashboard');
-      loadAdminPlaces();
+      elements.authModal.classList.add('hidden');
+      switchView('adminConsole');
     } else {
       elements.adminLoginError.innerText = data.message || 'Invalid credentials.';
       elements.adminLoginError.classList.remove('hidden');
@@ -516,199 +558,7 @@ elements.adminLoginForm.addEventListener('submit', async (e) => {
   }
 });
 
-// Admin Logout
-elements.adminLogoutBtn.addEventListener('click', () => {
-  state.activeAdmin = null;
-  updateAuthButtonDisplay();
-  if (elements.authSessionStatus) {
-    elements.authSessionStatus.innerText = 'Sign In or Create Account';
-  }
-  switchAuthTab('userLogin');
-});
-
-// Load Admin Places Table
-async function loadAdminPlaces() {
-  try {
-    const res = await fetch('/api/admin/places');
-    const result = await res.json();
-    if (result.success) {
-      state.adminPlaces = result.data;
-      elements.adminPlacesTableBody.innerHTML = result.data.map(p => `
-        <tr>
-          <td>${p.PlaceID}</td>
-          <td><strong>${escapeHtml(p.Name)}</strong></td>
-          <td>${escapeHtml(p.CategoryName)}</td>
-          <td>${p.DistanceFromCenter} km</td>
-          <td>
-            <span class="status-badge ${p.IsDeleted ? 'status-deleted' : 'status-active'}">
-              ${p.IsDeleted ? 'Soft-Deleted' : 'Active'}
-            </span>
-          </td>
-          <td>
-            <button class="btn btn-outline btn-sm" onclick="openEditPlaceForm(${p.PlaceID})">Edit</button>
-            <button class="btn btn-outline btn-sm" onclick="togglePlaceStatus(${p.PlaceID})">
-              ${p.IsDeleted ? 'Restore' : 'Soft-Delete'}
-            </button>
-            <button class="btn btn-danger btn-sm" onclick="deletePlaceForever(${p.PlaceID})">Delete</button>
-          </td>
-        </tr>
-      `).join('');
-    }
-  } catch (err) {
-    console.error('[RouteCraft Admin] Error loading places:', err);
-  }
-}
-
-function openEditPlaceForm(placeId) {
-  const p = state.adminPlaces.find(item => item.PlaceID === placeId);
-  if (!p) return;
-
-  elements.editPlaceId.value = p.PlaceID;
-  elements.placeFormTitle.innerText = `Edit Destination: ${p.Name}`;
-  document.getElementById('newPlaceName').value = p.Name;
-  document.getElementById('newPlaceCategory').value = p.CategoryID;
-  document.getElementById('newPlaceDistance').value = p.DistanceFromCenter;
-  document.getElementById('newPlaceLat').value = p.Latitude;
-  document.getElementById('newPlaceLon').value = p.Longitude;
-  document.getElementById('newPlaceDuration').value = p.EstVisitDurationMins;
-  document.getElementById('newPlaceHours').value = p.OpeningHours || '08:00 AM - 05:00 PM';
-  document.getElementById('newPlaceFee').value = p.EntranceFee || 'Free Admission';
-  document.getElementById('newPlaceImage').value = p.ImageUrl || '';
-  document.getElementById('newPlaceDesc').value = p.Description;
-
-  elements.addPlaceFormContainer.classList.remove('hidden');
-  elements.addPlaceFormContainer.scrollIntoView({ behavior: 'smooth' });
-}
-
-async function togglePlaceStatus(placeId) {
-  try {
-    const res = await fetch(`/api/admin/places/${placeId}/toggle-status`, { method: 'PUT' });
-    const result = await res.json();
-    if (result.success) {
-      await loadAdminPlaces();
-      await loadPlaces();
-    }
-  } catch (err) {
-    console.error('[RouteCraft Admin] Status toggle error:', err);
-  }
-}
-
-async function deletePlaceForever(placeId) {
-  if (!confirm(`Are you sure you want to permanently delete place #${placeId}? This action cannot be undone.`)) {
-    return;
-  }
-
-  try {
-    const res = await fetch(`/api/admin/places/${placeId}`, { method: 'DELETE' });
-    const result = await res.json();
-    if (result.success) {
-      alert('Place permanently deleted.');
-      await loadAdminPlaces();
-      await loadPlaces();
-    } else {
-      alert(result.message || 'Error deleting record.');
-    }
-  } catch (err) {
-    alert('Network error deleting record.');
-  }
-}
-
-// Create or Update Place Submission
-elements.createPlaceForm.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const editId = elements.editPlaceId.value;
-  const isEditing = editId && editId.trim() !== '';
-
-  const payload = {
-    name: document.getElementById('newPlaceName').value,
-    categoryId: document.getElementById('newPlaceCategory').value,
-    distanceFromCenter: document.getElementById('newPlaceDistance').value,
-    latitude: document.getElementById('newPlaceLat').value,
-    longitude: document.getElementById('newPlaceLon').value,
-    estVisitDurationMins: document.getElementById('newPlaceDuration').value,
-    openingHours: document.getElementById('newPlaceHours').value,
-    entranceFee: document.getElementById('newPlaceFee').value,
-    imageUrl: document.getElementById('newPlaceImage').value,
-    description: document.getElementById('newPlaceDesc').value
-  };
-
-  const endpoint = isEditing ? `/api/admin/places/${editId}` : '/api/admin/places';
-  const method = isEditing ? 'PUT' : 'POST';
-
-  try {
-    const res = await fetch(endpoint, {
-      method: method,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-    const data = await res.json();
-
-    if (data.success) {
-      alert(isEditing ? 'Destination updated successfully!' : 'Destination created successfully!');
-      elements.createPlaceForm.reset();
-      elements.editPlaceId.value = '';
-      elements.placeFormTitle.innerText = 'Add New Destination (Max 25 km Kiniyama Scope)';
-      elements.addPlaceFormContainer.classList.add('hidden');
-      await loadAdminPlaces();
-      await loadPlaces();
-    } else {
-      alert(data.message || 'Operation failed.');
-    }
-  } catch (err) {
-    alert('Network error submitting place.');
-  }
-});
-
-async function loadAdminUsers() {
-  try {
-    const res = await fetch('/api/admin/list');
-    const result = await res.json();
-    if (result.success) {
-      elements.adminUsersTableBody.innerHTML = result.data.map(a => `
-        <tr>
-          <td>${a.AdminID}</td>
-          <td><strong>${escapeHtml(a.Username)}</strong></td>
-          <td>${escapeHtml(a.FullName)}</td>
-          <td>${escapeHtml(a.Email)}</td>
-          <td>${a.LastLogin ? new Date(a.LastLogin).toLocaleString() : 'Never logged in'}</td>
-        </tr>
-      `).join('');
-    }
-  } catch (err) {
-    console.error('[RouteCraft Admin] Error loading administrators:', err);
-  }
-}
-
-elements.createAdminForm.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const payload = {
-    username: document.getElementById('newAdminUsername').value,
-    fullName: document.getElementById('newAdminFullName').value,
-    email: document.getElementById('newAdminEmail').value,
-    password: document.getElementById('newAdminPassword').value
-  };
-
-  try {
-    const res = await fetch('/api/admin/create-admin', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-    const data = await res.json();
-
-    if (data.success) {
-      alert(data.message);
-      elements.createAdminForm.reset();
-      loadAdminUsers();
-    } else {
-      alert(data.message || 'Error creating administrator.');
-    }
-  } catch (err) {
-    alert('Network error creating administrator.');
-  }
-});
-
-// User Login & Register
+// User Login Form
 elements.userLoginForm.addEventListener('submit', async (e) => {
   e.preventDefault();
   elements.userLoginError.classList.add('hidden');
@@ -727,6 +577,7 @@ elements.userLoginForm.addEventListener('submit', async (e) => {
     if (data.success) {
       state.currentUser = data.user;
       localStorage.setItem('routecraft_user', JSON.stringify(data.user));
+      clearCredentialsFromForms();
       updateAuthButtonDisplay();
       elements.authModal.classList.add('hidden');
       alert(`Welcome back, ${data.user.fullName}!`);
@@ -740,6 +591,7 @@ elements.userLoginForm.addEventListener('submit', async (e) => {
   }
 });
 
+// User Register Form
 elements.userRegisterForm.addEventListener('submit', async (e) => {
   e.preventDefault();
   elements.regError.classList.add('hidden');
@@ -761,7 +613,7 @@ elements.userRegisterForm.addEventListener('submit', async (e) => {
     if (data.success) {
       elements.regSuccess.innerText = data.message;
       elements.regSuccess.classList.remove('hidden');
-      elements.userRegisterForm.reset();
+      clearCredentialsFromForms();
       setTimeout(() => switchAuthTab('userLogin'), 1500);
     } else {
       elements.regError.innerText = data.message || 'Registration failed.';
@@ -774,9 +626,519 @@ elements.userRegisterForm.addEventListener('submit', async (e) => {
 });
 
 // =============================================================================
+// LOGOUT WITH ZERO CREDENTIALS & ITINERARY FLUSH
+// =============================================================================
+elements.logoutUserBtn.addEventListener('click', () => {
+  if (confirm('Are you sure you want to log out?')) {
+    // 1. Wipe sessions from memory and browser storage
+    state.currentUser = null;
+    state.activeAdmin = null;
+    localStorage.removeItem('routecraft_user');
+    localStorage.removeItem('routecraft_admin');
+
+    // 2. Wipe itinerary builder selections
+    state.itinerary = [];
+    localStorage.removeItem('routecraft_itinerary');
+    updateItineraryUI();
+    sortAndRenderPlaces();
+
+    // 3. Drop saved trips badge strictly to 0
+    state.userSavedTrips = [];
+    if (elements.savedTripsCountBadge) {
+      elements.savedTripsCountBadge.innerText = '0';
+    }
+    renderSavedTrips([]);
+
+    // 4. Wipe input fields completely (security protection)
+    clearCredentialsFromForms();
+
+    // 5. Update headers and return to public home view
+    updateAuthButtonDisplay();
+    switchView('explore');
+  }
+});
+
+// =============================================================================
+// SAVED TRIPS MANAGEMENT (VIEW 2)
+// =============================================================================
+async function loadUserSavedTrips() {
+  if (!state.currentUser) {
+    state.userSavedTrips = [];
+    if (elements.savedTripsCountBadge) elements.savedTripsCountBadge.innerText = '0';
+    renderSavedTrips([]);
+    return;
+  }
+
+  try {
+    const res = await fetch(`/api/itinerary/user/${state.currentUser.userId}`);
+    const result = await res.json();
+
+    if (result.success) {
+      state.userSavedTrips = result.data;
+      if (elements.savedTripsCountBadge) {
+        elements.savedTripsCountBadge.innerText = result.count;
+      }
+      renderSavedTrips(result.data);
+    }
+  } catch (err) {
+    console.error('[RouteCraft] Error loading saved trips:', err);
+  }
+}
+
+function renderSavedTrips(trips) {
+  if (!trips || trips.length === 0) {
+    elements.savedTripsGrid.innerHTML = `
+      <div class="empty-state" style="grid-column: 1 / -1;">
+        <div class="empty-icon">🧳</div>
+        <p>No saved trips found.</p>
+        <span>Build an itinerary in the planner and click "💾 Save Trip" to save it here.</span>
+      </div>`;
+    return;
+  }
+
+  elements.savedTripsGrid.innerHTML = trips.map(t => {
+    let placeIds = [];
+    try { placeIds = typeof t.PlaceIDs === 'string' ? JSON.parse(t.PlaceIDs) : t.PlaceIDs; } catch(e) {}
+    
+    const stopNames = placeIds.map(id => {
+      const p = state.allPlaces.find(item => item.PlaceID === id);
+      return p ? p.Name : `Place #${id}`;
+    }).join(' ➔ ');
+
+    const hours = Math.floor(t.TotalDurationMinutes / 60);
+    const mins = t.TotalDurationMinutes % 60;
+    const durFormatted = `${hours}h ${mins}m`;
+
+    return `
+      <div class="saved-trip-card">
+        <div class="saved-trip-header">
+          <div>
+            <h3 class="saved-trip-title">${escapeHtml(t.Title)}</h3>
+            <span class="saved-trip-date">Saved on ${new Date(t.CreatedAt).toLocaleDateString()}</span>
+          </div>
+          <span class="status-badge ${t.IsOverScheduled ? 'status-deleted' : 'status-active'}">
+            ${t.IsOverScheduled ? 'Over-Scheduled' : 'Viable Plan'}
+          </span>
+        </div>
+
+        <div class="saved-trip-metrics">
+          <div><strong>Stops:</strong> ${placeIds.length}</div>
+          <div><strong>Distance:</strong> ${t.TotalDistanceKm} km</div>
+          <div><strong>Duration:</strong> ${durFormatted}</div>
+        </div>
+
+        <div class="saved-trip-stops-preview">
+          <strong>Route:</strong> ${escapeHtml(stopNames)}
+        </div>
+
+        <div class="saved-trip-actions">
+          <button class="btn btn-primary btn-sm" onclick="loadTripIntoBuilder(${JSON.stringify(placeIds).replace(/"/g, '&quot;')})">
+            🔄 Load into Planner
+          </button>
+          <button class="btn btn-danger btn-sm" onclick="deleteSavedTrip(${t.ItineraryID})">Delete</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function loadTripIntoBuilder(placeIds) {
+  state.itinerary = placeIds;
+  saveItineraryState();
+  updateItineraryUI();
+  sortAndRenderPlaces();
+  switchView('explore');
+  alert('Trip itinerary loaded into the planning workspace!');
+}
+
+async function deleteSavedTrip(itineraryId) {
+  if (!confirm('Are you sure you want to delete this saved trip?')) return;
+
+  try {
+    const res = await fetch(`/api/itinerary/${itineraryId}`, { method: 'DELETE' });
+    const result = await res.json();
+    if (result.success) {
+      loadUserSavedTrips();
+    }
+  } catch (err) {
+    alert('Error deleting trip.');
+  }
+}
+
+// Save trip button in itinerary panel
+elements.saveTripToAccountBtn.addEventListener('click', () => {
+  if (!state.currentUser) {
+    alert('Please log in as a traveler to save trips to your profile.');
+    switchAuthTab('userLogin');
+    elements.authModal.classList.remove('hidden');
+    return;
+  }
+  elements.saveTripModal.classList.remove('hidden');
+});
+
+elements.saveTripForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const title = elements.saveTripTitleInput.value.trim();
+
+  try {
+    const res = await fetch('/api/itinerary/save', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        userId: state.currentUser.userId,
+        title: title || 'My Kiniyama Day Trip',
+        placeIds: state.itinerary
+      })
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      alert('Trip saved successfully to your account!');
+      elements.saveTripModal.classList.add('hidden');
+      elements.saveTripForm.reset();
+      loadUserSavedTrips();
+    } else {
+      alert(data.message || 'Failed to save trip.');
+    }
+  } catch (err) {
+    alert('Network error saving trip.');
+  }
+});
+
+// =============================================================================
+// ADMIN CONSOLE: PLACES, ADMINS & USER MANAGEMENT
+// =============================================================================
+elements.adminTabPlaces.addEventListener('click', () => {
+  elements.adminTabPlaces.classList.add('active');
+  elements.adminTabUsers.classList.remove('active');
+  elements.adminTabManageUsers.classList.remove('active');
+  elements.adminSectionPlaces.classList.remove('hidden');
+  elements.adminSectionUsers.classList.add('hidden');
+  elements.adminSectionManageUsers.classList.add('hidden');
+});
+
+elements.adminTabUsers.addEventListener('click', () => {
+  elements.adminTabUsers.classList.add('active');
+  elements.adminTabPlaces.classList.remove('active');
+  elements.adminTabManageUsers.classList.remove('active');
+  elements.adminSectionUsers.classList.remove('hidden');
+  elements.adminSectionPlaces.classList.add('hidden');
+  elements.adminSectionManageUsers.classList.add('hidden');
+  loadAdminUsers();
+});
+
+elements.adminTabManageUsers.addEventListener('click', () => {
+  elements.adminTabManageUsers.classList.add('active');
+  elements.adminTabPlaces.classList.remove('active');
+  elements.adminTabUsers.classList.remove('active');
+  elements.adminSectionManageUsers.classList.remove('hidden');
+  elements.adminSectionPlaces.classList.add('hidden');
+  elements.adminSectionUsers.classList.add('hidden');
+  loadRegisteredUsers();
+});
+
+elements.adminConsoleNewPlaceBtn.addEventListener('click', () => {
+  elements.adminSavePlaceForm.reset();
+  elements.adminEditPlaceId.value = '';
+  elements.adminPlaceFormHeading.innerText = 'Add New Destination (Max 25 km Scope)';
+  elements.adminAddPlaceCard.classList.toggle('hidden');
+  elements.adminAddPlaceCard.scrollIntoView({ behavior: 'smooth' });
+});
+
+elements.adminCancelPlaceBtn.addEventListener('click', () => {
+  elements.adminAddPlaceCard.classList.add('hidden');
+});
+
+async function loadAdminPlaces() {
+  try {
+    const res = await fetch('/api/admin/places');
+    const result = await res.json();
+
+    if (result.success) {
+      state.adminPlaces = result.data;
+      elements.adminConsolePlacesBody.innerHTML = result.data.map(p => `
+        <tr>
+          <td>${p.PlaceID}</td>
+          <td><strong>${escapeHtml(p.Name)}</strong></td>
+          <td>${escapeHtml(p.CategoryName)}</td>
+          <td>${p.DistanceFromCenter} km</td>
+          <td>
+            <span class="status-badge ${p.IsDeleted ? 'status-deleted' : 'status-active'}">
+              ${p.IsDeleted ? 'Soft-Deleted' : 'Active'}
+            </span>
+          </td>
+          <td>
+            <button class="btn btn-outline btn-sm" onclick="openAdminEditPlace(${p.PlaceID})">Edit</button>
+            <button class="btn btn-outline btn-sm" onclick="togglePlaceStatus(${p.PlaceID})">
+              ${p.IsDeleted ? 'Restore' : 'Soft-Delete'}
+            </button>
+            <button class="btn btn-danger btn-sm" onclick="deletePlaceForever(${p.PlaceID})">Delete</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+  } catch (err) {
+    console.error('[RouteCraft Admin] Error loading places:', err);
+  }
+}
+
+function openAdminEditPlace(placeId) {
+  const p = state.adminPlaces.find(item => item.PlaceID === placeId);
+  if (!p) return;
+
+  elements.adminEditPlaceId.value = p.PlaceID;
+  elements.adminPlaceFormHeading.innerText = `Edit Destination: ${p.Name}`;
+  document.getElementById('admPlaceName').value = p.Name;
+  document.getElementById('admPlaceCategory').value = p.CategoryID;
+  document.getElementById('admPlaceDistance').value = p.DistanceFromCenter;
+  document.getElementById('admPlaceLat').value = p.Latitude;
+  document.getElementById('admPlaceLon').value = p.Longitude;
+  document.getElementById('admPlaceDuration').value = p.EstVisitDurationMins;
+  document.getElementById('admPlaceHours').value = p.OpeningHours || '08:00 AM - 05:00 PM';
+  document.getElementById('admPlaceFee').value = p.EntranceFee || 'Free Admission';
+  document.getElementById('admPlaceImage').value = p.ImageUrl || '';
+  document.getElementById('admPlaceDesc').value = p.Description;
+
+  elements.adminAddPlaceCard.classList.remove('hidden');
+  elements.adminAddPlaceCard.scrollIntoView({ behavior: 'smooth' });
+}
+
+async function togglePlaceStatus(placeId) {
+  try {
+    const res = await fetch(`/api/admin/places/${placeId}/toggle-status`, { method: 'PUT' });
+    const result = await res.json();
+    if (result.success) {
+      await loadAdminPlaces();
+      await loadPlaces();
+    }
+  } catch (err) {
+    console.error('[RouteCraft Admin] Status toggle error:', err);
+  }
+}
+
+async function deletePlaceForever(placeId) {
+  if (!confirm(`Permanently delete place #${placeId}? This action cannot be undone.`)) return;
+
+  try {
+    const res = await fetch(`/api/admin/places/${placeId}`, { method: 'DELETE' });
+    const result = await res.json();
+    if (result.success) {
+      alert('Place permanently deleted.');
+      await loadAdminPlaces();
+      await loadPlaces();
+    }
+  } catch (err) {
+    alert('Network error deleting record.');
+  }
+}
+
+elements.adminSavePlaceForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const editId = elements.adminEditPlaceId.value;
+  const isEditing = editId && editId.trim() !== '';
+
+  const payload = {
+    name: document.getElementById('admPlaceName').value,
+    categoryId: document.getElementById('admPlaceCategory').value,
+    distanceFromCenter: document.getElementById('admPlaceDistance').value,
+    latitude: document.getElementById('admPlaceLat').value,
+    longitude: document.getElementById('admPlaceLon').value,
+    estVisitDurationMins: document.getElementById('admPlaceDuration').value,
+    openingHours: document.getElementById('admPlaceHours').value,
+    entranceFee: document.getElementById('admPlaceFee').value,
+    imageUrl: document.getElementById('admPlaceImage').value,
+    description: document.getElementById('admPlaceDesc').value
+  };
+
+  const endpoint = isEditing ? `/api/admin/places/${editId}` : '/api/admin/places';
+  const method = isEditing ? 'PUT' : 'POST';
+
+  try {
+    const res = await fetch(endpoint, {
+      method: method,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      alert(isEditing ? 'Destination updated successfully!' : 'Destination created successfully!');
+      elements.adminSavePlaceForm.reset();
+      elements.adminEditPlaceId.value = '';
+      elements.adminAddPlaceCard.classList.add('hidden');
+      await loadAdminPlaces();
+      await loadPlaces();
+    } else {
+      alert(data.message || 'Operation failed.');
+    }
+  } catch (err) {
+    alert('Network error submitting place.');
+  }
+});
+
+// Admin Accounts Table (With Delete Support)
+async function loadAdminUsers() {
+  try {
+    const res = await fetch('/api/admin/list');
+    const result = await res.json();
+    if (result.success) {
+      elements.adminConsoleUsersBody.innerHTML = result.data.map(a => `
+        <tr>
+          <td>${a.AdminID}</td>
+          <td><strong>${escapeHtml(a.Username)}</strong></td>
+          <td>${escapeHtml(a.FullName)}</td>
+          <td>${escapeHtml(a.Email)}</td>
+          <td>${a.LastLogin ? new Date(a.LastLogin).toLocaleString() : 'Never logged in'}</td>
+          <td>
+            ${a.AdminID === 1 
+              ? '<span class="status-badge status-active">Master Admin</span>' 
+              : `<button class="btn btn-danger btn-sm" onclick="deleteAdminAccount(${a.AdminID}, '${escapeHtml(a.Username)}')">Delete</button>`
+            }
+          </td>
+        </tr>
+      `).join('');
+    }
+  } catch (err) {
+    console.error('[RouteCraft Admin] Error loading administrators:', err);
+  }
+}
+
+async function deleteAdminAccount(adminId, username) {
+  if (!confirm(`Are you sure you want to delete administrator account '${username}'?`)) return;
+
+  try {
+    const res = await fetch(`/api/admin/admins/${adminId}`, { method: 'DELETE' });
+    const data = await res.json();
+
+    if (data.success) {
+      alert(data.message);
+      loadAdminUsers();
+    } else {
+      alert(data.message || 'Failed to delete administrator.');
+    }
+  } catch (err) {
+    alert('Network error deleting administrator.');
+  }
+}
+
+elements.adminCreateAdminForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const payload = {
+    username: document.getElementById('admNewUsername').value,
+    fullName: document.getElementById('admNewFullName').value,
+    email: document.getElementById('admNewEmail').value,
+    password: document.getElementById('admNewPassword').value
+  };
+
+  try {
+    const res = await fetch('/api/admin/create-admin', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      alert(data.message);
+      elements.adminCreateAdminForm.reset();
+      loadAdminUsers();
+    } else {
+      alert(data.message || 'Error creating administrator.');
+    }
+  } catch (err) {
+    alert('Network error creating administrator.');
+  }
+});
+
+// Registered Users Table Management (View, Change Password, Delete User)
+async function loadRegisteredUsers() {
+  try {
+    const res = await fetch('/api/admin/users');
+    const result = await res.json();
+
+    if (result.success) {
+      if (result.data.length === 0) {
+        elements.adminConsoleManageUsersBody.innerHTML = `
+          <tr>
+            <td colspan="6" class="text-center text-muted" style="padding: 1.5rem;">No registered tourist accounts found.</td>
+          </tr>`;
+        return;
+      }
+
+      elements.adminConsoleManageUsersBody.innerHTML = result.data.map(u => `
+        <tr>
+          <td>${u.UserID}</td>
+          <td><strong>${escapeHtml(u.FullName)}</strong></td>
+          <td>${escapeHtml(u.Email)}</td>
+          <td><span class="category-tag">${escapeHtml(u.UserType)}</span></td>
+          <td>${new Date(u.CreatedAt).toLocaleDateString()}</td>
+          <td>
+            <button class="btn btn-outline btn-sm" onclick="openChangePasswordModal(${u.UserID}, '${escapeHtml(u.FullName)}')">Change Password</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteUserAccount(${u.UserID}, '${escapeHtml(u.FullName)}')">Delete User</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+  } catch (err) {
+    console.error('[RouteCraft Admin] Error loading registered users:', err);
+  }
+}
+
+function openChangePasswordModal(userId, fullName) {
+  elements.changePasswordUserId.value = userId;
+  elements.changePasswordTargetName.innerText = `Enter a new password for traveler: ${fullName}`;
+  elements.newAdminAssignedPassword.value = '';
+  elements.adminPasswordModal.classList.remove('hidden');
+}
+
+elements.adminChangePasswordForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const userId = elements.changePasswordUserId.value;
+  const newPassword = elements.newAdminAssignedPassword.value;
+
+  try {
+    const res = await fetch(`/api/admin/users/${userId}/change-password`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ newPassword })
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      alert(data.message);
+      elements.adminPasswordModal.classList.add('hidden');
+      elements.adminChangePasswordForm.reset();
+    } else {
+      alert(data.message || 'Failed to update user password.');
+    }
+  } catch (err) {
+    alert('Network error updating password.');
+  }
+});
+
+async function deleteUserAccount(userId, fullName) {
+  if (!confirm(`Are you sure you want to delete ${fullName}'s account? This will permanently erase their profile and all their saved day-trip plans.`)) {
+    return;
+  }
+
+  try {
+    const res = await fetch(`/api/admin/users/${userId}`, { method: 'DELETE' });
+    const data = await res.json();
+
+    if (data.success) {
+      alert(data.message);
+      loadRegisteredUsers();
+    } else {
+      alert(data.message || 'Failed to delete user.');
+    }
+  } catch (err) {
+    alert('Network error deleting user account.');
+  }
+}
+
+// =============================================================================
 // EXPORT & CLEAN PRINT SUMMARY
 // =============================================================================
-
 function generateExportSummary() {
   if (!state.currentMetrics || state.itinerary.length === 0) return;
 
@@ -912,8 +1274,12 @@ function printItineraryDocument() {
 // =============================================================================
 // SETUP LISTENERS
 // =============================================================================
-
 function setupEventListeners() {
+  elements.brandHomeBtn.addEventListener('click', () => switchView('explore'));
+  elements.tabViewExplore.addEventListener('click', () => switchView('explore'));
+  elements.tabViewSavedTrips.addEventListener('click', () => switchView('savedTrips'));
+  elements.tabViewAdmin.addEventListener('click', () => switchView('adminConsole'));
+
   let debounceTimer;
   elements.searchInput.addEventListener('input', (e) => {
     clearTimeout(debounceTimer);
@@ -971,7 +1337,6 @@ function setupEventListeners() {
 
   elements.exportItineraryBtn.addEventListener('click', generateExportSummary);
 
-  // Carousel Prev / Next Buttons
   elements.carouselPrevBtn.addEventListener('click', (e) => {
     e.stopPropagation();
     prevCarouselPhoto();
@@ -982,28 +1347,18 @@ function setupEventListeners() {
     nextCarouselPhoto();
   });
 
-  // Modal Closers
   elements.closeDetailModalBtn.addEventListener('click', () => elements.placeDetailModal.classList.add('hidden'));
   elements.modalCloseActionBtn.addEventListener('click', () => elements.placeDetailModal.classList.add('hidden'));
   elements.closeExportModalBtn.addEventListener('click', () => elements.exportModal.classList.add('hidden'));
-  elements.closeAuthModalBtn.addEventListener('click', () => elements.authModal.classList.add('hidden'));
+  elements.closeAuthModalBtn.addEventListener('click', () => {
+    elements.authModal.classList.add('hidden');
+    clearCredentialsFromForms();
+  });
+  elements.closeSaveTripModalBtn.addEventListener('click', () => elements.saveTripModal.classList.add('hidden'));
+  elements.closeAdminPasswordModalBtn.addEventListener('click', () => elements.adminPasswordModal.classList.add('hidden'));
 
-  // Auth Button
   elements.authPortalBtn.addEventListener('click', () => {
-    if (state.currentUser) {
-      if (confirm(`You are logged in as ${state.currentUser.fullName}. Do you want to log out?`)) {
-        state.currentUser = null;
-        localStorage.removeItem('routecraft_user');
-        updateAuthButtonDisplay();
-      }
-      return;
-    }
-
-    if (state.activeAdmin) {
-      switchAuthTab('adminDashboard');
-    } else {
-      switchAuthTab('userLogin');
-    }
+    switchAuthTab('userLogin');
     elements.authModal.classList.remove('hidden');
   });
 
@@ -1011,19 +1366,6 @@ function setupEventListeners() {
   elements.tabUserRegisterBtn.addEventListener('click', () => switchAuthTab('userRegister'));
   elements.tabAdminLoginBtn.addEventListener('click', () => switchAuthTab('adminLogin'));
 
-  // Place creation UI
-  elements.showAddPlaceFormBtn.addEventListener('click', () => {
-    elements.createPlaceForm.reset();
-    elements.editPlaceId.value = '';
-    elements.placeFormTitle.innerText = 'Add New Destination (Max 25 km Kiniyama Scope)';
-    elements.addPlaceFormContainer.classList.toggle('hidden');
-  });
-
-  elements.cancelAddPlaceBtn.addEventListener('click', () => {
-    elements.addPlaceFormContainer.classList.add('hidden');
-  });
-
-  // Export Modal Actions
   elements.copyExportTextBtn.addEventListener('click', () => {
     navigator.clipboard.writeText(elements.exportContentBox.textContent)
       .then(() => alert('Itinerary copied to clipboard!'))
@@ -1060,6 +1402,18 @@ function restoreSavedUserSession() {
     }
   } catch (e) {
     console.warn('[RouteCraft] User session restore error.');
+  }
+}
+
+function restoreSavedAdminSession() {
+  try {
+    const savedAdmin = localStorage.getItem('routecraft_admin');
+    if (savedAdmin) {
+      state.activeAdmin = JSON.parse(savedAdmin);
+      updateAuthButtonDisplay();
+    }
+  } catch (e) {
+    console.warn('[RouteCraft] Admin session restore error.');
   }
 }
 

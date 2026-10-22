@@ -9,6 +9,7 @@
   --secondary-bg: #f4f6f8;
   --surface-color: #ffffff;
   --border-color: #d8dde6;
+  --input-border: #cbd5e1;
   --text-main: #1f2937;
   --text-muted: #64748b;
   --accent-green: #10b981;
@@ -17,7 +18,8 @@
   --accent-warning-text: #92400e;
   --accent-danger: #ef4444;
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
+  --shadow-focus: 0 0 0 3px rgba(11, 107, 203, 0.15);
   --radius-sm: 6px;
   --radius-md: 10px;
   --radius-lg: 14px;
@@ -39,7 +41,7 @@ body {
 }
 
 /* =============================================================================
-   1. NAVIGATION BAR
+   1. NAVIGATION & SPA VIEW TABS
    ============================================================================= */
 .top-nav {
   background: var(--surface-color);
@@ -54,7 +56,7 @@ body {
   width: 98%;
   max-width: 1750px;
   margin: 0 auto;
-  padding: 0.75rem 1rem;
+  padding: 0.65rem 1rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -80,14 +82,79 @@ body {
 }
 
 .brand-subtitle {
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   color: var(--text-muted);
   font-weight: 500;
 }
 
+.spa-nav-tabs {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.nav-tab {
+  background: none;
+  border: 1px solid transparent;
+  padding: 0.45rem 0.95rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: var(--transition);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.nav-tab:hover {
+  background: #eef2f6;
+  color: var(--text-main);
+}
+
+.nav-tab.active {
+  background: #e0f2fe;
+  color: var(--primary-color);
+  border-color: #bae6fd;
+}
+
+.admin-nav-tab {
+  background: #fef3c7;
+  color: #92400e;
+  border-color: #fde68a;
+}
+
+.admin-nav-tab.active {
+  background: #f59e0b;
+  color: #ffffff;
+  border-color: #d97706;
+}
+
+.tab-badge {
+  background: var(--primary-color);
+  color: #fff;
+  font-size: 0.7rem;
+  padding: 0.1rem 0.45rem;
+  border-radius: 10px;
+  font-weight: 700;
+}
+
+.user-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.825rem;
+  font-weight: 600;
+  background: #f1f5f9;
+  padding: 0.35rem 0.75rem;
+  border-radius: 20px;
+  border: 1px solid var(--border-color);
+}
+
 .search-box {
   flex: 1;
-  max-width: 550px;
+  max-width: 380px;
   position: relative;
   display: flex;
   align-items: center;
@@ -102,10 +169,10 @@ body {
 
 .search-box input {
   width: 100%;
-  padding: 0.6rem 0.75rem 0.6rem 2.4rem;
+  padding: 0.55rem 0.75rem 0.55rem 2.4rem;
   border: 1px solid var(--border-color);
   border-radius: 20px;
-  font-size: 0.875rem;
+  font-size: 0.85rem;
   outline: none;
   transition: var(--transition);
   background: #fdfdfd;
@@ -113,7 +180,7 @@ body {
 
 .search-box input:focus {
   border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(11, 107, 203, 0.15);
+  box-shadow: var(--shadow-focus);
   background: #fff;
 }
 
@@ -174,17 +241,55 @@ body {
 }
 
 .filter-select, .filter-select-sm {
-  padding: 0.4rem 0.65rem;
+  padding: 0.45rem 0.75rem;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border-color);
   background: #fff;
   font-size: 0.8rem;
   color: var(--text-main);
   outline: none;
+  transition: var(--transition);
+}
+
+.filter-select:focus, .filter-select-sm:focus {
+  border-color: var(--primary-color);
+  box-shadow: var(--shadow-focus);
 }
 
 /* =============================================================================
-   3. EXPANDED WORKSPACE: SIDEBAR ON FAR-LEFT
+   3. SPA VIEWS LAYOUT
+   ============================================================================= */
+.app-view {
+  animation: fadeIn 0.25s ease-in-out;
+}
+
+.view-container {
+  width: 96%;
+  max-width: 1400px;
+  margin: 1.5rem auto;
+  background: var(--surface-color);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 1.75rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.view-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 1rem;
+}
+
+.view-header h2 {
+  font-size: 1.35rem;
+  font-weight: 700;
+}
+
+/* =============================================================================
+   4. DUAL-PANEL EXPLORE WORKSPACE
    ============================================================================= */
 .main-workspace {
   width: 98%;
@@ -192,7 +297,7 @@ body {
   margin: 1.25rem auto 2rem auto;
   padding: 0 0.5rem;
   display: grid;
-  grid-template-columns: 340px 1fr;
+  grid-template-columns: 350px 1fr;
   gap: 1.5rem;
   align-items: start;
 }
@@ -204,8 +309,8 @@ body {
   padding: 1.25rem;
   box-shadow: var(--shadow-sm);
   position: sticky;
-  top: 85px;
-  max-height: calc(100vh - 105px);
+  top: 80px;
+  max-height: calc(100vh - 100px);
   display: flex;
   flex-direction: column;
 }
@@ -263,7 +368,7 @@ body {
   flex: 1;
   overflow-y: auto;
   min-height: 160px;
-  max-height: 320px;
+  max-height: 280px;
   border: 1px dashed var(--border-color);
   border-radius: var(--radius-sm);
   padding: 0.5rem;
@@ -399,8 +504,9 @@ body {
 }
 
 .panel-actions {
-  display: flex;
-  gap: 0.5rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0.4rem;
   margin-bottom: 0.75rem;
 }
 
@@ -412,9 +518,7 @@ body {
   padding-top: 0.5rem;
 }
 
-/* =============================================================================
-   4. DESTINATION CARDS
-   ============================================================================= */
+/* Destination Cards Grid */
 .directory-panel {
   display: flex;
   flex-direction: column;
@@ -566,94 +670,250 @@ body {
 }
 
 /* =============================================================================
-   5. BUTTONS & SHARED CONTROLS
+   5. SAVED TRIPS DASHBOARD STYLES
    ============================================================================= */
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.4rem;
-  padding: 0.5rem 0.85rem;
-  font-size: 0.8rem;
-  font-weight: 600;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  border: 1px solid transparent;
+.saved-trips-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  gap: 1.25rem;
+  margin-top: 1rem;
+}
+
+.saved-trip-card {
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
   transition: var(--transition);
-  text-decoration: none;
 }
 
-.btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+.saved-trip-card:hover {
+  box-shadow: var(--shadow-md);
+  border-color: #cbd5e1;
 }
 
-.btn-primary {
-  background: var(--primary-color);
-  color: #fff;
+.saved-trip-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
 }
 
-.btn-primary:hover:not(:disabled) {
-  background: var(--primary-hover);
-}
-
-.btn-secondary {
-  background: #e2e8f0;
+.saved-trip-title {
+  font-size: 1.05rem;
+  font-weight: 700;
   color: var(--text-main);
 }
 
-.btn-secondary:hover:not(:disabled) {
-  background: #cbd5e1;
+.saved-trip-date {
+  font-size: 0.725rem;
+  color: var(--text-muted);
 }
 
-.btn-outline {
-  border-color: var(--border-color);
-  background: #fff;
-  color: var(--text-main);
-}
-
-.btn-outline:hover:not(:disabled) {
+.saved-trip-metrics {
+  display: flex;
+  gap: 1rem;
   background: #f8fafc;
-  border-color: #94a3b8;
+  padding: 0.65rem 0.85rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
 }
 
-.btn-danger {
-  background: #fee2e2;
-  color: var(--accent-danger);
-  border-color: #fca5a5;
+.saved-trip-stops-preview {
+  font-size: 0.775rem;
+  color: #334155;
+  line-height: 1.5;
 }
 
-.btn-danger:hover:not(:disabled) {
-  background: #ef4444;
-  color: #fff;
+.saved-trip-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: auto;
+  border-top: 1px solid #f1f5f9;
+  padding-top: 0.75rem;
 }
-
-.btn-text {
-  background: none;
-  color: var(--primary-color);
-  padding: 0.2rem 0.5rem;
-}
-
-.btn-sm {
-  padding: 0.35rem 0.6rem;
-  font-size: 0.75rem;
-}
-
-.btn-lg {
-  padding: 0.65rem 1.25rem;
-  font-size: 0.9rem;
-}
-
-.btn-block {
-  width: 100%;
-}
-
-.mt-2 { margin-top: 0.5rem; }
-.mt-3 { margin-top: 1rem; }
-.text-center { text-align: center; }
 
 /* =============================================================================
-   6. LARGE PLACE DETAIL MODAL (ELIMINATES HORIZONTAL SCROLLING)
+   6. ADMIN CONSOLE & MODERN FORM INPUTS (REDESIGNED FOR SLEEK AESTHETICS)
+   ============================================================================= */
+.admin-topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.admin-topbar-actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.admin-subtabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.subtab-btn {
+  padding: 0.6rem 1rem;
+  border: none;
+  background: none;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: var(--transition);
+}
+
+.subtab-btn.active {
+  color: var(--primary-color);
+  border-bottom-color: var(--primary-color);
+}
+
+/* Modern Administrative Card */
+.admin-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: var(--radius-md);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.admin-card h4 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 0.25rem;
+}
+
+/* Modern Grid Form Inputs */
+.grid-form {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.15rem 1.25rem;
+  margin-top: 1.25rem;
+}
+
+.full-width {
+  grid-column: span 2;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 0.4rem;
+  letter-spacing: 0.01em;
+}
+
+/* Universal Modern Input Styling */
+.grid-form input[type="text"],
+.grid-form input[type="number"],
+.grid-form input[type="password"],
+.grid-form input[type="email"],
+.grid-form select,
+.grid-form textarea {
+  width: 100%;
+  padding: 0.65rem 0.85rem;
+  font-family: inherit;
+  font-size: 0.875rem;
+  color: #1f2937;
+  background-color: #fbfcfd;
+  border: 1px solid var(--input-border);
+  border-radius: var(--radius-sm);
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+  line-height: 1.4;
+}
+
+.grid-form input:focus,
+.grid-form select:focus,
+.grid-form textarea:focus {
+  background-color: #ffffff;
+  border-color: var(--primary-color);
+  box-shadow: var(--shadow-focus);
+}
+
+.grid-form input::placeholder,
+.grid-form textarea::placeholder {
+  color: #94a3b8;
+  font-size: 0.85rem;
+}
+
+.grid-form select {
+  cursor: pointer;
+  background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%2364748B%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.4-12.8z%22%2F%3E%3C%2Fsvg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 0.65rem auto;
+  padding-right: 2rem;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.grid-form textarea {
+  min-height: 90px;
+  resize: vertical;
+}
+
+.form-actions {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  margin-top: 0.5rem;
+}
+
+/* Admin Table */
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.825rem;
+}
+
+.admin-table th, .admin-table td {
+  padding: 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.admin-table th {
+  background: #f8fafc;
+  font-weight: 600;
+}
+
+.status-badge {
+  padding: 0.2rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.status-active {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.status-deleted {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+/* =============================================================================
+   7. MODAL STYLES & DYNAMIC CAROUSEL
    ============================================================================= */
 .modal-overlay {
   position: fixed;
@@ -724,11 +984,10 @@ body {
   color: var(--text-main);
 }
 
-/* Two-Column Detail Split (No horizontal scrollbars) */
 .modal-body-split {
   flex: 1;
   display: grid;
-  grid-template-columns: 46% 54%;
+  grid-template-columns: 48% 52%;
   gap: 1.75rem;
   padding: 1.75rem;
   overflow-y: auto;
@@ -741,7 +1000,6 @@ body {
   flex-direction: column;
 }
 
-/* Photo Frame with Carousel Controls */
 .detail-photo-frame {
   position: relative;
   width: 100%;
@@ -760,7 +1018,6 @@ body {
   transition: opacity 0.2s ease-in-out;
 }
 
-/* Carousel Navigation Arrows */
 .carousel-btn {
   position: absolute;
   top: 50%;
@@ -786,13 +1043,8 @@ body {
   transform: translateY(-50%) scale(1.08);
 }
 
-.carousel-prev {
-  left: 14px;
-}
-
-.carousel-next {
-  right: 14px;
-}
+.carousel-prev { left: 14px; }
+.carousel-next { right: 14px; }
 
 .carousel-counter {
   position: absolute;
@@ -878,15 +1130,8 @@ body {
   border-radius: 4px;
 }
 
-.category-pill {
-  background: #e0f2fe;
-  color: #0369a1;
-}
-
-.distance-pill {
-  background: #f1f5f9;
-  color: #475569;
-}
+.category-pill { background: #e0f2fe; color: #0369a1; }
+.distance-pill { background: #f1f5f9; color: #475569; }
 
 .modal-footer {
   padding: 1rem 1.75rem;
@@ -897,19 +1142,10 @@ body {
   background: #ffffff;
 }
 
-/* =============================================================================
-   7. REDESIGNED SLEEK AUTH POPUP & EXPANDABLE ADMIN DASHBOARD
-   ============================================================================= */
-/* Compact, balanced modal specifically for Login & Registration */
+/* Compact Auth Modal */
 .modal-auth {
   max-width: 460px;
   width: 95%;
-  transition: max-width 0.3s ease-in-out;
-}
-
-/* Expands ONLY when Admin Dashboard is logged in */
-.modal-auth.admin-expanded {
-  max-width: 1050px;
 }
 
 .auth-header {
@@ -923,7 +1159,7 @@ body {
   border-bottom: 1px solid var(--border-color);
 }
 
-.auth-tab-btn, .subtab-btn {
+.auth-tab-btn {
   flex: 1;
   padding: 0.75rem;
   border: none;
@@ -936,7 +1172,7 @@ body {
   border-bottom: 2px solid transparent;
 }
 
-.auth-tab-btn.active, .subtab-btn.active {
+.auth-tab-btn.active {
   color: var(--primary-color);
   background: #fff;
   border-bottom-color: var(--primary-color);
@@ -975,18 +1211,15 @@ body {
   font-size: 0.875rem;
   color: var(--text-main);
   outline: none;
-  transition: var(--transition);
   background: #fafafa;
 }
 
 .clean-auth-form input:focus,
 .clean-auth-form select:focus {
   border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(11, 107, 203, 0.12);
-  background: #ffffff;
+  box-shadow: var(--shadow-focus);
 }
 
-/* Proportional Centered Submit Button */
 .btn-auth {
   width: 100%;
   padding: 0.75rem;
@@ -1021,80 +1254,6 @@ body {
   border-radius: 4px;
 }
 
-/* Admin Dashboard Tables & Forms */
-.admin-toolbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-  padding-bottom: 0.75rem;
-  border-bottom: 1px solid var(--border-color);
-}
-
-.admin-subtabs {
-  display: flex;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-  border-bottom: 1px solid var(--border-color);
-}
-
-.admin-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.825rem;
-}
-
-.admin-table th, .admin-table td {
-  padding: 0.65rem 0.75rem;
-  text-align: left;
-  border-bottom: 1px solid var(--border-color);
-}
-
-.admin-table th {
-  background: #f8fafc;
-  font-weight: 600;
-}
-
-.status-badge {
-  padding: 0.2rem 0.5rem;
-  border-radius: 12px;
-  font-size: 0.7rem;
-  font-weight: 600;
-}
-
-.status-active {
-  background: #dcfce7;
-  color: #15803d;
-}
-
-.status-deleted {
-  background: #fee2e2;
-  color: #b91c1c;
-}
-
-.create-admin-box {
-  background: #f8fafc;
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-sm);
-  padding: 1rem;
-  margin-bottom: 1.5rem;
-}
-
-.grid-form {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 0.75rem;
-  background: #f8fafc;
-  padding: 1rem;
-  border-radius: var(--radius-sm);
-  margin-bottom: 1.25rem;
-  border: 1px solid var(--border-color);
-}
-
-.full-width {
-  grid-column: span 2;
-}
-
 .export-preview-box {
   background: #f8fafc;
   border: 1px solid var(--border-color);
@@ -1107,12 +1266,46 @@ body {
   overflow-y: auto;
 }
 
-.hidden {
-  display: none !important;
+/* =============================================================================
+   8. SHARED BUTTONS & CONTROLS
+   ============================================================================= */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.5rem 0.85rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: var(--transition);
+  text-decoration: none;
 }
 
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-primary { background: var(--primary-color); color: #fff; }
+.btn-primary:hover:not(:disabled) { background: var(--primary-hover); }
+.btn-secondary { background: #e2e8f0; color: var(--text-main); }
+.btn-secondary:hover:not(:disabled) { background: #cbd5e1; }
+.btn-outline { border-color: var(--border-color); background: #fff; color: var(--text-main); }
+.btn-outline:hover:not(:disabled) { background: #f8fafc; border-color: #94a3b8; }
+.btn-danger { background: #fee2e2; color: var(--accent-danger); border-color: #fca5a5; }
+.btn-danger:hover:not(:disabled) { background: #ef4444; color: #fff; }
+.btn-text { background: none; color: var(--primary-color); padding: 0.2rem 0.5rem; }
+.btn-sm { padding: 0.35rem 0.6rem; font-size: 0.75rem; }
+.btn-lg { padding: 0.65rem 1.25rem; font-size: 0.9rem; }
+.btn-block { width: 100%; }
+
+.mt-2 { margin-top: 0.5rem; }
+.mt-3 { margin-top: 1rem; }
+.text-center { text-align: center; }
+.text-muted { color: var(--text-muted); font-size: 0.85rem; }
+.hidden { display: none !important; }
+
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-4px); }
+  from { opacity: 0; transform: translateY(-3px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
@@ -1122,68 +1315,21 @@ body {
 }
 
 /* =============================================================================
-   8. RESPONSIVENESS
+   9. RESPONSIVENESS & CLEAN PRINTING
    ============================================================================= */
 @media (max-width: 992px) {
-  .modal-fullscreen-view {
-    width: 96vw;
-    height: 94vh;
-  }
-  .modal-body-split {
-    grid-template-columns: 1fr;
-  }
-  .detail-photo-frame {
-    min-height: 240px;
-    height: 240px;
-  }
-  .main-workspace {
-    grid-template-columns: 1fr;
-  }
-  .itinerary-panel {
-    position: static;
-    max-height: none;
-  }
+  .main-workspace { grid-template-columns: 1fr; }
+  .itinerary-panel { position: static; max-height: none; }
+  .modal-body-split { grid-template-columns: 1fr; }
+  .detail-photo-frame { min-height: 240px; height: 240px; }
+  .grid-form { grid-template-columns: 1fr; }
+  .full-width { grid-column: span 1; }
 }
 
-@media (max-width: 640px) {
-  .nav-container {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  .search-box {
-    max-width: 100%;
-  }
-  .filter-container {
-    flex-direction: column;
-    align-items: stretch;
-  }
-}
-
-/* =============================================================================
-   9. CLEAN PRINTING & PDF EXPORT
-   ============================================================================= */
 @media print {
-  .top-nav,
-  .filter-bar,
-  .directory-panel,
-  .panel-actions,
-  .modal-overlay:not(#exportModal),
-  .modal-footer,
-  .modal-close-btn {
+  .top-nav, .filter-bar, .directory-panel, .panel-actions, .modal-overlay:not(#exportModal), .modal-footer, .modal-close-btn {
     display: none !important;
   }
-
-  body {
-    background: #ffffff !important;
-    color: #000000 !important;
-  }
-
-  .export-preview-box {
-    max-height: none !important;
-    overflow: visible !important;
-    border: none !important;
-    padding: 0 !important;
-    font-size: 11pt !important;
-    white-space: pre-wrap !important;
-  }
+  body { background: #ffffff !important; color: #000000 !important; }
+  .export-preview-box { max-height: none !important; overflow: visible !important; border: none !important; font-size: 11pt !important; }
 }

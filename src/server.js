@@ -1,6 +1,5 @@
 /**
  * RouteCraft: An Interactive Web Application for Regional Day-Trip Planning
- * Main Server & RESTful API Routing Engine
  */
 
 const express = require('express');
@@ -27,8 +26,6 @@ app.use(express.urlencoded({ extended: true }));
 
 // Serve frontend static files
 app.use(express.static(path.join(__dirname, '../public')));
-
-// Serve assets folder from either root /assets or /public/assets
 app.use('/assets', express.static(path.join(__dirname, '../assets')));
 app.use('/assets', express.static(path.join(__dirname, '../public/assets')));
 
@@ -50,7 +47,7 @@ app.post('/api/auth/register', authController.registerUser);
 app.post('/api/auth/login', authController.loginUser);
 
 // -----------------------------------------------------------------------------
-// ADMINISTRATIVE API ROUTES
+// ADMINISTRATIVE API ROUTES (Places, Admins, and User Management)
 // -----------------------------------------------------------------------------
 app.post('/api/admin/login', adminController.adminLogin);
 app.get('/api/admin/places', adminController.adminListPlaces);
@@ -58,8 +55,16 @@ app.post('/api/admin/places', adminController.createPlace);
 app.put('/api/admin/places/:id', adminController.updatePlace);
 app.put('/api/admin/places/:id/toggle-status', adminController.toggleSoftDelete);
 app.delete('/api/admin/places/:id', adminController.deletePlacePermanent);
+
+// Admin Management
 app.get('/api/admin/list', adminController.listAdmins);
 app.post('/api/admin/create-admin', adminController.createAdmin);
+app.delete('/api/admin/admins/:id', adminController.deleteAdmin);
+
+// User Management (New Functionality)
+app.get('/api/admin/users', adminController.listUsers);
+app.put('/api/admin/users/:id/change-password', adminController.changeUserPassword);
+app.delete('/api/admin/users/:id', adminController.deleteUser);
 
 // Default fallback for client-side SPA routing
 app.get('*', (req, res) => {
@@ -72,9 +77,7 @@ app.use((err, req, res, next) => {
   res.status(500).json({ success: false, message: 'An internal server error occurred.' });
 });
 
-// -----------------------------------------------------------------------------
-// STARTUP: Admin Credential Verification
-// -----------------------------------------------------------------------------
+// Startup: Verify Default Admin
 async function verifyDefaultAdmin() {
   try {
     const defaultUsername = 'admin';
@@ -89,15 +92,6 @@ async function verifyDefaultAdmin() {
         [defaultUsername, hash, 'RouteCraft System Administrator', 'admin@routecraft.lk']
       );
       console.log('[RouteCraft Boot] Created default administrator account: admin');
-    } else {
-      // Ensure the password hash matches Admin@RouteCraft2026
-      const isValid = await bcrypt.compare(defaultPassword, rows[0].PasswordHash);
-      if (!isValid) {
-        const salt = await bcrypt.genSalt(10);
-        const hash = await bcrypt.hash(defaultPassword, salt);
-        await db.query('UPDATE ADMIN SET PasswordHash = ? WHERE AdminID = ?', [hash, rows[0].AdminID]);
-        console.log('[RouteCraft Boot] Reset default admin password to: Admin@RouteCraft2026');
-      }
     }
   } catch (err) {
     console.warn('[RouteCraft Boot Warning] Could not auto-verify admin credentials:', err.message);
