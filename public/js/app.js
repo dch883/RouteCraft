@@ -2,8 +2,291 @@
  * RouteCraft: Client-Side Single Page Application (SPA) Engine
  */
 
+// =============================================================================
+// I18N DICTIONARY (IDEA 5: ENGLISH, SINHALA, TAMIL)
+// =============================================================================
+const i18n = {
+  en: {
+    brandSubtitle: "Kiniyama Regional Day-Planner",
+    navExplore: "Explore & Plan",
+    navSavedTrips: "My Saved Trips",
+    navAdminConsole: "Admin Console",
+    searchPlaceholder: "Search attractions, heritage sites, nature...",
+    allAttractions: "All Attractions",
+    filterByVibe: "Filter by Vibe (Atmosphere)",
+    filterByActivity: "Filter by Activity",
+    btnReset: "Reset",
+    itineraryTitle: "Your Single-Day Itinerary",
+    itineraryDesc: "Assemble up to 10 stops within the 25 km Kiniyama zone.",
+    btnViewRouteMap: "View Route Map",
+    btnOptimizeSequence: "Optimize Sequence",
+    warningTitle: "Over-Scheduled Warning",
+    emptyItinerary: "No places added yet.",
+    emptyItineraryHint: "Select '+ Add to Trip' on any destination card to begin crafting your route.",
+    metricRoadDistance: "Estimated Road Distance:",
+    metricDuration: "Cumulative Duration:",
+    metricAdmission: "Estimated Admission Cost:",
+    freeAdmission: "Free Admission",
+    metricsSubtext: "Includes dwell time, rural transit (~35 km/h), & ticket fees.",
+    btnClear: "Clear",
+    btnSaveTrip: "Save Trip",
+    btnExport: "Export",
+    disclaimerTitle: "Guidance Disclaimer:",
+    disclaimerText: "Distances and transit durations are Haversine-computed estimations intended strictly for day-trip guidance.",
+    directoryTitle: "Destinations within 25 km of Kiniyama",
+    sortBy: "Sort by:",
+    sortDistance: "Distance from Center (Nearest)",
+    sortName: "Alphabetical (A - Z)",
+    btnViewDetails: "View Details",
+    btnAddTrip: "+ Add to Trip",
+    btnAdded: "✓ Added",
+    btnRemoveTrip: "Remove from Itinerary",
+    savedTripsHeading: "My Saved Day-Trip Itineraries",
+    savedTripsSubtitle: "Review, reload, or print previously assembled trips for the Kiniyama region.",
+    btnReturnPlanner: "← Return to Trip Planner",
+    noSavedTrips: "No saved trips found.",
+    noSavedTripsHint: "Craft a day-trip in the planner and click '💾 Save Trip' to store it in your account.",
+    tabPhotos: "Photos",
+    tabInAppMap: "In-App Map",
+    btnOpenGoogleMaps: "Open External Google Maps (Directions)",
+    aboutDestination: "About this Destination",
+    travelTipsTitle: "Travel Tips & Visitor Etiquette",
+    attrHours: "Operating Hours",
+    attrEntrance: "Entrance Fee",
+    attrParking: "Parking Availability",
+    attrContact: "Contact Info",
+    attrDuration: "Recommended Duration",
+    attrScope: "Scope Status",
+    scopeVerified: "Verified ≤ 25 km Zone",
+    tagsTitle: "Vibe & Activity Tags",
+    btnClose: "Close",
+    badgeRouteMap: "Interactive Day-Trip Route",
+    routeMapHeading: "Full Itinerary Journey Map",
+    routeMapNote: "Stops are ordered sequentially. Dashed lines connect consecutive attractions.",
+    btnCloseMap: "Close Map",
+    tabUserLogin: "User Login",
+    tabRegister: "Register",
+    tabAdminPortal: "Admin Portal",
+    loginInstruction: "Log in to save day trips and access trip history.",
+    labelEmail: "Email Address",
+    labelPassword: "Password",
+    labelPasswordMin: "Password * (Min 6 characters)",
+    labelFullName: "Full Name *",
+    labelUserCategory: "User Category",
+    labelAdminUsername: "Admin Username",
+    btnSignIn: "Sign In",
+    btnSignInAdmin: "Sign In as Administrator",
+    btnCreateAccount: "Create Account",
+    registerInstruction: "Create your traveler profile for planning trips around Kiniyama.",
+    adminInstruction: "System Administrators only. Enter your credentials.",
+    saveItineraryHeading: "Save Itinerary",
+    labelTripTitle: "Trip Name / Title",
+    btnConfirmSave: "Confirm & Save",
+    exportHeading: "Day-Trip Itinerary Summary",
+    btnCopyClipboard: "Copy to Clipboard",
+    btnPrintPdf: "Print / Save as PDF",
+    btnLoginRegister: "Login / Register",
+    btnLogout: "Logout"
+  },
+  si: {
+    brandSubtitle: "කිනියම ප්‍රාදේශීය එක්දින චාරිකා සැලසුම්කරු",
+    navExplore: "ගවේෂණය සහ සැලසුම",
+    navSavedTrips: "මගේ චාරිකා",
+    navAdminConsole: "පරිපාලක පුවරුව",
+    searchPlaceholder: "ආකර්ෂණීය ස්ථාන, උරුමයන් සොයන්න...",
+    allAttractions: "සියලු ආකර්ෂණ",
+    filterByVibe: "පරිසර ස්වභාවය අනුව තෝරන්න",
+    filterByActivity: "ක්‍රියාකාරකම අනුව තෝරන්න",
+    btnReset: "යළි පිහිටුවන්න",
+    itineraryTitle: "ඔබගේ දින සැලසුම",
+    itineraryDesc: "කිනියම සිට කි.මී. 25 සීමාව තුළ ස්ථාන 10ක් දක්වා තෝරාගන්න.",
+    btnViewRouteMap: "මාර්ග සිතියම බලන්න",
+    btnOptimizeSequence: "අනුපිළිවෙල ප්‍රශස්ත කරන්න",
+    warningTitle: "කාලසීමාව ඉක්මවීමේ අනතුරු ඇඟවීම",
+    emptyItinerary: "තවමත් කිසිදු ස්ථානයක් එක්කර නොමැත.",
+    emptyItineraryHint: "ඔබේ චාරිකාව ආරම්භ කිරීමට ඕනෑම ස්ථානයක '+ චාරිකාවට එක්කරන්න' ඔබන්න.",
+    metricRoadDistance: "ඇස්තමේන්තුගත දුර:",
+    metricDuration: "මුළු ගතවන කාලය:",
+    metricAdmission: "ඇස්තමේන්තුගත ඇතුල්වීමේ ගාස්තු:",
+    freeAdmission: "නොමිලේ",
+    metricsSubtext: "නැරඹුම් කාලය, ගමන් කාලය (~35 km/h) සහ ප්‍රවේශ පත්‍ර ගාස්තු ඇතුළත් වේ.",
+    btnClear: "ඉවත් කරන්න",
+    btnSaveTrip: "චාරිකාව සුරකින්න",
+    btnExport: "අපනයනය",
+    disclaimerTitle: "මාර්ගෝපදේශ වගකීම් ප්‍රකාශය:",
+    disclaimerText: "දුර සහ ගමන් කාලයන් හෙවර්සයින් ගණනය කිරීම් වන අතර සැලසුම් මඟපෙන්වීම සඳහා පමණක් අදහස් කෙරේ.",
+    directoryTitle: "කිනියම සිට කි.මී. 25 සීමාවේ ආකර්ෂණීය ස්ථාන",
+    sortBy: "අනුපිළිවෙල:",
+    sortDistance: "කිනියම සිට ආසන්නතම ස්ථාන",
+    sortName: "අකාරාදී පිළිවෙල (A - Z)",
+    btnViewDetails: "විස්තර බලන්න",
+    btnAddTrip: "+ චාරිකාවට එක්කරන්න",
+    btnAdded: "✓ එක්කර ඇත",
+    btnRemoveTrip: "චාරිකාවෙන් ඉවත් කරන්න",
+    savedTripsHeading: "මගේ සුරැකි එක්දින චාරිකා",
+    savedTripsSubtitle: "කිනියම කලාපය සඳහා ඔබ මීට පෙර සුරැකි චාරිකා සමාලෝචනය කරන්න හෝ මුද්‍රණය කරන්න.",
+    btnReturnPlanner: "← සැලසුම්කරු වෙත ආපසු",
+    noSavedTrips: "සුරැකි චාරිකා හමු නොවීය.",
+    noSavedTripsHint: "සැලසුම්කරු තුළ චාරිකාවක් සකස් කර එය මෙහි තබා ගැනීමට '💾 චාරිකාව සුරකින්න' ක්ලික් කරන්න.",
+    tabPhotos: "ඡායාරූප",
+    tabInAppMap: "සිතියම",
+    btnOpenGoogleMaps: "ගූගල් සිතියමෙන් මාර්ගය බලන්න",
+    aboutDestination: "මෙම ස්ථානය පිළිබඳව",
+    travelTipsTitle: "සංචාරක උපදෙස් සහ චාරිත්‍ර වාරිත්‍ර",
+    attrHours: "විවෘත වේලාවන්",
+    attrEntrance: "ඇතුල්වීමේ ගාස්තුව",
+    attrParking: "වාහන නැවැත්වීමේ පහසුකම්",
+    attrContact: "සම්බන්ධතා තොරතුරු",
+    attrDuration: "නිර්දේශිත කාලය",
+    attrScope: "කලාපීය තත්ත්වය",
+    scopeVerified: "කි.මී. 25 කලාපය තහවුරු කර ඇත",
+    tagsTitle: "ටැග් සහ වර්ගීකරණයන්",
+    btnClose: "වසන්න",
+    badgeRouteMap: "සක්‍රීය චාරිකා සිතියම",
+    routeMapHeading: "සම්පූර්ණ චාරිකා මාර්ග සිතියම",
+    routeMapNote: "ස්ථාන අනුක්‍රමිකව සකසා ඇත. කඩ ඉරි මඟින් ගමන් මාර්ගය දක්වයි.",
+    btnCloseMap: "සිතියම වසන්න",
+    tabUserLogin: "පරිශීලක පිවිසුම",
+    tabRegister: "ලියාපදිංචි වන්න",
+    tabAdminPortal: "පරිපාලක ද්වාරය",
+    loginInstruction: "චාරිකා සුරැකීමට සහ ඉතිහාසය බැලීමට ඔබගේ ගිණුමට ලොග් වන්න.",
+    labelEmail: "විද්‍යුත් තැපැල් ලිපිනය",
+    labelPassword: "මුරපදය",
+    labelPasswordMin: "මුරපදය * (අවම අකුරු 6ක්)",
+    labelFullName: "සම්පූර්ණ නම *",
+    labelUserCategory: "පරිශීලක කාණ්ඩය",
+    labelAdminUsername: "පරිපාලක නම",
+    btnSignIn: "ඇතුල් වන්න",
+    btnSignInAdmin: "පරිපාලක ලෙස ඇතුල් වන්න",
+    btnCreateAccount: "ගිණුම සාදන්න",
+    registerInstruction: "කිනියම වටා චාරිකා සැලසුම් කිරීම සඳහා ඔබගේ ගිණුම සාදාගන්න.",
+    adminInstruction: "බලයලත් පද්ධති පරිපාලකයින් පමණි.",
+    saveItineraryHeading: "චාරිකාව සුරකින්න",
+    labelTripTitle: "චාරිකාවේ නම / මාතෘකාව",
+    btnConfirmSave: "තහවුරු කර සුරකින්න",
+    exportHeading: "එක්දින චාරිකා සාරාංශය",
+    btnCopyClipboard: "පිටපත් කරගන්න",
+    btnPrintPdf: "මුද්‍රණය / PDF සුරකින්න",
+    btnLoginRegister: "පිවිසෙන්න / ලියාපදිංචි වන්න",
+    btnLogout: "පිටවන්න"
+  },
+  ta: {
+    brandSubtitle: "கினியம பிராந்திய ஒருநாள் பயணத் திட்டமிடுநர்",
+    navExplore: "ஆராய்ந்து திட்டமிடு",
+    navSavedTrips: "எனது பயணங்கள்",
+    navAdminConsole: "நிர்வாக பலகை",
+    searchPlaceholder: "சுற்றுலா தலங்கள், பாரம்பரியங்களை தேடுங்கள்...",
+    allAttractions: "அனைத்து இடங்களும்",
+    filterByVibe: "சூழல் சூழலின் அடிப்படையில்",
+    filterByActivity: "செயல்பாட்டின் அடிப்படையில்",
+    btnReset: "மீட்டமை",
+    itineraryTitle: "உங்கள் ஒருநாள் பயணத் திட்டம்",
+    itineraryDesc: "கினியம பகுதியில் 25 கி.மீ எல்லைக்குள் 10 இடங்கள் வரை தேர்ந்தெடுக்கவும்.",
+    btnViewRouteMap: "பாதை வரைபடம்",
+    btnOptimizeSequence: "வரிசையை சீரமைக்க",
+    warningTitle: "அதிகப்படியான நேர எச்சரிக்கை",
+    emptyItinerary: "இன்னும் இடங்கள் சேர்க்கப்படவில்லை.",
+    emptyItineraryHint: "உங்கள் பயணத்தைத் தொடங்க ஏதேனும் இட அட்டையில் '+ பயணத்தில் சேர்' என்பதை அழுத்தவும்.",
+    metricRoadDistance: "மதிப்பிடப்பட்ட தூரம்:",
+    metricDuration: "மொத்த பயண நேரம்:",
+    metricAdmission: "நுழைவுக்கட்டண செலவு:",
+    freeAdmission: "இலவச அனுமதி",
+    metricsSubtext: "பார்வை நேரம், வாகன பயண நேரம் (~35 km/h) மற்றும் டிக்கெட் கட்டணங்கள் அடங்கும்.",
+    btnClear: "அழிக்க",
+    btnSaveTrip: "பயணத்தை சேமிக்க",
+    btnExport: "ஏற்றுமதி",
+    disclaimerTitle: "வழிகாட்டுதல் பொறுப்புத்துறப்பு:",
+    disclaimerText: "தூரங்கள் மற்றும் பயண நேரங்கள் கணிப்புகள் மட்டுமே; திட்டமிடல் வழிகாட்டலுக்கு மட்டுமே.",
+    directoryTitle: "கினியமவிலிருந்து 25 கி.மீ எல்லைக்குள் உள்ள இடங்கள்",
+    sortBy: "வரிசைப்படுத்து:",
+    sortDistance: "அருகிலுள்ள இடங்கள்",
+    sortName: "அகரவரிசை (A - Z)",
+    btnViewDetails: "விவரங்களை காண்க",
+    btnAddTrip: "+ பயணத்தில் சேர்",
+    btnAdded: "✓ சேர்க்கப்பட்டது",
+    btnRemoveTrip: "பயணத்திலிருந்து நீக்கு",
+    savedTripsHeading: "எனது சேமித்த ஒருநாள் பயணங்கள்",
+    savedTripsSubtitle: "முன்பு திட்டமிடப்பட்ட பயணங்களை மதிப்பாய்வு செய்யவும் அல்லது அச்சிடவும்.",
+    btnReturnPlanner: "← திட்டமிடுபவருக்குத் திரும்பு",
+    noSavedTrips: "சேமிக்கப்பட்ட பயணங்கள் எதுவும் இல்லை.",
+    noSavedTripsHint: "திட்டமிடுபவரில் ஒரு பயணத்தை உருவாக்கி அதை சேமிக்க '💾 பயணத்தை சேமிக்க' என்பதைக் கிளிக் செய்யவும்.",
+    tabPhotos: "புகைப்படங்கள்",
+    tabInAppMap: "வரைபடம்",
+    btnOpenGoogleMaps: "கூகிள் வரைபடத்தில் திசைகள்",
+    aboutDestination: "இந்த இடத்தைப் பற்றி",
+    travelTipsTitle: "பயணக் குறிப்புகள் மற்றும் ஆசாரங்கள்",
+    attrHours: "திறக்கும் நேரம்",
+    attrEntrance: "நுழைவு கட்டணம்",
+    attrParking: "வாகனம் நிறுத்துமிடம்",
+    attrContact: "தொடர்பு தகவல்",
+    attrDuration: "பரிந்துரைக்கப்பட்ட நேரம்",
+    attrScope: "பிராந்திய நிலை",
+    scopeVerified: "25 கி.மீ எல்லை சரிபார்க்கப்பட்டது",
+    tagsTitle: "குறிச்சொற்கள்",
+    btnClose: "மூடு",
+    badgeRouteMap: "ஊடாடும் பயணப் பாதை",
+    routeMapHeading: "முழுமையான பயணப் பாதை வரைபடம்",
+    routeMapNote: "இடங்கள் தொடர்ச்சியாக வரிசைப்படுத்தப்பட்டுள்ளன. கோடுகள் பயணப் பாதையைக் காட்டுகின்றன.",
+    btnCloseMap: "வரைபடத்தை மூடு",
+    tabUserLogin: "பயனர் உள்நுழைவு",
+    tabRegister: "பதிவு செய்க",
+    tabAdminPortal: "நிர்வாகி தளம்",
+    loginInstruction: "பயணங்களைச் சேமிக்க உங்கள் கணக்கில் உள்நுழையவும்.",
+    labelEmail: "மின்னஞ்சல் முகவரி",
+    labelPassword: "கடவுச்சொல்",
+    labelPasswordMin: "கடவுச்சொல் * (குறைந்தது 6 எழுத்துக்கள்)",
+    labelFullName: "முழு பெயர் *",
+    labelUserCategory: "பயனர் வகை",
+    labelAdminUsername: "நிர்வாகி பெயர்",
+    btnSignIn: "உள்நுழைக",
+    btnSignInAdmin: "நிர்வாகியாக உள்நுழைக",
+    btnCreateAccount: "கணக்கை உருவாக்கவும்",
+    registerInstruction: "கினியம பயணங்களைத் திட்டமிட உங்கள் கணக்கை உருவாக்கவும்.",
+    adminInstruction: "அங்கீகரிக்கப்பட்ட கணினி நிர்வாகிகள் மட்டுமே.",
+    saveItineraryHeading: "பயணத்தை சேமிக்க",
+    labelTripTitle: "பயணத்தின் பெயர் / தலைப்பு",
+    btnConfirmSave: "உறுதிசெய்து சேமிக்கவும்",
+    exportHeading: "ஒருநாள் பயணச் சுருக்கம்",
+    btnCopyClipboard: "நகலெடுக்கவும்",
+    btnPrintPdf: "அச்சிடுக / PDF ஆக சேமிக்க",
+    btnLoginRegister: "உள்நுழைக / பதிவுசெய்க",
+    btnLogout: "வெளியேறு"
+  }
+};
+
+// PLACE NAMES & CATEGORIES TRANSLATION DICTIONARY
+const placeTranslations = {
+  1: { si: "ශ්‍රී අංගුලිමාල මහා සෑ විහාරය", ta: "ஸ்ரீ அங்குலிமால மகா சே விகாரை" },
+  2: { si: "පඬුවස්නුවර රජ මහා විහාරය", ta: "பண்டுவஸ்நுவர ராஜ மகா விகாரை" },
+  3: { si: "මුන්නේශ්වරම් කෝවිල", ta: "முன்னேஸ்வரம் சிவன் கோவில்" },
+  4: { si: "පඬුවස්නුවර පුරාවිද්‍යා කෞතුකාගාරය", ta: "பண்டுவஸ்நுவர தொல்பொருள் அருங்காட்சியகம்" },
+  5: { si: "හලාවත කලපුව සහ කඩොලාන පරිසරය", ta: "சிலாபம் களப்பு மற்றும் கண்டல் காடுகள்" },
+  6: { si: "පඬුවස්නුවර පුරාණ රාජධානිය", ta: "பண்டுவஸ்நுவர புராதன இராச்சியம்" },
+  7: { si: "ආනවිලුන්දාව පක්ෂි අභයභූමිය", ta: "ஆனவிலுந்தாவ பறவைகள் சரணாலயம்" },
+  8: { si: "කඩිගාව පාලම සහ දැදුරු ඔය නිම්නය", ta: "கடிகாவ பாலம் மற்றும் தெதுரு ஓயா பள்ளத்தாக்கு" },
+  9: { si: "හලාවත වෙරළ උද්‍යානය", ta: "சிலாபம் கடற்கரை பூங்கா" },
+  10: { si: "හෙට්ටිපොල හරිත උද්‍යානය", ta: "ஹெட்டிபொல பசுமைப் பூங்கா" },
+  11: { si: "වයඹ විශ්වවිද්‍යාල වැව උද්‍යානය", ta: "வயம்ப பல்கலைக்கழக ஏரிப் பூங்கா" },
+  12: { si: "ආනවිලුන්දාව තෙත්බිම් සංරක්ෂණ කලාපය", ta: "ஆனவிலுந்தாவ சதுப்புநில பாதுகாப்பு மண்டலம்" },
+  13: { si: "වයි ග්‍රෝ කඳවුර දුම්මලසූරිය", ta: "வை குரோ முகாம் தும்மலசூரிய" },
+  14: { si: "තිස්සව රජ මහා විහාරය", ta: "திஸ்ஸவ ரஜமகா விகாரை" },
+  15: { si: "පාද වැව පුරාණ ජලාශය", ta: "பாத வாவி புராதன நீர்த்தேக்கம்" }
+};
+
+const categoryTranslations = {
+  "Religious & Spiritual": { si: "ආගමික හා ආධ්‍යාත්මික", ta: "மத மற்றும் ஆன்மீகம்" },
+  "Historical & Archaeological": { si: "ඓතිහාසික හා පුරාවිද්‍යා", ta: "வரலாற்று மற்றும் தொல்பொருள்" },
+  "Eco-tourism & Nature": { si: "පරිසර හා ස්වභාවධර්මය", ta: "சூழல் மற்றும் இயற்கை" },
+  "Coastal & Leisure": { si: "වෙරළබඩ හා විවේකී", ta: "கடற்கரை மற்றும் பொழுதுபோக்கு" },
+  "Community & Education": { si: "ප්‍රජා හා අධ්‍යාපනික", ta: "சமூக மற்றும் கல்வி" }
+};
+
+// =============================================================================
+// APPLICATION STATE
+// =============================================================================
 const state = {
-  currentView: 'explore', // 'explore' | 'savedTrips' | 'adminConsole'
+  currentLang: localStorage.getItem('routecraft_lang') || 'en', // Default English
+  currentView: 'explore',
   allPlaces: [],
   adminPlaces: [],
   categories: [],
@@ -19,10 +302,8 @@ const state = {
   activeAdmin: null,
   currentUser: null,
   userSavedTrips: [],
-  // Multi-Photo Carousel State
   currentCarouselImages: [],
   currentCarouselIndex: 0,
-  // Leaflet Map Instances
   leafletModalMap: null,
   leafletModalMarker: null,
   leafletRouteMap: null,
@@ -31,7 +312,7 @@ const state = {
 };
 
 const elements = {
-  // Views
+  // Views & Navigation
   viewExplore: document.getElementById('viewExplore'),
   viewSavedTrips: document.getElementById('viewSavedTrips'),
   viewAdminConsole: document.getElementById('viewAdminConsole'),
@@ -43,7 +324,7 @@ const elements = {
   userProfileBadge: document.getElementById('userProfileBadge'),
   userBadgeLabel: document.getElementById('userBadgeLabel'),
   logoutUserBtn: document.getElementById('logoutUserBtn'),
-  // Weather Badge (Idea 4)
+  // Weather Badge
   kiniyamaWeatherPill: document.getElementById('kiniyamaWeatherPill'),
   weatherIcon: document.getElementById('weatherIcon'),
   weatherText: document.getElementById('weatherText'),
@@ -56,7 +337,7 @@ const elements = {
   activityFilter: document.getElementById('activityFilter'),
   resetFiltersBtn: document.getElementById('resetFiltersBtn'),
   sortOrder: document.getElementById('sortOrder'),
-  // Itinerary UI & Quick Actions (Ideas 1, 2, 3)
+  // Itinerary UI & Actions
   btnViewRouteMap: document.getElementById('btnViewRouteMap'),
   btnOptimizeRoute: document.getElementById('btnOptimizeRoute'),
   itineraryStopsList: document.getElementById('itineraryStopsList'),
@@ -70,7 +351,7 @@ const elements = {
   clearItineraryBtn: document.getElementById('clearItineraryBtn'),
   saveTripToAccountBtn: document.getElementById('saveTripToAccountBtn'),
   exportItineraryBtn: document.getElementById('exportItineraryBtn'),
-  // Place Detail Modal & Media
+  // Place Detail Modal
   placeDetailModal: document.getElementById('placeDetailModal'),
   closeDetailModalBtn: document.getElementById('closeDetailModalBtn'),
   modalCloseActionBtn: document.getElementById('modalCloseActionBtn'),
@@ -96,7 +377,7 @@ const elements = {
   modalTagsWrapper: document.getElementById('modalTagsWrapper'),
   modalMapsLink: document.getElementById('modalMapsLink'),
   modalAddToTripBtn: document.getElementById('modalAddToTripBtn'),
-  // Route Map Modal (Idea 1)
+  // Full Route Map Modal
   routeMapModal: document.getElementById('routeMapModal'),
   closeRouteMapModalBtn: document.getElementById('closeRouteMapModalBtn'),
   closeRouteMapFooterBtn: document.getElementById('closeRouteMapFooterBtn'),
@@ -116,7 +397,7 @@ const elements = {
   tabUserLoginContent: document.getElementById('tabUserLoginContent'),
   tabUserRegisterContent: document.getElementById('tabUserRegisterContent'),
   tabAdminLoginContent: document.getElementById('tabAdminLoginContent'),
-  // User Form Elements
+  // User Form
   userLoginForm: document.getElementById('userLoginForm'),
   userEmail: document.getElementById('userEmail'),
   userPassword: document.getElementById('userPassword'),
@@ -133,7 +414,7 @@ const elements = {
   adminUsername: document.getElementById('adminUsername'),
   adminPassword: document.getElementById('adminPassword'),
   adminLoginError: document.getElementById('adminLoginError'),
-  // Admin Console View Elements
+  // Admin Console View
   adminConsoleUser: document.getElementById('adminConsoleUser'),
   adminConsoleNewPlaceBtn: document.getElementById('adminConsoleNewPlaceBtn'),
   adminTabPlaces: document.getElementById('adminTabPlaces'),
@@ -153,7 +434,7 @@ const elements = {
   adminCreateAdminForm: document.getElementById('adminCreateAdminForm'),
   adminConsoleUsersBody: document.getElementById('adminConsoleUsersBody'),
   adminConsoleManageUsersBody: document.getElementById('adminConsoleManageUsersBody'),
-  // Admin Change Password Modal
+  // Admin Password Modal
   adminPasswordModal: document.getElementById('adminPasswordModal'),
   closeAdminPasswordModalBtn: document.getElementById('closeAdminPasswordModalBtn'),
   adminChangePasswordForm: document.getElementById('adminChangePasswordForm'),
@@ -175,6 +456,59 @@ const elements = {
 };
 
 const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1586861635167-e5223aadc9fe?w=600&auto=format&fit=crop&q=80';
+
+// =============================================================================
+// I18N RENDERING HELPER (IDEA 5)
+// =============================================================================
+function getTranslation(key) {
+  const lang = state.currentLang;
+  return (i18n[lang] && i18n[lang][key]) ? i18n[lang][key] : (i18n['en'][key] || key);
+}
+
+function getLocalizedPlaceName(place) {
+  const lang = state.currentLang;
+  if (lang !== 'en' && placeTranslations[place.PlaceID] && placeTranslations[place.PlaceID][lang]) {
+    return placeTranslations[place.PlaceID][lang];
+  }
+  return place.Name;
+}
+
+function getLocalizedCategoryName(catName) {
+  const lang = state.currentLang;
+  if (lang !== 'en' && categoryTranslations[catName] && categoryTranslations[catName][lang]) {
+    return categoryTranslations[catName][lang];
+  }
+  return catName;
+}
+
+function applyLanguage(lang) {
+  state.currentLang = lang;
+  localStorage.setItem('routecraft_lang', lang);
+
+  // Update language buttons active state
+  document.querySelectorAll('.lang-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.getAttribute('data-lang') === lang);
+  });
+
+  // Translate all DOM elements tagged with data-i18n
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    el.textContent = getTranslation(key);
+  });
+
+  // Translate input placeholders
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+    const key = el.getAttribute('data-i18n-placeholder');
+    el.placeholder = getTranslation(key);
+  });
+
+  // Re-render UI views
+  renderTaxonomyControls();
+  sortAndRenderPlaces();
+  updateItineraryUI();
+  fetchLiveKiniyamaWeather();
+  updateAuthButtonDisplay();
+}
 
 // Clear Credentials Helper
 function clearCredentialsFromForms() {
@@ -199,7 +533,6 @@ function clearCredentialsFromForms() {
 // LIVE WEATHER ENGINE FOR KINIYAMA (7°39'36.8"N 80°00'17.9"E)
 async function fetchLiveKiniyamaWeather() {
   try {
-    // 7°39'36.8"N, 80°00'17.9"E -> 7.660222, 80.004972
     const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=7.660222&longitude=80.004972&current_weather=true');
     const data = await res.json();
 
@@ -212,26 +545,30 @@ async function fetchLiveKiniyamaWeather() {
 
       if (code === 1 || code === 2 || code === 3) {
         icon = '⛅';
-        desc = 'Partly Cloudy';
+        desc = state.currentLang === 'si' ? 'අර්ධ වළාකුළු' : (state.currentLang === 'ta' ? 'பகுதி மேகமூட்டம்' : 'Partly Cloudy');
       } else if (code >= 45 && code <= 48) {
         icon = '🌫️';
-        desc = 'Misty';
+        desc = state.currentLang === 'si' ? 'මීදුම සහිත' : (state.currentLang === 'ta' ? 'பனிமூட்டம்' : 'Misty');
       } else if (code >= 51 && code <= 67) {
         icon = '🌧️';
-        desc = 'Showers';
+        desc = state.currentLang === 'si' ? 'වැසි සහිත' : (state.currentLang === 'ta' ? 'மழை' : 'Showers');
       } else if (code >= 80 && code <= 82) {
         icon = '⛈️';
-        desc = 'Rain';
+        desc = state.currentLang === 'si' ? 'ධාරානිපාත වැසි' : (state.currentLang === 'ta' ? 'கனமழை' : 'Rain');
       } else if (code >= 95) {
         icon = '⚡';
-        desc = 'Thunderstorms';
+        desc = state.currentLang === 'si' ? 'ගිගුරුම් සහිත' : (state.currentLang === 'ta' ? 'இடியுடன் கூடிய' : 'Thunderstorms');
+      } else {
+        desc = state.currentLang === 'si' ? 'පැහැදිලි අහස' : (state.currentLang === 'ta' ? 'தெளிவான வானம்' : 'Clear');
       }
 
       elements.weatherIcon.innerText = icon;
-      elements.weatherText.innerText = `Kiniyama: ${temp}°C | ${desc}`;
+      const titlePrefix = state.currentLang === 'si' ? 'කිනියම' : (state.currentLang === 'ta' ? 'கினியம' : 'Kiniyama');
+      elements.weatherText.innerText = `${titlePrefix}: ${temp}°C | ${desc}`;
     }
   } catch (err) {
-    elements.weatherText.innerText = 'Kiniyama: 28°C | Clear';
+    const titlePrefix = state.currentLang === 'si' ? 'කිනියම' : (state.currentLang === 'ta' ? 'கினියம' : 'Kiniyama');
+    elements.weatherText.innerText = `${titlePrefix}: 28°C | Clear`;
   }
 }
 
@@ -241,10 +578,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   clearCredentialsFromForms();
   restoreSavedUserSession();
   restoreSavedAdminSession();
-  fetchLiveKiniyamaWeather();
   await loadTaxonomies();
   await loadPlaces();
   restoreSavedItinerary();
+  applyLanguage(state.currentLang); // Apply saved language
 });
 
 // SPA VIEW ROUTING
@@ -306,16 +643,19 @@ async function loadPlaces() {
 }
 
 function renderTaxonomyControls() {
-  let chipsHtml = `<button class="filter-chip ${state.selectedCategory === 'All' ? 'active' : ''}" data-category="All">All Attractions</button>`;
+  const allLabel = getTranslation('allAttractions');
+  let chipsHtml = `<button class="filter-chip ${state.selectedCategory === 'All' ? 'active' : ''}" data-category="All">${allLabel}</button>`;
+
   state.categories.forEach(cat => {
-    chipsHtml += `<button class="filter-chip ${state.selectedCategory === cat.CategoryName ? 'active' : ''}" data-category="${cat.CategoryName}">${cat.CategoryName}</button>`;
+    const localizedName = getLocalizedCategoryName(cat.CategoryName);
+    chipsHtml += `<button class="filter-chip ${state.selectedCategory === cat.CategoryName ? 'active' : ''}" data-category="${cat.CategoryName}">${localizedName}</button>`;
   });
   elements.categoryChips.innerHTML = chipsHtml;
 
-  elements.vibeFilter.innerHTML = `<option value="">Filter by Vibe (Atmosphere)</option>` +
+  elements.vibeFilter.innerHTML = `<option value="">${getTranslation('filterByVibe')}</option>` +
     state.vibes.map(v => `<option value="${v.TagName}">${v.TagName}</option>`).join('');
 
-  elements.activityFilter.innerHTML = `<option value="">Filter by Activity</option>` +
+  elements.activityFilter.innerHTML = `<option value="">${getTranslation('filterByActivity')}</option>` +
     state.activities.map(a => `<option value="${a.TagName}">${a.TagName}</option>`).join('');
 
   elements.admPlaceCategory.innerHTML = state.categories.map(c => 
@@ -332,14 +672,17 @@ function sortAndRenderPlaces() {
     places.sort((a, b) => a.Name.localeCompare(b.Name));
   }
 
-  elements.resultsCount.innerText = `Showing ${places.length} verified destination${places.length === 1 ? '' : 's'}`;
+  const countText = state.currentLang === 'si'
+    ? `ස්ථාන ${places.length}ක් පෙන්වයි`
+    : (state.currentLang === 'ta' ? `${places.length} இடங்கள் காட்டப்படுகின்றன` : `Showing ${places.length} verified destinations`);
+  elements.resultsCount.innerText = countText;
 
   if (places.length === 0) {
     elements.placesGrid.innerHTML = `
       <div class="empty-state" style="grid-column: 1 / -1;">
         <div class="empty-icon">🔎</div>
-        <p>No destinations match your criteria.</p>
-        <span>Try adjusting your keyword, vibe, or category filters.</span>
+        <p>${state.currentLang === 'si' ? 'ස්ථාන හමු නොවීය.' : (state.currentLang === 'ta' ? 'இடங்கள் எதுவும் கிடைக்கவில்லை.' : 'No destinations match your criteria.')}</p>
+        <span>${state.currentLang === 'si' ? 'වෙනත් සෙවුම් පද හෝ පෙරහන් භාවිතා කර බලන්න.' : 'Try adjusting your keyword, vibe, or category filters.'}</span>
       </div>`;
     return;
   }
@@ -348,27 +691,29 @@ function sortAndRenderPlaces() {
     const isAdded = state.itinerary.includes(p.PlaceID);
     const pills = (p.tags || []).slice(0, 3).map(t => `<span class="pill-sm">${escapeHtml(t.TagName)}</span>`).join('');
     const photoUrl = (p.photos && p.photos.length > 0) ? p.photos[0] : (p.ImageUrl || FALLBACK_IMAGE);
+    const localizedTitle = getLocalizedPlaceName(p);
+    const localizedCategory = getLocalizedCategoryName(p.CategoryName);
 
     return `
       <article class="place-card">
         <div class="card-image-box">
-          <img src="${escapeHtml(photoUrl)}" alt="${escapeHtml(p.Name)}" loading="lazy" onerror="this.onerror=null;this.src='${FALLBACK_IMAGE}';">
+          <img src="${escapeHtml(photoUrl)}" alt="${escapeHtml(localizedTitle)}" loading="lazy" onerror="this.onerror=null;this.src='${FALLBACK_IMAGE}';">
           <div class="card-image-overlay">
-            <span class="category-tag">${escapeHtml(p.CategoryName)}</span>
+            <span class="category-tag">${escapeHtml(localizedCategory)}</span>
             <span class="card-distance-badge">${p.DistanceFromCenter} km</span>
           </div>
         </div>
 
         <div class="card-body">
-          <h3 class="card-title">${escapeHtml(p.Name)}</h3>
+          <h3 class="card-title">${escapeHtml(localizedTitle)}</h3>
           <p class="card-description">${escapeHtml(p.Description)}</p>
           <div class="card-pills">${pills}</div>
           <div class="card-footer">
-            <button class="btn btn-outline btn-sm" onclick="openPlaceDetails(${p.PlaceID})">View Details</button>
+            <button class="btn btn-outline btn-sm" onclick="openPlaceDetails(${p.PlaceID})">${getTranslation('btnViewDetails')}</button>
             <button class="btn ${isAdded ? 'btn-secondary' : 'btn-primary'} btn-sm" 
               onclick="toggleItineraryStop(${p.PlaceID})" 
               id="btnTrip-${p.PlaceID}">
-              ${isAdded ? '✓ Added' : '+ Add to Trip'}
+              ${isAdded ? getTranslation('btnAdded') : getTranslation('btnAddTrip')}
             </button>
           </div>
         </div>
@@ -377,7 +722,7 @@ function sortAndRenderPlaces() {
   }).join('');
 }
 
-// ITINERARY WORKSPACE, BUDGET & ROUTE METRICS (IDEA 3)
+// ITINERARY WORKSPACE & METRICS
 function toggleItineraryStop(placeId) {
   const index = state.itinerary.indexOf(placeId);
   if (index === -1) {
@@ -404,19 +749,20 @@ function moveItineraryItem(index, direction) {
 
 async function updateItineraryUI() {
   const count = state.itinerary.length;
-  elements.itineraryCountBadge.innerText = `${count} stop${count === 1 ? '' : 's'}`;
+  const stopsSuffix = state.currentLang === 'si' ? 'නැවතුම්' : (state.currentLang === 'ta' ? 'இடங்கள்' : 'stops');
+  elements.itineraryCountBadge.innerText = `${count} ${stopsSuffix}`;
   elements.clearItineraryBtn.disabled = count === 0;
   elements.saveTripToAccountBtn.disabled = count === 0;
   elements.exportItineraryBtn.disabled = count === 0;
   elements.btnViewRouteMap.disabled = count === 0;
-  elements.btnOptimizeRoute.disabled = count <= 2; // Optimization useful for 3+ stops
+  elements.btnOptimizeRoute.disabled = count <= 2;
 
   if (count === 0) {
     elements.itineraryStopsList.innerHTML = '';
     elements.itineraryStopsList.appendChild(elements.emptyItineraryState);
     elements.metricDistance.innerText = '0.00 km';
     elements.metricDuration.innerText = '0h 0m';
-    elements.metricBudget.innerText = 'Free Admission';
+    elements.metricBudget.innerText = getTranslation('freeAdmission');
     elements.timeWarningBanner.classList.add('hidden');
     return;
   }
@@ -433,24 +779,27 @@ async function updateItineraryUI() {
       state.currentMetrics = result.metrics;
       const ordered = result.orderedPlaces;
 
-      elements.itineraryStopsList.innerHTML = ordered.map((item, idx) => `
-        <div class="itinerary-item">
-          <div class="stop-info">
-            <span class="stop-index">#${idx + 1}</span>
-            <span class="stop-title" title="${escapeHtml(item.Name)}">${escapeHtml(item.Name)}</span>
-            <span class="stop-sub">Dwell: ${item.EstVisitDurationMins}m | Ref Dist: ${item.DistanceFromCenter}km | Fee: ${item.EntranceFee || 'Free'}</span>
+      elements.itineraryStopsList.innerHTML = ordered.map((item, idx) => {
+        const localizedTitle = getLocalizedPlaceName(item);
+        return `
+          <div class="itinerary-item">
+            <div class="stop-info">
+              <span class="stop-index">#${idx + 1}</span>
+              <span class="stop-title" title="${escapeHtml(localizedTitle)}">${escapeHtml(localizedTitle)}</span>
+              <span class="stop-sub">${item.EstVisitDurationMins}m | ${item.DistanceFromCenter}km | ${item.EntranceFee || 'Free'}</span>
+            </div>
+            <div class="stop-controls">
+              <button class="stop-btn" onclick="moveItineraryItem(${idx}, -1)" ${idx === 0 ? 'disabled' : ''} title="Move Up">▲</button>
+              <button class="stop-btn" onclick="moveItineraryItem(${idx}, 1)" ${idx === ordered.length - 1 ? 'disabled' : ''} title="Move Down">▼</button>
+              <button class="stop-btn delete" onclick="toggleItineraryStop(${item.PlaceID})" title="Remove Stop">&times;</button>
+            </div>
           </div>
-          <div class="stop-controls">
-            <button class="stop-btn" onclick="moveItineraryItem(${idx}, -1)" ${idx === 0 ? 'disabled' : ''} title="Move Up">▲</button>
-            <button class="stop-btn" onclick="moveItineraryItem(${idx}, 1)" ${idx === ordered.length - 1 ? 'disabled' : ''} title="Move Down">▼</button>
-            <button class="stop-btn delete" onclick="toggleItineraryStop(${item.PlaceID})" title="Remove Stop">&times;</button>
-          </div>
-        </div>
-      `).join('');
+        `;
+      }).join('');
 
       elements.metricDistance.innerText = `${result.metrics.totalDistanceKm} km`;
       elements.metricDuration.innerText = result.metrics.totalDurationFormatted;
-      elements.metricBudget.innerText = result.metrics.totalBudgetFormatted;
+      elements.metricBudget.innerText = result.metrics.totalBudgetLKR > 0 ? `LKR ${result.metrics.totalBudgetLKR}` : getTranslation('freeAdmission');
 
       if (result.metrics.isOverScheduled) {
         elements.timeWarningBanner.classList.remove('hidden');
@@ -464,12 +813,11 @@ async function updateItineraryUI() {
   }
 }
 
-// ROUTE OPTIMIZATION HANDLER (IDEA 2)
+// ROUTE OPTIMIZATION HANDLER
 async function triggerRouteOptimization() {
   if (state.itinerary.length <= 2) return;
 
   try {
-    elements.btnOptimizeRoute.innerText = '⚡ Optimizing...';
     elements.btnOptimizeRoute.disabled = true;
 
     const res = await fetch('/api/itinerary/optimize', {
@@ -485,24 +833,26 @@ async function triggerRouteOptimization() {
       await updateItineraryUI();
 
       if (data.distanceSavedKm > 0) {
-        alert(`Route successfully optimized! Reduced road distance by ${data.distanceSavedKm} km (from ${data.initialDistanceKm} km to ${data.optimizedDistanceKm} km).`);
+        const alertMsg = state.currentLang === 'si'
+          ? `මාර්ග අනුපිළිවෙල සාර්ථකව ප්‍රශස්ත කරන ලදී! ගමන් දුර කි.මී. ${data.distanceSavedKm} කින් අඩු විය.`
+          : (state.currentLang === 'ta' ? `பயண வரிசை வெற்றிகரமாக சீரமைக்கப்பட்டது! ${data.distanceSavedKm} கி.மீ மிச்சப்படுத்தப்பட்டது.` : `Route successfully optimized! Reduced road distance by ${data.distanceSavedKm} km.`);
+        alert(alertMsg);
       } else {
-        alert('Your current sequence is already travel-optimized!');
+        alert(state.currentLang === 'si' ? 'ඔබගේ වත්මන් මාර්ගය දැනටමත් ප්‍රශස්ත මට්ටමේ පවතී!' : 'Your current sequence is already travel-optimized!');
       }
     }
   } catch (err) {
     alert('Could not optimize route order.');
   } finally {
-    elements.btnOptimizeRoute.innerText = '⚡ Optimize Sequence';
     elements.btnOptimizeRoute.disabled = state.itinerary.length <= 2;
   }
 }
 
-// FULL ROUTE MAP RENDERING (IDEA 1)
+// FULL ROUTE MAP RENDERING
 function openRouteMapModal() {
   if (state.itinerary.length === 0) return;
 
-  elements.routeMapMetricsBadge.innerText = `${state.currentMetrics.totalStops} stops | ${state.currentMetrics.totalDistanceKm} km road travel`;
+  elements.routeMapMetricsBadge.innerText = `${state.currentMetrics.totalStops} stops | ${state.currentMetrics.totalDistanceKm} km`;
   elements.routeMapModal.classList.remove('hidden');
 
   setTimeout(() => renderConnectedRouteMap(), 150);
@@ -512,7 +862,6 @@ function renderConnectedRouteMap() {
   const container = elements.routeMapCanvas;
   if (!container) return;
 
-  // Ordered places from current itinerary
   const orderedPlaces = state.itinerary.map(id => state.allPlaces.find(p => p.PlaceID === id)).filter(Boolean);
   if (orderedPlaces.length === 0) return;
 
@@ -540,7 +889,6 @@ function renderConnectedRouteMap() {
       const pt = [lat, lon];
       latLngs.push(pt);
 
-      // Numbered badge marker icon
       const customIcon = L.divIcon({
         className: 'route-map-marker',
         html: `<span>${idx + 1}</span>`,
@@ -548,16 +896,15 @@ function renderConnectedRouteMap() {
         iconAnchor: [14, 14]
       });
 
+      const localizedTitle = getLocalizedPlaceName(p);
       const marker = L.marker(pt, { icon: customIcon }).bindPopup(`
-        <strong>#${idx + 1}: ${escapeHtml(p.Name)}</strong><br>
-        <small>${escapeHtml(p.CategoryName)} • ${p.DistanceFromCenter} km</small><br>
-        <em>Expected Dwell: ${p.EstVisitDurationMins}m</em>
+        <strong>#${idx + 1}: ${escapeHtml(localizedTitle)}</strong><br>
+        <small>${p.DistanceFromCenter} km • ${p.EstVisitDurationMins}m</small>
       `);
       state.routeMarkersGroup.addLayer(marker);
     }
   });
 
-  // Draw connected polyline if at least 2 coordinate points exist
   if (latLngs.length >= 2) {
     state.routePolylineLayer = L.polyline(latLngs, {
       color: '#0b6bcb',
@@ -646,36 +993,39 @@ async function openPlaceDetails(placeId) {
 
     showModalMedia('photos');
 
+    const localizedTitle = getLocalizedPlaceName(p);
+    const localizedCategory = getLocalizedCategoryName(p.CategoryName);
+
     const lat = parseFloat(p.Latitude);
     const lon = parseFloat(p.Longitude);
     const hasCoordinates = !isNaN(lat) && !isNaN(lon) && (lat !== 0 || lon !== 0);
 
     if (hasCoordinates) {
       elements.btnShowMap.style.display = 'block';
-      initializeOrUpdateLeafletMap(lat, lon, p.Name);
+      initializeOrUpdateLeafletMap(lat, lon, localizedTitle);
     } else {
       elements.btnShowMap.style.display = 'none';
     }
 
-    elements.modalPlaceTitle.innerText = p.Name;
-    elements.modalCategoryBadge.innerText = p.CategoryName;
+    elements.modalPlaceTitle.innerText = localizedTitle;
+    elements.modalCategoryBadge.innerText = localizedCategory;
     elements.modalDistanceBadge.innerText = `${p.DistanceFromCenter} km from Kiniyama`;
     elements.modalPlaceDescription.innerText = p.Description;
     elements.modalTravelTips.innerText = p.TravelTips || 'Standard travel guidelines apply; wear comfortable footwear and observe local customs.';
     elements.modalHours.innerText = p.OpeningHours || '08:00 AM - 05:00 PM';
-    elements.modalEntrance.innerText = p.EntranceFee || 'Free Admission';
+    elements.modalEntrance.innerText = p.EntranceFee || getTranslation('freeAdmission');
     elements.modalParking.innerText = p.ParkingAvailable ? 'On-site Parking Available' : 'Street/Limited Parking';
     elements.modalContact.innerText = p.ContactInfo || 'Not Available';
     elements.modalDuration.innerText = `${p.EstVisitDurationMins} minutes`;
 
     elements.modalTagsWrapper.innerHTML = (p.tags || []).map(t => 
-      `<span class="pill-sm">${escapeHtml(t.TagName)} (${escapeHtml(t.TagType)})</span>`
+      `<span class="pill-sm">${escapeHtml(t.TagName)}</span>`
     ).join('') || '<span class="text-muted" style="font-size: 0.8rem;">No tags assigned.</span>';
 
     elements.modalMapsLink.href = p.GoogleMapsUrl || `https://maps.google.com/?q=${lat},${lon}`;
 
     const isAdded = state.itinerary.includes(p.PlaceID);
-    elements.modalAddToTripBtn.innerText = isAdded ? 'Remove from Itinerary' : '+ Add to Itinerary';
+    elements.modalAddToTripBtn.innerText = isAdded ? getTranslation('btnRemoveTrip') : getTranslation('btnAddTrip');
     elements.modalAddToTripBtn.onclick = () => {
       toggleItineraryStop(p.PlaceID);
       openPlaceDetails(p.PlaceID);
@@ -711,15 +1061,15 @@ function switchAuthTab(tabName) {
   if (tabName === 'userLogin') {
     elements.tabUserLoginBtn.classList.add('active');
     elements.tabUserLoginContent.classList.remove('hidden');
-    elements.authModalTitle.innerText = 'User Login';
+    elements.authModalTitle.innerText = getTranslation('tabUserLogin');
   } else if (tabName === 'userRegister') {
     elements.tabUserRegisterBtn.classList.add('active');
     elements.tabUserRegisterContent.classList.remove('hidden');
-    elements.authModalTitle.innerText = 'Create Traveler Account';
+    elements.authModalTitle.innerText = getTranslation('btnCreateAccount');
   } else if (tabName === 'adminLogin') {
     elements.tabAdminLoginBtn.classList.add('active');
     elements.tabAdminLoginContent.classList.remove('hidden');
-    elements.authModalTitle.innerText = 'Admin Portal Access';
+    elements.authModalTitle.innerText = getTranslation('tabAdminPortal');
   }
 }
 
@@ -740,7 +1090,7 @@ function updateAuthButtonDisplay() {
     elements.tabViewAdmin.classList.add('hidden');
     elements.authPortalBtn.classList.remove('hidden');
     elements.userProfileBadge.classList.add('hidden');
-    elements.authBtnLabel.innerText = 'Login / Register';
+    elements.authBtnLabel.innerText = getTranslation('btnLoginRegister');
   }
 }
 
@@ -899,8 +1249,8 @@ function renderSavedTrips(trips) {
     elements.savedTripsGrid.innerHTML = `
       <div class="empty-state" style="grid-column: 1 / -1;">
         <div class="empty-icon">🧳</div>
-        <p>No saved trips found.</p>
-        <span>Build an itinerary in the planner and click "💾 Save Trip" to save it here.</span>
+        <p>${getTranslation('noSavedTrips')}</p>
+        <span>${getTranslation('noSavedTripsHint')}</span>
       </div>`;
     return;
   }
@@ -911,7 +1261,7 @@ function renderSavedTrips(trips) {
     
     const stopNames = placeIds.map(id => {
       const p = state.allPlaces.find(item => item.PlaceID === id);
-      return p ? p.Name : `Place #${id}`;
+      return p ? getLocalizedPlaceName(p) : `Place #${id}`;
     }).join(' ➔ ');
 
     const hours = Math.floor(t.TotalDurationMinutes / 60);
@@ -923,7 +1273,7 @@ function renderSavedTrips(trips) {
         <div class="saved-trip-header">
           <div>
             <h3 class="saved-trip-title">${escapeHtml(t.Title)}</h3>
-            <span class="saved-trip-date">Saved on ${new Date(t.CreatedAt).toLocaleDateString()}</span>
+            <span class="saved-trip-date">${new Date(t.CreatedAt).toLocaleDateString()}</span>
           </div>
           <span class="status-badge ${t.IsOverScheduled ? 'status-deleted' : 'status-active'}">
             ${t.IsOverScheduled ? 'Over-Scheduled' : 'Viable Plan'}
@@ -942,9 +1292,9 @@ function renderSavedTrips(trips) {
 
         <div class="saved-trip-actions">
           <button class="btn btn-primary btn-sm" onclick="loadTripIntoBuilder(${JSON.stringify(placeIds).replace(/"/g, '&quot;')})">
-            🔄 Load into Planner
+            🔄 ${state.currentLang === 'si' ? 'නැවත අරඹන්න' : (state.currentLang === 'ta' ? 'திட்டமிடு' : 'Load into Planner')}
           </button>
-          <button class="btn btn-danger btn-sm" onclick="deleteSavedTrip(${t.ItineraryID})">Delete</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteSavedTrip(${t.ItineraryID})">${getTranslation('btnClear')}</button>
         </div>
       </div>
     `;
@@ -1377,10 +1727,12 @@ function generateExportSummary() {
   const orderedPlaces = state.itinerary.map(id => state.allPlaces.find(p => p.PlaceID === id)).filter(Boolean);
 
   orderedPlaces.forEach((p, idx) => {
-    text += `${idx + 1}. ${p.Name} (${p.CategoryName})\n`;
+    const localizedTitle = getLocalizedPlaceName(p);
+    const localizedCategory = getLocalizedCategoryName(p.CategoryName);
+    text += `${idx + 1}. ${localizedTitle} (${localizedCategory})\n`;
     text += `   - Distance from Kiniyama: ${p.DistanceFromCenter} km\n`;
     text += `   - Operating Hours: ${p.OpeningHours}\n`;
-    text += `   - Entrance Fee: ${p.EntranceFee || 'Free Admission'}\n`;
+    text += `   - Entrance Fee: ${p.EntranceFee || getTranslation('freeAdmission')}\n`;
     text += `   - Expected Dwell Time: ${p.EstVisitDurationMins} minutes\n`;
     text += `   - Map Link: ${p.GoogleMapsUrl}\n`;
     if (p.TravelTips) {
@@ -1404,13 +1756,16 @@ function printItineraryDocument() {
 
   let rowsHtml = '';
   orderedPlaces.forEach((p, idx) => {
+    const localizedTitle = getLocalizedPlaceName(p);
+    const localizedCategory = getLocalizedCategoryName(p.CategoryName);
+
     rowsHtml += `
       <tr style="border-bottom: 1px solid #e2e8f0;">
         <td style="padding: 10px 8px; font-weight: bold; color: #0b6bcb; vertical-align: top;">#${idx + 1}</td>
         <td style="padding: 10px 8px; vertical-align: top;">
-          <strong style="font-size: 14px; color: #0f172a;">${escapeHtml(p.Name)}</strong>
+          <strong style="font-size: 14px; color: #0f172a;">${escapeHtml(localizedTitle)}</strong>
           <div style="font-size: 11px; color: #64748b; margin-top: 2px;">
-            <span style="background: #e0f2fe; color: #0369a1; padding: 2px 6px; border-radius: 4px; font-weight: 600;">${escapeHtml(p.CategoryName)}</span>
+            <span style="background: #e0f2fe; color: #0369a1; padding: 2px 6px; border-radius: 4px; font-weight: 600;">${escapeHtml(localizedCategory)}</span>
             &nbsp;•&nbsp; ${p.DistanceFromCenter} km from Kiniyama
           </div>
           <div style="font-size: 11px; color: #475569; margin-top: 4px;">
@@ -1499,7 +1854,15 @@ function setupEventListeners() {
   elements.tabViewSavedTrips.addEventListener('click', () => switchView('savedTrips'));
   elements.tabViewAdmin.addEventListener('click', () => switchView('adminConsole'));
 
-  // Quick Action Buttons (Ideas 1 & 2)
+  // Language Switcher Event Listeners (Idea 5)
+  document.querySelectorAll('.lang-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const selectedLang = btn.getAttribute('data-lang');
+      applyLanguage(selectedLang);
+    });
+  });
+
+  // Quick Action Buttons
   elements.btnViewRouteMap.addEventListener('click', openRouteMapModal);
   elements.btnOptimizeRoute.addEventListener('click', triggerRouteOptimization);
 

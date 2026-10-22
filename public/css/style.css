@@ -1,5 +1,5 @@
 /**
- * RouteCraft: Modern Responsive Stylesheet
+ * RouteCraft: Modern Responsive Stylesheet with Multilingual Typography
  * Adheres to: WCAG 2.1 Level AA Accessibility Standards & IEEE Std 830-1998 SRS
  */
 
@@ -32,15 +32,16 @@
   padding: 0;
 }
 
+/* Universal Typography with Sinhala & Tamil Fallbacks */
 body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family: 'Inter', 'Noto Sans Sinhala', 'Noto Sans Tamil', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   color: var(--text-main);
   background-color: var(--secondary-bg);
   line-height: 1.5;
   min-height: 100vh;
 }
 
-/* 1. NAVIGATION & SPA VIEW TABS */
+/* 1. NAVIGATION BAR */
 .top-nav {
   background: var(--surface-color);
   border-bottom: 1px solid var(--border-color);
@@ -58,7 +59,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1.25rem;
+  gap: 1.15rem;
 }
 
 .brand {
@@ -83,6 +84,22 @@ body {
   font-size: 0.72rem;
   color: var(--text-muted);
   font-weight: 500;
+}
+
+/* Live Weather Pill */
+.weather-pill {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #0369a1;
+  background: #e0f2fe;
+  border: 1px solid #bae6fd;
+  padding: 0.35rem 0.85rem;
+  border-radius: 20px;
+  white-space: nowrap;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 
 .spa-nav-tabs {
@@ -138,41 +155,43 @@ body {
   font-weight: 700;
 }
 
-/* Live Weather Pill Positioned Beside Brand */
-.weather-pill {
+/* 2. COMPACT LANGUAGE SWITCHER (IDEA 5) */
+.lang-switcher {
+  display: inline-flex;
+  background: #f1f5f9;
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  padding: 2px;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.lang-btn {
+  background: none;
+  border: none;
+  padding: 0.3rem 0.65rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  border-radius: 16px;
+  cursor: pointer;
+  transition: var(--transition);
+  line-height: 1.2;
+}
+
+.lang-btn:hover {
+  color: var(--text-main);
+}
+
+.lang-btn.active {
+  background: var(--primary-color);
+  color: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+.nav-actions {
   display: flex;
   align-items: center;
-  gap: 0.45rem;
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: #0369a1;
-  background: #e0f2fe;
-  border: 1px solid #bae6fd;
-  padding: 0.35rem 0.85rem;
-  border-radius: 20px;
-  white-space: nowrap;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
-  transition: var(--transition);
-}
-
-.weather-pill:hover {
-  background: #d0ebff;
-  border-color: #7dd3fc;
-}
-
-@media (max-width: 900px) {
-  .nav-container {
-    flex-wrap: wrap;
-    gap: 0.75rem;
-  }
-  .weather-pill {
-    order: 2;
-  }
-  .spa-nav-tabs {
-    order: 3;
-    width: 100%;
-    justify-content: center;
-  }
+  gap: 0.75rem;
 }
 
 .user-badge {
@@ -219,7 +238,7 @@ body {
   background: #fff;
 }
 
-/* 2. FILTER BAR */
+/* 3. FILTER BAR */
 .filter-bar {
   background: var(--surface-color);
   border-bottom: 1px solid var(--border-color);
@@ -289,7 +308,7 @@ body {
   box-shadow: var(--shadow-focus);
 }
 
-/* 3. SPA VIEWS LAYOUT */
+/* 4. SPA VIEWS LAYOUT */
 .app-view {
   animation: fadeIn 0.25s ease-in-out;
 }
@@ -319,7 +338,7 @@ body {
   font-weight: 700;
 }
 
-/* 4. DUAL-PANEL EXPLORE WORKSPACE */
+/* 5. DUAL-PANEL EXPLORE WORKSPACE */
 .main-workspace {
   width: 98%;
   max-width: 1750px;
@@ -371,7 +390,6 @@ body {
   border-radius: 12px;
 }
 
-/* Quick Route Map & Optimize Actions (Ideas 1 & 2) */
 .itinerary-quick-actions {
   display: flex;
   gap: 0.4rem;
@@ -716,7 +734,7 @@ body {
   padding-top: 0.75rem;
 }
 
-/* 5. SAVED TRIPS DASHBOARD STYLES */
+/* 6. SAVED TRIPS DASHBOARD */
 .saved-trips-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
@@ -781,7 +799,7 @@ body {
   padding-top: 0.75rem;
 }
 
-/* 6. ADMIN CONSOLE & MODERN FORM INPUTS */
+/* 7. ADMIN CONSOLE & MODERN FORM INPUTS */
 .admin-topbar {
   display: flex;
   justify-content: space-between;
@@ -944,7 +962,7 @@ body {
 .status-active { background: #dcfce7; color: #15803d; }
 .status-deleted { background: #fee2e2; color: #b91c1c; }
 
-/* 7. MODALS, IN-APP MAP & NUMBERED ROUTE MARKERS */
+/* 8. MODALS & NUMBERED MARKERS */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -1167,7 +1185,6 @@ body {
   line-height: 1.45;
 }
 
-/* Custom Numbered Route Badge Marker for Leaflet Map */
 .route-map-marker {
   background: #0b6bcb;
   color: #ffffff;
@@ -1368,7 +1385,7 @@ body {
   overflow-y: auto;
 }
 
-/* 8. SHARED CONTROLS */
+/* 9. BUTTONS */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -1414,8 +1431,8 @@ body {
   to { transform: scale(1); opacity: 1; }
 }
 
-/* 9. RESPONSIVENESS & CLEAN PRINTING */
 @media (max-width: 992px) {
+  .nav-container { flex-wrap: wrap; }
   .main-workspace { grid-template-columns: 1fr; }
   .itinerary-panel { position: static; max-height: none; }
   .modal-body-split { grid-template-columns: 1fr; }

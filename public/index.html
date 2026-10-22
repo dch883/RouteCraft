@@ -7,10 +7,10 @@
   <meta name="description" content="Interactive single-day itinerary planner for rural and semi-urban attractions within a 25 km radius of Kiniyama, Sri Lanka. Developed by H.M.D.C. Herath (University of Moratuwa).">
   <!-- Stylesheet -->
   <link rel="stylesheet" href="css/style.css">
-  <!-- Google Fonts: Inter -->
+  <!-- Google Fonts: Inter & Sri Lankan Noto Sans Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Sinhala:wght@400;600;700&family=Noto+Sans+Tamil:wght@400;600;700&display=swap" rel="stylesheet">
   <!-- Leaflet.js: Free & Open-Source Map Engine -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
@@ -20,36 +20,49 @@
   <!-- TOP NAVIGATION BAR -->
   <header class="top-nav">
     <div class="nav-container">
-      <!-- 1. Left: Brand Title -->
+      <!-- 1. Brand Title -->
       <div class="brand" id="brandHomeBtn" style="cursor: pointer;">
         <span class="brand-icon">🧭</span>
         <div class="brand-text">
           <span class="brand-title">RouteCraft</span>
-          <span class="brand-subtitle">Kiniyama Regional Day-Planner</span>
+          <span class="brand-subtitle" data-i18n="brandSubtitle">Kiniyama Regional Day-Planner</span>
         </div>
       </div>
 
-      <!-- 2. Weather Pill Positioned in the Exact Indicated Spot -->
+      <!-- 2. Live Weather Pill for Kiniyama -->
       <div class="weather-pill" id="kiniyamaWeatherPill" title="Live weather for Kiniyama (7°39'36.8''N 80°00'17.9''E)">
         <span id="weatherIcon">🌤️</span> <span id="weatherText">Kiniyama: Loading...</span>
       </div>
 
       <!-- 3. Navigation View Switcher Tabs -->
       <nav class="spa-nav-tabs">
-        <button class="nav-tab active" id="tabViewExplore">🧭 Explore & Plan</button>
-        <button class="nav-tab" id="tabViewSavedTrips">📋 My Saved Trips <span class="tab-badge" id="savedTripsCountBadge">0</span></button>
-        <button class="nav-tab admin-nav-tab hidden" id="tabViewAdmin">⚙️ Admin Console</button>
+        <button class="nav-tab active" id="tabViewExplore">
+          🧭 <span data-i18n="navExplore">Explore & Plan</span>
+        </button>
+        <button class="nav-tab" id="tabViewSavedTrips">
+          📋 <span data-i18n="navSavedTrips">My Saved Trips</span> <span class="tab-badge" id="savedTripsCountBadge">0</span>
+        </button>
+        <button class="nav-tab admin-nav-tab hidden" id="tabViewAdmin">
+          ⚙️ <span data-i18n="navAdminConsole">Admin Console</span>
+        </button>
       </nav>
 
-      <!-- 4. Right: User Profile & Login Buttons -->
+      <!-- 4. Right Controls: Language Switcher (Idea 5) & Profile/Auth -->
       <div class="nav-actions">
+        <!-- Language Switcher Pill (EN, SI, TA) -->
+        <div class="lang-switcher" id="langSwitcher" title="Switch Language / භාෂාව මාරු කරන්න / மொழியை மாற்றவும்">
+          <button class="lang-btn active" data-lang="en">EN</button>
+          <button class="lang-btn" data-lang="si">සිං</button>
+          <button class="lang-btn" data-lang="ta">தமி</button>
+        </div>
+
         <div id="userProfileBadge" class="user-badge hidden">
           <span id="userBadgeLabel">👤 Tourist</span>
-          <button id="logoutUserBtn" class="btn btn-text btn-sm" title="Log out of account">Logout</button>
+          <button id="logoutUserBtn" class="btn btn-text btn-sm" title="Log out" data-i18n="btnLogout">Logout</button>
         </div>
 
         <button id="authPortalBtn" class="btn btn-outline" title="Sign In or Register">
-          <span class="btn-icon">👤</span> <span id="authBtnLabel">Login / Register</span>
+          <span class="btn-icon">👤</span> <span id="authBtnLabel" data-i18n="btnLoginRegister">Login / Register</span>
         </button>
       </div>
     </div>
@@ -61,23 +74,23 @@
       <div class="filter-container">
         <div class="search-box">
           <span class="search-icon">🔍</span>
-          <input type="text" id="searchInput" placeholder="Search attractions, heritage sites, nature...">
+          <input type="text" id="searchInput" placeholder="Search attractions, heritage sites, nature..." data-i18n-placeholder="searchPlaceholder">
         </div>
 
         <div class="chip-group" id="categoryChips">
-          <button class="filter-chip active" data-category="All">All Attractions</button>
+          <button class="filter-chip active" data-category="All" data-i18n="allAttractions">All Attractions</button>
         </div>
         
         <div class="dropdown-filters">
           <select id="vibeFilter" class="filter-select">
-            <option value="">Filter by Vibe (Atmosphere)</option>
+            <option value="" data-i18n="filterByVibe">Filter by Vibe (Atmosphere)</option>
           </select>
 
           <select id="activityFilter" class="filter-select">
-            <option value="">Filter by Activity</option>
+            <option value="" data-i18n="filterByActivity">Filter by Activity</option>
           </select>
           
-          <button id="resetFiltersBtn" class="btn btn-text" title="Reset all filters">Reset</button>
+          <button id="resetFiltersBtn" class="btn btn-text" title="Reset all filters" data-i18n="btnReset">Reset</button>
         </div>
       </div>
     </section>
@@ -87,26 +100,26 @@
       <aside class="itinerary-panel" id="itineraryPanel">
         <div class="panel-header">
           <div class="panel-header-title">
-            <h3>Your Single-Day Itinerary</h3>
+            <h3 data-i18n="itineraryTitle">Your Single-Day Itinerary</h3>
             <span class="counter-badge" id="itineraryCountBadge">0 stops</span>
           </div>
-          <p class="panel-desc">Assemble up to 10 stops within the 25 km Kiniyama zone.</p>
+          <p class="panel-desc" data-i18n="itineraryDesc">Assemble up to 10 stops within the 25 km Kiniyama zone.</p>
         </div>
 
-        <!-- Quick Route Actions: Route Map (Idea 1) & Optimize Order (Idea 2) -->
+        <!-- Quick Route Actions -->
         <div class="itinerary-quick-actions">
-          <button id="btnViewRouteMap" class="btn btn-outline btn-sm" disabled title="View all stops connected on a full map">
-            🗺️ View Route Map
+          <button id="btnViewRouteMap" class="btn btn-outline btn-sm" disabled title="View all stops on map">
+            🗺️ <span data-i18n="btnViewRouteMap">View Route Map</span>
           </button>
-          <button id="btnOptimizeRoute" class="btn btn-outline btn-sm" disabled title="Reorder stops by shortest road distance">
-            ⚡ Optimize Sequence
+          <button id="btnOptimizeRoute" class="btn btn-outline btn-sm" disabled title="Reorder stops by shortest distance">
+            ⚡ <span data-i18n="btnOptimizeSequence">Optimize Sequence</span>
           </button>
         </div>
 
         <div class="alert-banner warning-banner hidden" id="timeWarningBanner">
           <div class="alert-icon">⚠️</div>
           <div class="alert-content">
-            <strong>Over-Scheduled Warning</strong>
+            <strong data-i18n="warningTitle">Over-Scheduled Warning</strong>
             <p id="warningBannerText">Plan exceeds realistic single-day limit (8.0 active hours).</p>
           </div>
         </div>
@@ -114,38 +127,40 @@
         <div class="itinerary-list" id="itineraryStopsList">
           <div class="empty-state" id="emptyItineraryState">
             <div class="empty-icon">📍</div>
-            <p>No places added yet.</p>
-            <span>Select "+ Add to Trip" on any destination card to begin crafting your route.</span>
+            <p data-i18n="emptyItinerary">No places added yet.</p>
+            <span data-i18n="emptyItineraryHint">Select "+ Add to Trip" on any destination card to begin crafting your route.</span>
           </div>
         </div>
 
-        <!-- Metrics Box with Budget / Expense Estimator (Idea 3) -->
+        <!-- Metrics Box with Budget -->
         <div class="itinerary-metrics-box" id="metricsBox">
           <div class="metric-row">
-            <span class="metric-label">Estimated Road Distance:</span>
+            <span class="metric-label" data-i18n="metricRoadDistance">Estimated Road Distance:</span>
             <span class="metric-value" id="metricDistance">0.00 km</span>
           </div>
           <div class="metric-row">
-            <span class="metric-label">Cumulative Duration:</span>
+            <span class="metric-label" data-i18n="metricDuration">Cumulative Duration:</span>
             <span class="metric-value" id="metricDuration">0h 0m</span>
           </div>
           <div class="metric-row">
-            <span class="metric-label">Estimated Admission Cost:</span>
-            <span class="metric-value highlight-cost" id="metricBudget">Free Admission</span>
+            <span class="metric-label" data-i18n="metricAdmission">Estimated Admission Cost:</span>
+            <span class="metric-value highlight-cost" id="metricBudget" data-i18n="freeAdmission">Free Admission</span>
           </div>
           <div class="metric-subtext">
-            <small>Includes dwell time, rural transit (~35 km/h), & domestic ticket prices.</small>
+            <small data-i18n="metricsSubtext">Includes dwell time, rural transit (~35 km/h), & ticket fees.</small>
           </div>
         </div>
 
         <div class="panel-actions">
-          <button id="clearItineraryBtn" class="btn btn-secondary" disabled>Clear</button>
-          <button id="saveTripToAccountBtn" class="btn btn-outline" disabled title="Save to your profile">💾 Save Trip</button>
-          <button id="exportItineraryBtn" class="btn btn-primary" disabled>Export</button>
+          <button id="clearItineraryBtn" class="btn btn-secondary" disabled data-i18n="btnClear">Clear</button>
+          <button id="saveTripToAccountBtn" class="btn btn-outline" disabled title="Save to your profile">
+            💾 <span data-i18n="btnSaveTrip">Save Trip</span>
+          </button>
+          <button id="exportItineraryBtn" class="btn btn-primary" disabled data-i18n="btnExport">Export</button>
         </div>
 
         <div class="disclaimer-note">
-          <strong>Guidance Disclaimer:</strong> Distances and transit durations are Haversine-computed estimations intended strictly for day-trip guidance.
+          <strong data-i18n="disclaimerTitle">Guidance Disclaimer:</strong> <span data-i18n="disclaimerText">Distances and transit durations are Haversine-computed estimations intended strictly for day-trip guidance.</span>
         </div>
       </aside>
 
@@ -153,14 +168,14 @@
       <section class="directory-panel">
         <div class="directory-header">
           <div class="directory-heading">
-            <h2>Destinations within 25 km of Kiniyama</h2>
+            <h2 data-i18n="directoryTitle">Destinations within 25 km of Kiniyama</h2>
             <span id="resultsCount" class="results-count">Loading places...</span>
           </div>
           <div class="sort-selector">
-            <label for="sortOrder">Sort by:</label>
+            <label for="sortOrder" data-i18n="sortBy">Sort by:</label>
             <select id="sortOrder" class="filter-select-sm">
-              <option value="distance">Distance from Center (Nearest)</option>
-              <option value="name">Alphabetical (A - Z)</option>
+              <option value="distance" data-i18n="sortDistance">Distance from Center (Nearest)</option>
+              <option value="name" data-i18n="sortName">Alphabetical (A - Z)</option>
             </select>
           </div>
         </div>
@@ -175,17 +190,17 @@
     <section class="view-container">
       <div class="view-header">
         <div>
-          <h2>My Saved Day-Trip Itineraries</h2>
-          <p class="text-muted">Review, reload, or print previously assembled trips for the Kiniyama region.</p>
+          <h2 data-i18n="savedTripsHeading">My Saved Day-Trip Itineraries</h2>
+          <p class="text-muted" data-i18n="savedTripsSubtitle">Review, reload, or print previously assembled trips for the Kiniyama region.</p>
         </div>
-        <button class="btn btn-outline" onclick="switchView('explore')">← Return to Trip Planner</button>
+        <button class="btn btn-outline" onclick="switchView('explore')" data-i18n="btnReturnPlanner">← Return to Trip Planner</button>
       </div>
 
       <div id="savedTripsGrid" class="saved-trips-grid">
         <div class="empty-state">
           <div class="empty-icon">🧳</div>
-          <p>No saved trips found.</p>
-          <span>Craft a day-trip in the planner and click "💾 Save Trip" to store it in your account.</span>
+          <p data-i18n="noSavedTrips">No saved trips found.</p>
+          <span data-i18n="noSavedTripsHint">Craft a day-trip in the planner and click "💾 Save Trip" to store it in your account.</span>
         </div>
       </div>
     </section>
@@ -205,6 +220,7 @@
         </div>
       </div>
 
+      <!-- 3 Subtabs -->
       <div class="admin-subtabs">
         <button class="subtab-btn active" id="adminTabPlaces">Manage Destinations</button>
         <button class="subtab-btn" id="adminTabUsers">Manage Administrators</button>
@@ -379,7 +395,7 @@
     </section>
   </div>
 
-  <!-- MODAL 1: PLACE DETAIL VIEW (IN-APP MAP & PHOTOS) -->
+  <!-- MODAL 1: PLACE DETAIL VIEW -->
   <div class="modal-overlay hidden" id="placeDetailModal">
     <div class="modal-window modal-fullscreen-view">
       <div class="modal-header">
@@ -397,8 +413,8 @@
         <!-- Left: Carousel / Map Switcher -->
         <div class="detail-left-col">
           <div class="media-toggle-bar">
-            <button class="media-tab active" id="btnShowPhotos">📷 Photos</button>
-            <button class="media-tab" id="btnShowMap">🗺️ In-App Map</button>
+            <button class="media-tab active" id="btnShowPhotos">📷 <span data-i18n="tabPhotos">Photos</span></button>
+            <button class="media-tab" id="btnShowMap">🗺️ <span data-i18n="tabInAppMap">In-App Map</span></button>
           </div>
 
           <div class="detail-photo-frame" id="modalPhotoContainer">
@@ -413,21 +429,21 @@
           </div>
 
           <a id="modalMapsLink" href="#" target="_blank" rel="noopener noreferrer" class="btn btn-outline btn-block mt-2">
-            📍 Open External Google Maps (Turn-by-Turn)
+            📍 <span data-i18n="btnOpenGoogleMaps">Open External Google Maps (Directions)</span>
           </a>
         </div>
 
         <!-- Right: Information & Travel Tips -->
         <div class="detail-right-col">
           <div class="detail-desc-box">
-            <h4>About this Destination</h4>
+            <h4 data-i18n="aboutDestination">About this Destination</h4>
             <p id="modalPlaceDescription" class="modal-description"></p>
           </div>
 
           <div class="travel-tips-box" id="modalTravelTipsBox">
             <span class="tips-icon">💡</span>
             <div>
-              <strong>Travel Tips & Visitor Etiquette</strong>
+              <strong data-i18n="travelTipsTitle">Travel Tips & Visitor Etiquette</strong>
               <p id="modalTravelTips" class="tips-text">Standard travel guidelines apply; wear comfortable footwear and observe local customs.</p>
             </div>
           </div>
@@ -436,7 +452,7 @@
             <div class="attribute-item">
               <span class="attr-icon">🕒</span>
               <div>
-                <strong>Operating Hours</strong>
+                <strong data-i18n="attrHours">Operating Hours</strong>
                 <p id="modalHours">08:00 AM - 05:00 PM</p>
               </div>
             </div>
@@ -444,7 +460,7 @@
             <div class="attribute-item">
               <span class="attr-icon">🎟️</span>
               <div>
-                <strong>Entrance Fee</strong>
+                <strong data-i18n="attrEntrance">Entrance Fee</strong>
                 <p id="modalEntrance">Free Admission</p>
               </div>
             </div>
@@ -452,7 +468,7 @@
             <div class="attribute-item">
               <span class="attr-icon">🚗</span>
               <div>
-                <strong>Parking Availability</strong>
+                <strong data-i18n="attrParking">Parking Availability</strong>
                 <p id="modalParking">On-site Parking Available</p>
               </div>
             </div>
@@ -460,7 +476,7 @@
             <div class="attribute-item">
               <span class="attr-icon">📞</span>
               <div>
-                <strong>Contact Info</strong>
+                <strong data-i18n="attrContact">Contact Info</strong>
                 <p id="modalContact">Not Available</p>
               </div>
             </div>
@@ -468,7 +484,7 @@
             <div class="attribute-item">
               <span class="attr-icon">⏳</span>
               <div>
-                <strong>Recommended Duration</strong>
+                <strong data-i18n="attrDuration">Recommended Duration</strong>
                 <p id="modalDuration">60 minutes</p>
               </div>
             </div>
@@ -476,36 +492,36 @@
             <div class="attribute-item">
               <span class="attr-icon">📍</span>
               <div>
-                <strong>Scope Status</strong>
-                <p>Verified &le; 25 km Zone</p>
+                <strong data-i18n="attrScope">Scope Status</strong>
+                <p data-i18n="scopeVerified">Verified &le; 25 km Zone</p>
               </div>
             </div>
           </div>
 
           <div class="modal-tags-container">
-            <h4>Vibe & Activity Tags</h4>
+            <h4 data-i18n="tagsTitle">Vibe & Activity Tags</h4>
             <div class="tags-wrapper" id="modalTagsWrapper"></div>
           </div>
         </div>
       </div>
 
       <div class="modal-footer">
-        <button id="modalCloseActionBtn" class="btn btn-secondary">Close</button>
+        <button id="modalCloseActionBtn" class="btn btn-secondary" data-i18n="btnClose">Close</button>
         <button id="modalAddToTripBtn" class="btn btn-primary btn-lg">+ Add to Itinerary</button>
       </div>
     </div>
   </div>
 
-  <!-- MODAL 2: FULL-DAY INTERACTIVE ROUTE MAP (IDEA 1) -->
+  <!-- MODAL 2: FULL ROUTE MAP MODAL -->
   <div class="modal-overlay hidden" id="routeMapModal">
     <div class="modal-window modal-fullscreen-view">
       <div class="modal-header">
         <div class="modal-title-wrap">
           <div class="modal-badges-row">
-            <span class="category-pill">Interactive Day-Trip Route</span>
+            <span class="category-pill" data-i18n="badgeRouteMap">Interactive Day-Trip Route</span>
             <span class="distance-pill" id="routeMapMetricsBadge">0 stops | 0.00 km</span>
           </div>
-          <h2>Full Itinerary Journey Map</h2>
+          <h2 data-i18n="routeMapHeading">Full Itinerary Journey Map</h2>
         </div>
         <button class="modal-close-btn" id="closeRouteMapModalBtn">&times;</button>
       </div>
@@ -515,10 +531,10 @@
       </div>
 
       <div class="modal-footer" style="justify-content: space-between;">
-        <span class="text-muted" style="font-size: 0.8rem;">
+        <span class="text-muted" style="font-size: 0.8rem;" data-i18n="routeMapNote">
           Stops are ordered sequentially. Dashed lines connect consecutive attractions.
         </span>
-        <button class="btn btn-secondary" id="closeRouteMapFooterBtn">Close Map</button>
+        <button class="btn btn-secondary" id="closeRouteMapFooterBtn" data-i18n="btnCloseMap">Close Map</button>
       </div>
     </div>
   </div>
@@ -535,40 +551,40 @@
       </div>
 
       <div class="auth-tabs" id="authTabsNav">
-        <button class="auth-tab-btn active" id="tabUserLoginBtn">User Login</button>
-        <button class="auth-tab-btn" id="tabUserRegisterBtn">Register</button>
-        <button class="auth-tab-btn" id="tabAdminLoginBtn">Admin Portal</button>
+        <button class="auth-tab-btn active" id="tabUserLoginBtn" data-i18n="tabUserLogin">User Login</button>
+        <button class="auth-tab-btn" id="tabUserRegisterBtn" data-i18n="tabRegister">Register</button>
+        <button class="auth-tab-btn" id="tabAdminLoginBtn" data-i18n="tabAdminPortal">Admin Portal</button>
       </div>
 
       <div class="auth-body-container" id="tabUserLoginContent">
         <form id="userLoginForm" class="clean-auth-form" autocomplete="off">
-          <p class="form-instruction text-center">Log in to save day trips and access trip history.</p>
+          <p class="form-instruction text-center" data-i18n="loginInstruction">Log in to save day trips and access trip history.</p>
           <div class="form-group">
-            <label for="userEmail">Email Address</label>
+            <label for="userEmail" data-i18n="labelEmail">Email Address</label>
             <input type="email" id="userEmail" required placeholder="name@example.com" autocomplete="off">
           </div>
           <div class="form-group">
-            <label for="userPassword">Password</label>
+            <label for="userPassword" data-i18n="labelPassword">Password</label>
             <input type="password" id="userPassword" required placeholder="••••••••" autocomplete="new-password">
           </div>
           <div class="form-error hidden" id="userLoginError"></div>
-          <button type="submit" class="btn btn-primary btn-auth">Sign In</button>
+          <button type="submit" class="btn btn-primary btn-auth" data-i18n="btnSignIn">Sign In</button>
         </form>
       </div>
 
       <div class="auth-body-container hidden" id="tabUserRegisterContent">
         <form id="userRegisterForm" class="clean-auth-form" autocomplete="off">
-          <p class="form-instruction text-center">Create your traveler profile for planning trips around Kiniyama.</p>
+          <p class="form-instruction text-center" data-i18n="registerInstruction">Create your traveler profile for planning trips around Kiniyama.</p>
           <div class="form-group">
-            <label for="regFullName">Full Name *</label>
+            <label for="regFullName" data-i18n="labelFullName">Full Name *</label>
             <input type="text" id="regFullName" required placeholder="e.g. Kasun Perera" autocomplete="off">
           </div>
           <div class="form-group">
-            <label for="regEmail">Email Address *</label>
+            <label for="regEmail" data-i18n="labelEmail">Email Address *</label>
             <input type="email" id="regEmail" required placeholder="name@example.com" autocomplete="off">
           </div>
           <div class="form-group">
-            <label for="regUserType">User Category</label>
+            <label for="regUserType" data-i18n="labelUserCategory">User Category</label>
             <select id="regUserType">
               <option value="Domestic Tourist">Domestic Tourist (Local Traveler)</option>
               <option value="Foreign Visitor">Foreign Visitor (International Tourist)</option>
@@ -577,28 +593,28 @@
             </select>
           </div>
           <div class="form-group">
-            <label for="regPassword">Password * (Min 6 characters)</label>
+            <label for="regPassword" data-i18n="labelPasswordMin">Password * (Min 6 characters)</label>
             <input type="password" id="regPassword" required minlength="6" placeholder="••••••••" autocomplete="new-password">
           </div>
           <div class="form-error hidden" id="regError"></div>
           <div class="form-success hidden" id="regSuccess"></div>
-          <button type="submit" class="btn btn-primary btn-auth">Create Account</button>
+          <button type="submit" class="btn btn-primary btn-auth" data-i18n="btnCreateAccount">Create Account</button>
         </form>
       </div>
 
       <div class="auth-body-container hidden" id="tabAdminLoginContent">
         <form id="adminLoginForm" class="clean-auth-form" autocomplete="off">
-          <p class="form-instruction text-center">System Administrators only. Enter your credentials.</p>
+          <p class="form-instruction text-center" data-i18n="adminInstruction">System Administrators only. Enter your credentials.</p>
           <div class="form-group">
-            <label for="adminUsername">Admin Username</label>
+            <label for="adminUsername" data-i18n="labelAdminUsername">Admin Username</label>
             <input type="text" id="adminUsername" required placeholder="admin" autocomplete="off">
           </div>
           <div class="form-group">
-            <label for="adminPassword">Admin Password</label>
+            <label for="adminPassword" data-i18n="labelPassword">Admin Password</label>
             <input type="password" id="adminPassword" required placeholder="••••••••" autocomplete="new-password">
           </div>
           <div class="form-error hidden" id="adminLoginError"></div>
-          <button type="submit" class="btn btn-primary btn-auth">Sign In as Administrator</button>
+          <button type="submit" class="btn btn-primary btn-auth" data-i18n="btnSignInAdmin">Sign In as Administrator</button>
         </form>
       </div>
     </div>
@@ -629,16 +645,16 @@
   <div class="modal-overlay hidden" id="saveTripModal">
     <div class="modal-window modal-auth">
       <div class="modal-header">
-        <h3>Save Itinerary</h3>
+        <h3 data-i18n="saveItineraryHeading">Save Itinerary</h3>
         <button class="modal-close-btn" id="closeSaveTripModalBtn">&times;</button>
       </div>
       <div class="auth-body-container">
         <form id="saveTripForm" class="clean-auth-form">
           <div class="form-group">
-            <label for="saveTripTitleInput">Trip Name / Title</label>
+            <label for="saveTripTitleInput" data-i18n="labelTripTitle">Trip Name / Title</label>
             <input type="text" id="saveTripTitleInput" required placeholder="e.g. Saturday Heritage & Lake Tour">
           </div>
-          <button type="submit" class="btn btn-primary btn-auth">Confirm & Save</button>
+          <button type="submit" class="btn btn-primary btn-auth" data-i18n="btnConfirmSave">Confirm & Save</button>
         </form>
       </div>
     </div>
@@ -648,15 +664,15 @@
   <div class="modal-overlay hidden" id="exportModal">
     <div class="modal-window">
       <div class="modal-header">
-        <h3>Day-Trip Itinerary Summary</h3>
+        <h3 data-i18n="exportHeading">Day-Trip Itinerary Summary</h3>
         <button class="modal-close-btn" id="closeExportModalBtn">&times;</button>
       </div>
       <div class="modal-body">
         <pre class="export-preview-box" id="exportContentBox"></pre>
       </div>
       <div class="modal-footer">
-        <button id="copyExportTextBtn" class="btn btn-secondary">Copy to Clipboard</button>
-        <button id="printItineraryBtn" class="btn btn-primary">Print / Save as PDF</button>
+        <button id="copyExportTextBtn" class="btn btn-secondary" data-i18n="btnCopyClipboard">Copy to Clipboard</button>
+        <button id="printItineraryBtn" class="btn btn-primary" data-i18n="btnPrintPdf">Print / Save as PDF</button>
       </div>
     </div>
   </div>
