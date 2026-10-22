@@ -210,7 +210,7 @@ function sortAndRenderPlaces() {
 
   elements.placesGrid.innerHTML = places.map(p => {
     const isAdded = state.itinerary.includes(p.PlaceID);
-    const pills = (p.tags || []).slice(0, 3).map(t => `<span class="pill-sm">${t.TagName}</span>`).join('');
+    const pills = (p.tags || []).slice(0, 3).map(t => `<span class="pill-sm">${escapeHtml(t.TagName)}</span>`).join('');
     const photoUrl = p.ImageUrl && p.ImageUrl.trim() !== '' ? p.ImageUrl : FALLBACK_IMAGE;
 
     return `
@@ -327,20 +327,15 @@ async function updateItineraryUI() {
 }
 
 // =============================================================================
-// PLACE DETAIL MODAL & CAROUSEL (PREV / NEXT MULTI-PHOTO SYSTEM)
+// PLACE DETAIL MODAL & CAROUSEL
 // =============================================================================
 
-/**
- * Builds the image list for a place:
- * e.g., assets/places/kadigawa.jpg -> kadigawa.jpg, kadigawa2.jpg, kadigawa3.jpg
- */
 function buildImageListForPlace(baseImageUrl) {
   const list = [];
   const primary = (baseImageUrl && baseImageUrl.trim()) ? baseImageUrl.trim() : FALLBACK_IMAGE;
   list.push(primary);
 
-  // Generate secondary and tertiary image paths matching user file naming
-  // (e.g. kadigawa2.jpg, kadigawa3.jpg)
+  // Generate potential secondary/tertiary image paths matching naming convention
   if (primary.match(/(\.[\w\d]+)$/)) {
     const img2 = primary.replace(/(\.[\w\d]+)$/, '2$1');
     const img3 = primary.replace(/(\.[\w\d]+)$/, '3$1');
@@ -359,7 +354,7 @@ function updateCarouselView() {
   setTimeout(() => {
     elements.modalPlaceImage.src = images[idx];
     elements.modalPlaceImage.onerror = () => {
-      // If local extra image doesn't exist, fallback gracefully
+      // If secondary image is absent, gracefully cycle back to primary
       elements.modalPlaceImage.src = images[0] || FALLBACK_IMAGE;
     };
     elements.modalPlaceImage.style.opacity = '1';
@@ -392,7 +387,7 @@ async function openPlaceDetails(placeId) {
     elements.modalDuration.innerText = `${p.EstVisitDurationMins} minutes`;
 
     elements.modalTagsWrapper.innerHTML = (p.tags || []).map(t => 
-      `<span class="pill-sm">${t.TagName} (${t.TagType})</span>`
+      `<span class="pill-sm">${escapeHtml(t.TagName)} (${escapeHtml(t.TagType)})</span>`
     ).join('') || '<span class="text-muted" style="font-size: 0.8rem;">No tags assigned.</span>';
 
     elements.modalMapsLink.href = p.GoogleMapsUrl || `https://maps.google.com/?q=${p.Latitude},${p.Longitude}`;
@@ -410,7 +405,6 @@ async function openPlaceDetails(placeId) {
   }
 }
 
-// Carousel Next / Prev Click Handlers
 function nextCarouselPhoto() {
   const len = state.currentCarouselImages.length;
   state.currentCarouselIndex = (state.currentCarouselIndex + 1) % len;
@@ -424,7 +418,7 @@ function prevCarouselPhoto() {
 }
 
 // =============================================================================
-// REDESIGNED AUTH & ADMIN PORTAL
+// AUTH & ADMIN PORTAL
 // =============================================================================
 
 function switchAuthTab(tabName) {
@@ -484,7 +478,7 @@ elements.subtabAdminsBtn.addEventListener('click', () => {
   loadAdminUsers();
 });
 
-// Admin Login
+// Admin Login Handler (Fix for Issue 1: elements.authSessionStatus)
 elements.adminLoginForm.addEventListener('submit', async (e) => {
   e.preventDefault();
   elements.adminLoginError.classList.add('hidden');
@@ -503,7 +497,12 @@ elements.adminLoginForm.addEventListener('submit', async (e) => {
     if (data.success) {
       state.activeAdmin = data.admin;
       updateAuthButtonDisplay();
-      elements.adminSessionStatus.innerText = 'Admin Session Active';
+
+      // Safe update preventing undefined property crash
+      if (elements.authSessionStatus) {
+        elements.authSessionStatus.innerText = 'Admin Session Active';
+      }
+
       elements.adminUserDisplayName.innerText = data.admin.username;
       switchAuthTab('adminDashboard');
       loadAdminPlaces();
@@ -521,6 +520,9 @@ elements.adminLoginForm.addEventListener('submit', async (e) => {
 elements.adminLogoutBtn.addEventListener('click', () => {
   state.activeAdmin = null;
   updateAuthButtonDisplay();
+  if (elements.authSessionStatus) {
+    elements.authSessionStatus.innerText = 'Sign In or Create Account';
+  }
   switchAuthTab('userLogin');
 });
 
