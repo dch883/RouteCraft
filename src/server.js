@@ -1,7 +1,7 @@
 /**
  * RouteCraft: An Interactive Web Application for Regional Day-Trip Planning
  * Main Server & RESTful API Routing Engine
-*/
+ */
 
 const express = require('express');
 const cors = require('cors');
@@ -37,7 +37,7 @@ app.get('/api/places', placeController.getAllPlaces);
 app.get('/api/places/:id', placeController.getPlaceById);
 app.get('/api/taxonomies', placeController.getTaxonomies);
 
-// Itinerary Engine, Route Optimization & Persistence (Ideas 1, 2, 3)
+// Itinerary Engine, Route Optimization & Persistence
 app.post('/api/itinerary/calculate', itineraryController.calculateItinerary);
 app.post('/api/itinerary/optimize', itineraryController.optimizeItinerary);
 app.post('/api/itinerary/save', itineraryController.saveItinerary);
@@ -49,7 +49,7 @@ app.post('/api/auth/register', authController.registerUser);
 app.post('/api/auth/login', authController.loginUser);
 
 // -----------------------------------------------------------------------------
-// ADMINISTRATIVE API ROUTES
+// ADMINISTRATIVE API ROUTES (Places, Tags, Admins, Users)
 // -----------------------------------------------------------------------------
 app.post('/api/admin/login', adminController.adminLogin);
 app.get('/api/admin/places', adminController.adminListPlaces);
@@ -58,7 +58,10 @@ app.put('/api/admin/places/:id', adminController.updatePlace);
 app.put('/api/admin/places/:id/toggle-status', adminController.toggleSoftDelete);
 app.delete('/api/admin/places/:id', adminController.deletePlacePermanent);
 
-// Admin Management
+// Taxonomy / Tag Management (New Endpoint)
+app.post('/api/admin/tags', adminController.createTag);
+
+// Admin Account Management
 app.get('/api/admin/list', adminController.listAdmins);
 app.post('/api/admin/create-admin', adminController.createAdmin);
 app.delete('/api/admin/admins/:id', adminController.deleteAdmin);

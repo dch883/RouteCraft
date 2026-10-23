@@ -32,7 +32,6 @@
   padding: 0;
 }
 
-/* Universal Typography with Sinhala & Tamil Fallbacks */
 body {
   font-family: 'Inter', 'Noto Sans Sinhala', 'Noto Sans Tamil', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   color: var(--text-main);
@@ -86,7 +85,6 @@ body {
   font-weight: 500;
 }
 
-/* Live Weather Pill */
 .weather-pill {
   display: flex;
   align-items: center;
@@ -155,7 +153,7 @@ body {
   font-weight: 700;
 }
 
-/* 2. COMPACT LANGUAGE SWITCHER (IDEA 5) */
+/* 2. LANGUAGE SWITCHER */
 .lang-switcher {
   display: inline-flex;
   background: #f1f5f9;
@@ -926,6 +924,66 @@ body {
 .grid-form textarea {
   min-height: 90px;
   resize: vertical;
+}
+
+/* Tag Selection Checkbox Container & New Tag Input */
+.admin-tags-selection-box {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0.85rem;
+  background: #f8fafc;
+  border: 1px solid var(--input-border);
+  border-radius: var(--radius-sm);
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+.tag-selector-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.7rem;
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  font-size: 0.775rem;
+  font-weight: 500;
+  cursor: pointer;
+  user-select: none;
+  transition: var(--transition);
+}
+
+.tag-selector-pill:hover {
+  background: #eef2f6;
+  border-color: #cbd5e1;
+}
+
+.tag-selector-pill input[type="checkbox"] {
+  width: auto;
+  margin: 0;
+  cursor: pointer;
+}
+
+.tag-selector-pill:has(input[type="checkbox"]:checked) {
+  background: #e0f2fe;
+  border-color: #0b6bcb;
+  color: #0369a1;
+  font-weight: 600;
+}
+
+.new-tag-input-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.new-tag-input-row input {
+  flex: 2;
+}
+
+.new-tag-input-row select {
+  flex: 1;
 }
 
 .form-actions {

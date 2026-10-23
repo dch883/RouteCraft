@@ -2,9 +2,7 @@
  * RouteCraft: Client-Side Single Page Application (SPA) Engine
  */
 
-// =============================================================================
-// I18N DICTIONARY (IDEA 5: ENGLISH, SINHALA, TAMIL)
-// =============================================================================
+// I18N DICTIONARY (IDEA 5)
 const i18n = {
   en: {
     brandSubtitle: "Kiniyama Regional Day-Planner",
@@ -254,7 +252,6 @@ const i18n = {
   }
 };
 
-// PLACE NAMES & CATEGORIES TRANSLATION DICTIONARY
 const placeTranslations = {
   1: { si: "ශ්‍රී අංගුලිමාල මහා සෑ විහාරය", ta: "ஸ்ரீ அங்குலிமால மகா சே விகாரை" },
   2: { si: "පඬුවස්නුවර රජ මහා විහාරය", ta: "பண்டுவஸ்நுவர ராஜ மகா விகாரை" },
@@ -281,11 +278,9 @@ const categoryTranslations = {
   "Community & Education": { si: "ප්‍රජා හා අධ්‍යාපනික", ta: "சமூக மற்றும் கல்வி" }
 };
 
-// =============================================================================
 // APPLICATION STATE
-// =============================================================================
 const state = {
-  currentLang: localStorage.getItem('routecraft_lang') || 'en', // Default English
+  currentLang: localStorage.getItem('routecraft_lang') || 'en',
   currentView: 'explore',
   allPlaces: [],
   adminPlaces: [],
@@ -414,7 +409,7 @@ const elements = {
   adminUsername: document.getElementById('adminUsername'),
   adminPassword: document.getElementById('adminPassword'),
   adminLoginError: document.getElementById('adminLoginError'),
-  // Admin Console View
+  // Admin Console View & Form Controls
   adminConsoleUser: document.getElementById('adminConsoleUser'),
   adminConsoleNewPlaceBtn: document.getElementById('adminConsoleNewPlaceBtn'),
   adminTabPlaces: document.getElementById('adminTabPlaces'),
@@ -430,6 +425,12 @@ const elements = {
   adminCancelPlaceBtn: document.getElementById('adminCancelPlaceBtn'),
   admPlaceCategory: document.getElementById('admPlaceCategory'),
   admPlaceMapsUrl: document.getElementById('admPlaceMapsUrl'),
+  admPlaceParking: document.getElementById('admPlaceParking'),
+  admPlaceContact: document.getElementById('admPlaceContact'),
+  admTagsCheckboxContainer: document.getElementById('admTagsCheckboxContainer'),
+  admNewTagName: document.getElementById('admNewTagName'),
+  admNewTagType: document.getElementById('admNewTagType'),
+  btnAddNewTagToForm: document.getElementById('btnAddNewTagToForm'),
   adminConsolePlacesBody: document.getElementById('adminConsolePlacesBody'),
   adminCreateAdminForm: document.getElementById('adminCreateAdminForm'),
   adminConsoleUsersBody: document.getElementById('adminConsoleUsersBody'),
@@ -457,9 +458,7 @@ const elements = {
 
 const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1586861635167-e5223aadc9fe?w=600&auto=format&fit=crop&q=80';
 
-// =============================================================================
-// I18N RENDERING HELPER (IDEA 5)
-// =============================================================================
+// I18N HELPERS
 function getTranslation(key) {
   const lang = state.currentLang;
   return (i18n[lang] && i18n[lang][key]) ? i18n[lang][key] : (i18n['en'][key] || key);
@@ -485,24 +484,20 @@ function applyLanguage(lang) {
   state.currentLang = lang;
   localStorage.setItem('routecraft_lang', lang);
 
-  // Update language buttons active state
   document.querySelectorAll('.lang-btn').forEach(btn => {
     btn.classList.toggle('active', btn.getAttribute('data-lang') === lang);
   });
 
-  // Translate all DOM elements tagged with data-i18n
   document.querySelectorAll('[data-i18n]').forEach(el => {
     const key = el.getAttribute('data-i18n');
     el.textContent = getTranslation(key);
   });
 
-  // Translate input placeholders
   document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
     const key = el.getAttribute('data-i18n-placeholder');
     el.placeholder = getTranslation(key);
   });
 
-  // Re-render UI views
   renderTaxonomyControls();
   sortAndRenderPlaces();
   updateItineraryUI();
@@ -510,7 +505,6 @@ function applyLanguage(lang) {
   updateAuthButtonDisplay();
 }
 
-// Clear Credentials Helper
 function clearCredentialsFromForms() {
   if (elements.adminLoginForm) elements.adminLoginForm.reset();
   if (elements.userLoginForm) elements.userLoginForm.reset();
@@ -567,7 +561,7 @@ async function fetchLiveKiniyamaWeather() {
       elements.weatherText.innerText = `${titlePrefix}: ${temp}°C | ${desc}`;
     }
   } catch (err) {
-    const titlePrefix = state.currentLang === 'si' ? 'කිනියම' : (state.currentLang === 'ta' ? 'கினියம' : 'Kiniyama');
+    const titlePrefix = state.currentLang === 'si' ? 'කිනියම' : (state.currentLang === 'ta' ? 'கினியம' : 'Kiniyama');
     elements.weatherText.innerText = `${titlePrefix}: 28°C | Clear`;
   }
 }
@@ -581,7 +575,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   await loadTaxonomies();
   await loadPlaces();
   restoreSavedItinerary();
-  applyLanguage(state.currentLang); // Apply saved language
+  applyLanguage(state.currentLang);
 });
 
 // SPA VIEW ROUTING
@@ -613,21 +607,23 @@ async function loadTaxonomies() {
       state.vibes = data.vibes;
       state.activities = data.activities;
       renderTaxonomyControls();
+      renderAdminTagsSelection();
     }
   } catch (error) {
     console.error('[RouteCraft] Failed to load taxonomies:', error);
   }
 }
 
+// SAFE CATALOG FETCHER: SENDS DISTINCT VIBE & ACTIVITY PARAMS TO PREVENT 500 CRASH
 async function loadPlaces() {
   try {
     elements.resultsCount.innerText = 'Updating catalog...';
     const params = new URLSearchParams();
 
     if (state.selectedCategory !== 'All') params.append('category', state.selectedCategory);
-    if (state.searchKeyword) params.append('search', state.searchKeyword);
-    if (state.selectedVibe) params.append('tag', state.selectedVibe);
-    if (state.selectedActivity) params.append('tag', state.selectedActivity);
+    if (state.searchKeyword && state.searchKeyword.trim() !== '') params.append('search', state.searchKeyword.trim());
+    if (state.selectedVibe && state.selectedVibe.trim() !== '') params.append('vibe', state.selectedVibe.trim());
+    if (state.selectedActivity && state.selectedActivity.trim() !== '') params.append('activity', state.selectedActivity.trim());
 
     const res = await fetch(`/api/places?${params.toString()}`);
     const result = await res.json();
@@ -635,9 +631,13 @@ async function loadPlaces() {
     if (result.success) {
       state.allPlaces = result.data;
       sortAndRenderPlaces();
+    } else {
+      elements.resultsCount.innerText = '0 destinations found';
+      elements.placesGrid.innerHTML = `<div class="empty-state"><p>${result.message || 'Error loading places.'}</p></div>`;
     }
   } catch (error) {
     console.error('[RouteCraft] Error fetching destinations:', error);
+    elements.resultsCount.innerText = 'Error loading destinations';
     elements.placesGrid.innerHTML = `<div class="empty-state"><p>Error connecting to backend server.</p></div>`;
   }
 }
@@ -653,14 +653,34 @@ function renderTaxonomyControls() {
   elements.categoryChips.innerHTML = chipsHtml;
 
   elements.vibeFilter.innerHTML = `<option value="">${getTranslation('filterByVibe')}</option>` +
-    state.vibes.map(v => `<option value="${v.TagName}">${v.TagName}</option>`).join('');
+    state.vibes.map(v => `<option value="${v.TagName}" ${state.selectedVibe === v.TagName ? 'selected' : ''}>${v.TagName}</option>`).join('');
 
   elements.activityFilter.innerHTML = `<option value="">${getTranslation('filterByActivity')}</option>` +
-    state.activities.map(a => `<option value="${a.TagName}">${a.TagName}</option>`).join('');
+    state.activities.map(a => `<option value="${a.TagName}" ${state.selectedActivity === a.TagName ? 'selected' : ''}>${a.TagName}</option>`).join('');
 
   elements.admPlaceCategory.innerHTML = state.categories.map(c => 
     `<option value="${c.CategoryID}">${c.CategoryName}</option>`
   ).join('');
+}
+
+function renderAdminTagsSelection(selectedTagIds = []) {
+  if (!elements.admTagsCheckboxContainer) return;
+
+  const allTags = [...state.vibes, ...state.activities];
+  if (allTags.length === 0) {
+    elements.admTagsCheckboxContainer.innerHTML = `<span class="text-muted" style="font-size:0.8rem;">No tags available. Add a new tag below.</span>`;
+    return;
+  }
+
+  elements.admTagsCheckboxContainer.innerHTML = allTags.map(tag => {
+    const isChecked = selectedTagIds.includes(tag.TagID);
+    return `
+      <label class="tag-selector-pill">
+        <input type="checkbox" name="adminPlaceTags" value="${tag.TagID}" ${isChecked ? 'checked' : ''}>
+        <span>${escapeHtml(tag.TagName)} <small style="color:#64748b;">(${tag.TagType})</small></span>
+      </label>
+    `;
+  }).join('');
 }
 
 function sortAndRenderPlaces() {
@@ -921,7 +941,7 @@ function renderConnectedRouteMap() {
   }
 }
 
-// PLACE DETAIL MODAL (LEAFLET MAP & PHOTOS)
+// PLACE DETAIL MODAL
 function showModalMedia(type) {
   if (type === 'photos') {
     elements.btnShowPhotos.classList.add('active');
@@ -1014,12 +1034,16 @@ async function openPlaceDetails(placeId) {
     elements.modalTravelTips.innerText = p.TravelTips || 'Standard travel guidelines apply; wear comfortable footwear and observe local customs.';
     elements.modalHours.innerText = p.OpeningHours || '08:00 AM - 05:00 PM';
     elements.modalEntrance.innerText = p.EntranceFee || getTranslation('freeAdmission');
-    elements.modalParking.innerText = p.ParkingAvailable ? 'On-site Parking Available' : 'Street/Limited Parking';
+
+    elements.modalParking.innerText = (p.ParkingAvailable === 1 || p.ParkingAvailable === true) 
+      ? 'On-site Parking Available' 
+      : 'Street / Limited Parking';
     elements.modalContact.innerText = p.ContactInfo || 'Not Available';
+
     elements.modalDuration.innerText = `${p.EstVisitDurationMins} minutes`;
 
     elements.modalTagsWrapper.innerHTML = (p.tags || []).map(t => 
-      `<span class="pill-sm">${escapeHtml(t.TagName)}</span>`
+      `<span class="pill-sm">${escapeHtml(t.TagName)} (${t.TagType})</span>`
     ).join('') || '<span class="text-muted" style="font-size: 0.8rem;">No tags assigned.</span>';
 
     elements.modalMapsLink.href = p.GoogleMapsUrl || `https://maps.google.com/?q=${lat},${lon}`;
@@ -1398,6 +1422,9 @@ elements.adminConsoleNewPlaceBtn.addEventListener('click', () => {
   elements.adminEditPlaceId.value = '';
   document.getElementById('admPlaceTravelTips').value = '';
   elements.admPlaceMapsUrl.value = '';
+  elements.admPlaceParking.value = '1';
+  elements.admPlaceContact.value = '';
+  renderAdminTagsSelection([]);
   elements.adminPlaceFormHeading.innerText = 'Add New Destination (Max 25 km Scope)';
   elements.adminAddPlaceCard.classList.toggle('hidden');
   elements.adminAddPlaceCard.scrollIntoView({ behavior: 'smooth' });
@@ -1405,6 +1432,40 @@ elements.adminConsoleNewPlaceBtn.addEventListener('click', () => {
 
 elements.adminCancelPlaceBtn.addEventListener('click', () => {
   elements.adminAddPlaceCard.classList.add('hidden');
+});
+
+// CREATE NEW TAG IN ADMIN FORM & AUTOMATICALLY UPDATE HOMEPAGE FILTERS
+elements.btnAddNewTagToForm.addEventListener('click', async () => {
+  const tagName = elements.admNewTagName.value.trim();
+  const tagType = elements.admNewTagType.value;
+
+  if (!tagName) {
+    alert('Please enter a tag name.');
+    return;
+  }
+
+  try {
+    const res = await fetch('/api/admin/tags', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tagName, tagType })
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      alert(`Tag '${data.tag.TagName}' created and added to filters!`);
+      elements.admNewTagName.value = '';
+
+      await loadTaxonomies();
+
+      const checkbox = document.querySelector(`input[name="adminPlaceTags"][value="${data.tag.TagID}"]`);
+      if (checkbox) checkbox.checked = true;
+    } else {
+      alert(data.message || 'Failed to create tag.');
+    }
+  } catch (err) {
+    alert('Network error creating tag.');
+  }
 });
 
 async function loadAdminPlaces() {
@@ -1455,9 +1516,16 @@ function openAdminEditPlace(placeId) {
   elements.admPlaceMapsUrl.value = p.GoogleMapsUrl || '';
   document.getElementById('admPlaceHours').value = p.OpeningHours || '08:00 AM - 05:00 PM';
   document.getElementById('admPlaceFee').value = p.EntranceFee || 'Free Admission';
+
+  elements.admPlaceParking.value = (p.ParkingAvailable === 1 || p.ParkingAvailable === true) ? '1' : '0';
+  elements.admPlaceContact.value = p.ContactInfo || '';
+
   document.getElementById('admPlaceImage').value = p.ImageUrl || '';
   document.getElementById('admPlaceDesc').value = p.Description;
   document.getElementById('admPlaceTravelTips').value = p.TravelTips || '';
+
+  const currentTagIds = (p.tags || []).map(t => t.TagID);
+  renderAdminTagsSelection(currentTagIds);
 
   elements.adminAddPlaceCard.classList.remove('hidden');
   elements.adminAddPlaceCard.scrollIntoView({ behavior: 'smooth' });
@@ -1497,6 +1565,9 @@ elements.adminSavePlaceForm.addEventListener('submit', async (e) => {
   const editId = elements.adminEditPlaceId.value;
   const isEditing = editId && editId.trim() !== '';
 
+  const checkedBoxes = document.querySelectorAll('input[name="adminPlaceTags"]:checked');
+  const tagIds = Array.from(checkedBoxes).map(cb => parseInt(cb.value, 10));
+
   const payload = {
     name: document.getElementById('admPlaceName').value,
     categoryId: document.getElementById('admPlaceCategory').value,
@@ -1507,9 +1578,12 @@ elements.adminSavePlaceForm.addEventListener('submit', async (e) => {
     googleMapsUrl: elements.admPlaceMapsUrl.value.trim(),
     openingHours: document.getElementById('admPlaceHours').value,
     entranceFee: document.getElementById('admPlaceFee').value,
+    parkingAvailable: elements.admPlaceParking.value === '1' ? 1 : 0,
+    contactInfo: elements.admPlaceContact.value.trim() || 'Not Available',
     imageUrl: document.getElementById('admPlaceImage').value,
     description: document.getElementById('admPlaceDesc').value,
-    travelTips: document.getElementById('admPlaceTravelTips').value
+    travelTips: document.getElementById('admPlaceTravelTips').value,
+    tagIds: tagIds
   };
 
   const endpoint = isEditing ? `/api/admin/places/${editId}` : '/api/admin/places';
@@ -1530,6 +1604,7 @@ elements.adminSavePlaceForm.addEventListener('submit', async (e) => {
       elements.adminAddPlaceCard.classList.add('hidden');
       await loadAdminPlaces();
       await loadPlaces();
+      await loadTaxonomies();
     } else {
       alert(data.message || 'Operation failed.');
     }
@@ -1733,6 +1808,8 @@ function generateExportSummary() {
     text += `   - Distance from Kiniyama: ${p.DistanceFromCenter} km\n`;
     text += `   - Operating Hours: ${p.OpeningHours}\n`;
     text += `   - Entrance Fee: ${p.EntranceFee || getTranslation('freeAdmission')}\n`;
+    text += `   - Parking: ${p.ParkingAvailable ? 'On-site Parking' : 'Street/Limited Parking'}\n`;
+    text += `   - Contact: ${p.ContactInfo || 'Not Available'}\n`;
     text += `   - Expected Dwell Time: ${p.EstVisitDurationMins} minutes\n`;
     text += `   - Map Link: ${p.GoogleMapsUrl}\n`;
     if (p.TravelTips) {
@@ -1770,8 +1847,14 @@ function printItineraryDocument() {
           </div>
           <div style="font-size: 11px; color: #475569; margin-top: 4px;">
             <strong>Hours:</strong> ${escapeHtml(p.OpeningHours)} &nbsp;|&nbsp; 
-            <strong>Fee:</strong> ${escapeHtml(p.EntranceFee)}
+            <strong>Fee:</strong> ${escapeHtml(p.EntranceFee)} &nbsp;|&nbsp;
+            <strong>Parking:</strong> ${p.ParkingAvailable ? 'Available' : 'Limited'}
           </div>
+          ${p.ContactInfo && p.ContactInfo !== 'Not Available' ? `
+            <div style="font-size: 11px; color: #475569; margin-top: 2px;">
+              <strong>Contact:</strong> ${escapeHtml(p.ContactInfo)}
+            </div>
+          ` : ''}
           ${p.TravelTips ? `
             <div style="font-size: 11px; color: #166534; background: #f0fdf4; padding: 4px 8px; border-radius: 4px; margin-top: 4px;">
               <strong>💡 Travel Tip:</strong> ${escapeHtml(p.TravelTips)}
@@ -1854,7 +1937,6 @@ function setupEventListeners() {
   elements.tabViewSavedTrips.addEventListener('click', () => switchView('savedTrips'));
   elements.tabViewAdmin.addEventListener('click', () => switchView('adminConsole'));
 
-  // Language Switcher Event Listeners (Idea 5)
   document.querySelectorAll('.lang-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const selectedLang = btn.getAttribute('data-lang');
@@ -1862,11 +1944,9 @@ function setupEventListeners() {
     });
   });
 
-  // Quick Action Buttons
   elements.btnViewRouteMap.addEventListener('click', openRouteMapModal);
   elements.btnOptimizeRoute.addEventListener('click', triggerRouteOptimization);
 
-  // In-App Media Switcher (Photos vs. Map)
   elements.btnShowPhotos.addEventListener('click', () => showModalMedia('photos'));
   elements.btnShowMap.addEventListener('click', () => showModalMedia('map'));
 

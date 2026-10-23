@@ -52,11 +52,11 @@ function discoverPhotosForPlace(imageUrl) {
 
 /**
  * GET /api/places
- * Retrieves catalog destinations including TravelTips
+ * Retrieves catalog destinations with crash-proof multi-criteria filtering
  */
 async function getAllPlaces(req, res) {
   try {
-    const { category, search, tag } = req.query;
+    const { category, search, tag, vibe, activity } = req.query;
 
     let sql = `
       SELECT DISTINCT 
@@ -78,33 +78,67 @@ async function getAllPlaces(req, res) {
         c.CategoryName
       FROM PLACE p
       JOIN CATEGORY c ON p.CategoryID = c.CategoryID
-      LEFT JOIN PLACE_TAG pt ON p.PlaceID = pt.PlaceID
-      LEFT JOIN TAG t ON pt.TagID = t.TagID
       WHERE p.IsDeleted = 0
     `;
 
     const params = [];
 
+    // 1. Category Filter (REQ-FUNC-04)
     if (category && category !== 'All') {
       sql += ` AND (c.CategoryName = ? OR c.CategoryID = ?)`;
-      params.push(category, category);
+      params.push(String(category), String(category));
     }
 
-    if (search && search.trim() !== '') {
+    // 2. Keyword Search across Title and Description (REQ-FUNC-03)
+    if (search && typeof search === 'string' && search.trim() !== '') {
       const searchTerm = `%${search.trim()}%`;
       sql += ` AND (p.Name LIKE ? OR p.Description LIKE ?)`;
       params.push(searchTerm, searchTerm);
     }
 
-    if (tag && tag.trim() !== '') {
-      sql += ` AND t.TagName = ?`;
-      params.push(tag.trim());
+    // 3. Vibe Filter (Subquery ensures accurate filtering)
+    if (vibe && typeof vibe === 'string' && vibe.trim() !== '') {
+      sql += ` AND p.PlaceID IN (
+        SELECT pt_v.PlaceID 
+        FROM PLACE_TAG pt_v 
+        JOIN TAG t_v ON pt_v.TagID = t_v.TagID 
+        WHERE t_v.TagName = ?
+      )`;
+      params.push(vibe.trim());
+    }
+
+    // 4. Activity Filter (Subquery ensures accurate filtering)
+    if (activity && typeof activity === 'string' && activity.trim() !== '') {
+      sql += ` AND p.PlaceID IN (
+        SELECT pt_a.PlaceID 
+        FROM PLACE_TAG pt_a 
+        JOIN TAG t_a ON pt_a.TagID = t_a.TagID 
+        WHERE t_a.TagName = ?
+      )`;
+      params.push(activity.trim());
+    }
+
+    // 5. General Tag Filter (Handles strings OR arrays safely without throwing TypeError)
+    if (tag) {
+      const tagsArray = Array.isArray(tag) ? tag : [tag];
+      for (const t of tagsArray) {
+        if (typeof t === 'string' && t.trim() !== '') {
+          sql += ` AND p.PlaceID IN (
+            SELECT pt_t.PlaceID 
+            FROM PLACE_TAG pt_t 
+            JOIN TAG t_t ON pt_t.TagID = t_t.TagID 
+            WHERE t_t.TagName = ?
+          )`;
+          params.push(t.trim());
+        }
+      }
     }
 
     sql += ` ORDER BY p.DistanceFromCenter ASC`;
 
     const [rows] = await db.query(sql, params);
 
+    // Fetch tags and discovered photo list for each destination
     for (let place of rows) {
       const [tags] = await db.query(
         `SELECT t.TagID, t.TagName, t.TagType 

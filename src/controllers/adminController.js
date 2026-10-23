@@ -1,6 +1,6 @@
 /**
  * RouteCraft - Comprehensive Administrative Management Controller
- */
+*/
 
 const bcrypt = require('bcryptjs');
 const db = require('../config/db');
@@ -77,6 +77,7 @@ async function adminLogin(req, res) {
 
 /**
  * GET /api/admin/places
+ * Lists places with associated tags for editing
  */
 async function adminListPlaces(req, res) {
   try {
@@ -90,6 +91,18 @@ async function adminListPlaces(req, res) {
       JOIN CATEGORY c ON p.CategoryID = c.CategoryID
       ORDER BY p.PlaceID DESC
     `);
+
+    // Fetch tags for each place
+    for (let place of rows) {
+      const [tags] = await db.query(
+        `SELECT t.TagID, t.TagName, t.TagType 
+         FROM TAG t 
+         JOIN PLACE_TAG pt ON t.TagID = pt.TagID 
+         WHERE pt.PlaceID = ?`,
+        [place.PlaceID]
+      );
+      place.tags = tags;
+    }
 
     return res.status(200).json({ success: true, data: rows });
   } catch (error) {
@@ -106,7 +119,6 @@ function resolveCoordinates(latInput, lonInput, mapsUrl) {
   let lon = parseFloat(lonInput);
 
   if ((isNaN(lat) || isNaN(lon)) && mapsUrl) {
-    // Attempt match patterns: @lat,lon or q=lat,lon
     const match = mapsUrl.match(/[@?&]q?=?(-?\d+\.\d+),(-?\d+\.\d+)/);
     if (match) {
       lat = parseFloat(match[1]);
@@ -114,7 +126,6 @@ function resolveCoordinates(latInput, lonInput, mapsUrl) {
     }
   }
 
-  // Fallback to Kiniyama center
   if (isNaN(lat)) lat = KINIYAMA_DEFAULT_LAT;
   if (isNaN(lon)) lon = KINIYAMA_DEFAULT_LON;
 
@@ -122,14 +133,16 @@ function resolveCoordinates(latInput, lonInput, mapsUrl) {
 }
 
 /**
- * POST /api/admin/places (Latitude & Longitude Optional)
+ * POST /api/admin/places
+ * Creates destination with Parking, Contact Info, and Tag mappings
  */
 async function createPlace(req, res) {
   try {
     const {
       name, categoryId, description, travelTips, distanceFromCenter,
       latitude, longitude, estVisitDurationMins,
-      openingHours, entranceFee, parkingAvailable, contactInfo, googleMapsUrl, imageUrl
+      openingHours, entranceFee, parkingAvailable, contactInfo, googleMapsUrl, imageUrl,
+      tagIds
     } = req.body;
 
     if (!name || !categoryId) {
@@ -169,10 +182,18 @@ async function createPlace(req, res) {
       ]
     );
 
+    const newPlaceId = result.insertId;
+
+    // Link selected tags in PLACE_TAG junction table
+    if (Array.isArray(tagIds) && tagIds.length > 0) {
+      const ptValues = tagIds.map(tId => [newPlaceId, parseInt(tId, 10)]);
+      await db.query(`INSERT INTO PLACE_TAG (PlaceID, TagID) VALUES ?`, [ptValues]);
+    }
+
     return res.status(201).json({
       success: true,
-      message: 'Place created successfully.',
-      placeId: result.insertId
+      message: 'Place created successfully with tags!',
+      placeId: newPlaceId
     });
   } catch (error) {
     console.error('[adminController.createPlace] Error:', error);
@@ -181,7 +202,8 @@ async function createPlace(req, res) {
 }
 
 /**
- * PUT /api/admin/places/:id (Latitude & Longitude Optional)
+ * PUT /api/admin/places/:id
+ * Updates destination with Parking, Contact Info, and Tag mappings
  */
 async function updatePlace(req, res) {
   try {
@@ -189,7 +211,8 @@ async function updatePlace(req, res) {
     const {
       name, categoryId, description, travelTips, distanceFromCenter,
       latitude, longitude, estVisitDurationMins,
-      openingHours, entranceFee, parkingAvailable, contactInfo, googleMapsUrl, imageUrl
+      openingHours, entranceFee, parkingAvailable, contactInfo, googleMapsUrl, imageUrl,
+      tagIds
     } = req.body;
 
     const dist = parseFloat(distanceFromCenter) || 0;
@@ -231,10 +254,67 @@ async function updatePlace(req, res) {
       return res.status(404).json({ success: false, message: 'Destination not found.' });
     }
 
-    return res.status(200).json({ success: true, message: 'Destination updated successfully.' });
+    // Refresh tags: delete existing and re-insert new selections
+    if (Array.isArray(tagIds)) {
+      await db.query(`DELETE FROM PLACE_TAG WHERE PlaceID = ?`, [id]);
+      if (tagIds.length > 0) {
+        const ptValues = tagIds.map(tId => [id, parseInt(tId, 10)]);
+        await db.query(`INSERT INTO PLACE_TAG (PlaceID, TagID) VALUES ?`, [ptValues]);
+      }
+    }
+
+    return res.status(200).json({ success: true, message: 'Destination and tags updated successfully.' });
   } catch (error) {
     console.error('[adminController.updatePlace] Error:', error);
     return res.status(500).json({ success: false, message: 'Failed to update destination.' });
+  }
+}
+
+/**
+ * POST /api/admin/tags
+ * Creates a new tag and makes it available immediately in filters
+ */
+async function createTag(req, res) {
+  try {
+    const { tagName, tagType } = req.body;
+    if (!tagName || !tagType) {
+      return res.status(400).json({ success: false, message: 'Tag Name and Type are required.' });
+    }
+
+    const cleanName = tagName.trim();
+    const cleanType = (tagType === 'Activity') ? 'Activity' : 'Vibe';
+
+    // Check if tag already exists (case-insensitive)
+    const [existing] = await db.query(
+      'SELECT TagID, TagName, TagType FROM TAG WHERE LOWER(TagName) = LOWER(?)',
+      [cleanName]
+    );
+
+    if (existing.length > 0) {
+      return res.status(200).json({
+        success: true,
+        message: 'Tag already exists.',
+        tag: existing[0]
+      });
+    }
+
+    const [result] = await db.query(
+      'INSERT INTO TAG (TagName, TagType) VALUES (?, ?)',
+      [cleanName, cleanType]
+    );
+
+    return res.status(201).json({
+      success: true,
+      message: 'New tag created successfully.',
+      tag: {
+        TagID: result.insertId,
+        TagName: cleanName,
+        TagType: cleanType
+      }
+    });
+  } catch (error) {
+    console.error('[adminController.createTag] Error:', error);
+    return res.status(500).json({ success: false, message: 'Failed to create new tag.' });
   }
 }
 
@@ -424,6 +504,7 @@ module.exports = {
   adminListPlaces,
   createPlace,
   updatePlace,
+  createTag,
   toggleSoftDelete,
   deletePlacePermanent,
   listAdmins,
